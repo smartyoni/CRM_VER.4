@@ -6,7 +6,14 @@
       "Bash(npm install)",
       "Bash(git init:*)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git config:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(dir \"C:\\Users\\inaee\\Downloads\\앱개발\\고객관리ver3\")",
+      "Bash(dir \"C:\\Users\\inaee\\Downloads\\앱개발\\고객관리ver3\\CRM_VER3\")",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
