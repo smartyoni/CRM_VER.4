@@ -42,13 +42,17 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
 
   const formatActivityDate = (date) => {
     if (!date) return '';
-    // date가 "YYYY-MM-DD" 형식이면 MM-DD 형식으로 변환
+    // "YYYY-MM-DD HH:mm" 형식을 "MM-DD HH:mm" 형식으로 변환
+    if (date.includes(' ')) {
+      // "2024-10-19 14:30" -> "10-19 14:30"
+      const parts = date.split(' ');
+      const datePart = parts[0].slice(5); // "10-19"
+      const timePart = parts[1]; // "14:30"
+      return `${datePart} ${timePart}`;
+    }
+    // 기존 "YYYY-MM-DD" 형식 처리
     if (date.length === 10) {
       return date.slice(5, 10); // "10-16"
-    }
-    // 레거시: datetime 형식도 처리
-    if (date.length > 10) {
-      return date.slice(5, 10);
     }
     return date;
   };
@@ -155,10 +159,59 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
                     fontFamily: 'inherit'
                   }}
                 />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
-                  <button onClick={handleAddFollowUp} className="btn-primary" style={{ fontSize: '12px', padding: '6px 16px' }}>
-                    입력
-                  </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => setNewFollowUpContent(prev => (prev ? prev + '\n[나] ' : '[나] '))}
+                      style={{
+                        fontSize: '12px',
+                        padding: '6px 12px',
+                        backgroundColor: '#e3f2fd',
+                        color: '#2196F3',
+                        border: '1px solid #2196F3',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      나
+                    </button>
+                    <button
+                      onClick={() => setNewFollowUpContent(prev => (prev ? prev + '\n[고객] ' : '[고객] '))}
+                      style={{
+                        fontSize: '12px',
+                        padding: '6px 12px',
+                        backgroundColor: '#f3e5f5',
+                        color: '#9c27b0',
+                        border: '1px solid #9c27b0',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      고객
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={handleAddFollowUp} className="btn-primary" style={{ fontSize: '12px', padding: '6px 16px' }}>
+                      입력
+                    </button>
+                    <button
+                      onClick={() => setNewFollowUpContent('')}
+                      style={{
+                        fontSize: '12px',
+                        padding: '6px 16px',
+                        backgroundColor: '#f5f5f5',
+                        color: '#666',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '500'
+                      }}
+                    >
+                      초기화
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -278,16 +331,30 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
             )}
           </div>
           <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <button onClick={onClose} className="btn-secondary">닫기</button>
             <button
               onClick={() => {
-                setEditingActivity(activity);
-                onClose();
+                if (confirm('이 활동을 삭제하시겠습니까?')) {
+                  onDeleteActivity(activity.id);
+                  onClose();
+                }
               }}
-              className="btn-primary"
+              className="btn-secondary"
+              style={{ backgroundColor: '#f44336' }}
             >
-              수정
+              삭제
             </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={onClose} className="btn-secondary">닫기</button>
+              <button
+                onClick={() => {
+                  setEditingActivity(activity);
+                  onClose();
+                }}
+                className="btn-primary"
+              >
+                수정
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -295,8 +362,23 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
   };
 
   const ActivityForm = ({ activity, onCancel }) => {
+    const getInitialDate = () => {
+      if (activity && activity.date) {
+        // 기존 날짜가 있으면 그대로 사용
+        return activity.date;
+      }
+      // 새 활동이면 현재 날짜 + 시간 형식 (YYYY-MM-DD HH:mm)
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
+    };
+
     const [formData, setFormData] = useState(
-      activity || { date: new Date().toISOString().slice(0, 10), content: '', images: [] }
+      activity || { date: getInitialDate(), content: '', images: [] }
     );
     const [uploading, setUploading] = useState(false);
 
@@ -371,12 +453,22 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
     return (
       <div className="modal-overlay" onClick={onCancel}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h3>활동 기록</h3>
-            <button className="btn-close" onClick={onCancel}>×</button>
+          <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0 }}>활동 기록</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input
+                type="text"
+                name="date"
+                value={formData.date}
+                onChange={handleChange}
+                placeholder="YYYY-MM-DD HH:mm"
+                style={{ padding: '6px 8px', fontSize: '14px', borderRadius: '4px', border: '1px solid #ccc', width: '160px' }}
+              />
+              <button className="btn-close" onClick={onCancel}>×</button>
+            </div>
           </div>
           <div className="form-grid">
-            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <div className="form-group" style={{ gridColumn: '1 / -1', display: 'none' }}>
               <label>활동일 *</label>
               <input type="date" name="date" value={formData.date} onChange={handleChange} />
             </div>
@@ -446,14 +538,24 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
 
   return (
     <div className="activity-tab">
-      {!isAdding && !editingActivity && <button onClick={() => setIsAdding(true)}>+ 활동 추가</button>}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        {!isAdding && !editingActivity && (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="btn-primary"
+            style={{ padding: '8px 16px', fontSize: '14px' }}
+          >
+            + 활동 추가
+          </button>
+        )}
+      </div>
       {isAdding && <ActivityForm onCancel={() => setIsAdding(false)} />}
 
       {editingActivity ? (
         <ActivityForm activity={editingActivity} onCancel={() => setEditingActivity(null)} />
       ) : customerActivities.length > 0 ? (
         <div onClick={handleCloseContextMenu}>
-          <table className="customer-table" style={{ marginTop: '15px' }}>
+          <table className="customer-table">
             <thead>
               <tr>
                 <th style={{ width: '80px' }}>활동일</th>

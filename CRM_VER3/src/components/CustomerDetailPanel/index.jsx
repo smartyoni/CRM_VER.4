@@ -83,66 +83,105 @@ const CustomerDetailPanel = ({
 
           {/* 상태 및 진행상황 선택 */}
           <div style={{ padding: '15px', borderBottom: '1px solid #e0e0e0', backgroundColor: '#f8f9fa' }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
-              <label style={{ fontSize: '14px', marginBottom: 0, minWidth: '60px', fontWeight: 'bold' }}>상태</label>
-              <div style={{ display: 'flex', gap: '5px' }}>
-                {STATUSES.map(status => (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => handleStatusChange(status)}
-                    style={{
-                      fontSize: '13px',
-                      padding: '5px 12px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px',
-                      backgroundColor: selectedCustomer.status === status ? '#4CAF50' : 'white',
-                      color: selectedCustomer.status === status ? 'white' : '#333',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {(selectedCustomer.status === '신규' || selectedCustomer.status === '진행중') && (
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <label style={{ fontSize: '14px', marginBottom: 0, minWidth: '60px', fontWeight: 'bold' }}>진행상황</label>
-                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                  {PROGRESS_STATUSES.map(progress => (
+                <label style={{ fontSize: '14px', marginBottom: 0, minWidth: '60px', fontWeight: 'bold' }}>상태</label>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  {STATUSES.map(status => (
                     <button
-                      key={progress}
+                      key={status}
                       type="button"
-                      onClick={() => handleProgressChange(progress)}
+                      onClick={() => handleStatusChange(status)}
                       style={{
                         fontSize: '13px',
                         padding: '5px 12px',
                         border: '1px solid #ccc',
                         borderRadius: '4px',
-                        backgroundColor: selectedCustomer.progress === progress ? '#2196F3' : 'white',
-                        color: selectedCustomer.progress === progress ? 'white' : '#333',
+                        backgroundColor: selectedCustomer.status === status ? '#4CAF50' : 'white',
+                        color: selectedCustomer.status === status ? 'white' : '#333',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                       }}
                     >
-                      {progress}
+                      {status}
                     </button>
                   ))}
                 </div>
               </div>
-            )}
+              {(selectedCustomer.status === '신규' || selectedCustomer.status === '진행중') && (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <label style={{ fontSize: '14px', marginBottom: 0, minWidth: '60px', fontWeight: 'bold' }}>진행상황</label>
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                    {PROGRESS_STATUSES.map(progress => (
+                      <button
+                        key={progress}
+                        type="button"
+                        onClick={() => handleProgressChange(progress)}
+                        style={{
+                          fontSize: '13px',
+                          padding: '5px 12px',
+                          border: '1px solid #ccc',
+                          borderRadius: '4px',
+                          backgroundColor: selectedCustomer.progress === progress ? '#2196F3' : 'white',
+                          color: selectedCustomer.progress === progress ? 'white' : '#333',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {progress}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="panel-content">
-            <div className="tab-nav">
-              <div onClick={() => setActiveTab('기본정보')} className={`tab-item ${activeTab === '기본정보' ? 'active' : ''}`}>기본정보</div>
-              <div onClick={() => setActiveTab('활동 내역')} className={`tab-item ${activeTab === '활동 내역' ? 'active' : ''}`}>활동 내역 +</div>
-              <div onClick={() => setActiveTab('미팅 내역')} className={`tab-item ${activeTab === '미팅 내역' ? 'active' : ''}`}>미팅 내역 +</div>
+            <div style={{
+              display: 'flex',
+              gap: '4px',
+              padding: '12px 15px',
+              backgroundColor: '#e3f2fd',
+              borderRadius: '8px',
+              marginBottom: '15px',
+              border: '1px solid #bbdefb'
+            }}>
+              {['기본정보', '활동 내역', '미팅 내역'].map((tab, index) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    border: 'none',
+                    borderRadius: '6px',
+                    backgroundColor: activeTab === tab ? 'white' : 'transparent',
+                    color: '#1a1a1a',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: activeTab === tab ? '0 2px 8px rgba(33, 150, 243, 0.15)' : 'none',
+                    border: activeTab === tab ? '1px solid #e0e0e0' : '1px solid transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab) {
+                      e.target.style.backgroundColor = '#f9f9f9';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab) {
+                      e.target.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
             <div className="tab-content">
-              {activeTab === '기본정보' && <BasicInfo customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} />}
+              {activeTab === '기본정보' && <BasicInfo customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} activities={activities} meetings={meetings} onTabChange={setActiveTab} />}
               {activeTab === '활동 내역' && 
                 <ActivityTab 
                     customerId={selectedCustomer.id} 

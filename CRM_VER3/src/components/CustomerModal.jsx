@@ -99,12 +99,8 @@ const CustomerModal = ({ isOpen, onClose, onSave, editData }) => {
             </div>
         </div>
         <div className="form-group">
-            <label>금액 지역 상세정보</label>
+            <label>금액 지역 입주시기 상세정보</label>
             <textarea name="preferredArea" value={formData.preferredArea} onChange={handleChange} rows="2"></textarea>
-        </div>
-        <div className="form-group">
-            <label>메모</label>
-            <textarea name="memo" value={formData.memo} onChange={handleChange}></textarea>
         </div>
         <div className="modal-footer">
           <button onClick={onClose} className="btn-secondary">취소</button>

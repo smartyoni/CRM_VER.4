@@ -251,25 +251,22 @@ button {
     overflow-y: auto;
 }
 
+/* --- Segmented Control Tabs (New Style) --- */
+/* 새로운 세그먼티드 컨트롤 스타일을 위해 기존 스타일은 deprecated되었습니다 */
 .tab-nav {
-  display: flex;
-  border-bottom: 1px solid var(--medium-gray);
+  display: none;
 }
 
 .tab-item {
-  padding: 15px 20px;
-  cursor: pointer;
-  color: var(--secondary-gray);
+  display: none;
 }
 
 .tab-item.active {
-  border-bottom: 2px solid var(--primary-blue);
-  color: var(--primary-blue);
-  font-weight: bold;
+  display: none;
 }
 
 .tab-content {
-  padding: 20px;
+  padding: 0 15px 20px 15px;
 }
 
 /* --- Modal --- */
@@ -362,7 +359,8 @@ button {
 }
 
 /* --- Detail Panel Specifics --- */
-.basic-info-container { padding: 15px; }
+.basic-info-container { padding: 0; }
+.basic-info-container .info-section:first-child { margin-bottom: 15px; margin-top: 0; border: 1px solid #eee; padding: 15px; border-radius: 5px; }
 .info-section { margin-bottom: 20px; border: 1px solid #eee; padding: 15px; border-radius: 5px; }
 .info-section h4 { margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }

@@ -478,13 +478,23 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
   return (
     <div className="meeting-tab">
-        {!isAdding && !editingMeeting && <button onClick={() => setIsAdding(true)}>+ 미팅 추가</button>}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+          {!isAdding && !editingMeeting && (
+            <button
+              onClick={() => setIsAdding(true)}
+              className="btn-primary"
+              style={{ padding: '8px 16px', fontSize: '14px' }}
+            >
+              + 미팅 추가
+            </button>
+          )}
+        </div>
         {isAdding && <MeetingForm onCancel={() => setIsAdding(false)} />}
 
         {editingMeeting ? (
           <MeetingForm key={editingMeeting.id} meetingData={editingMeeting} onCancel={() => setEditingMeeting(null)} />
         ) : customerMeetings.length > 0 ? (
-          <table className="customer-table" style={{ marginTop: '15px' }}>
+          <table className="customer-table">
             <thead>
               <tr>
                 <th>미팅날짜</th>
