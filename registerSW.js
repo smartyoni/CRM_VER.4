@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/CRM_VER.4/sw.js', { scope: '/CRM_VER.4/' })})}

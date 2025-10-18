@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(git config:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(dir \"C:\\Users\\inaee\\Downloads\\앱개발\\고객관리ver3\")",
+      "Bash(dir \"C:\\Users\\inaee\\Downloads\\앱개발\\고객관리ver3\\CRM_VER3\")",
+      "Bash(npm run build:*)",
+      "Bash(git subtree push:*)",
+      "Bash(git branch:*)",
+      "Bash(npx gh-pages:*)",
+      "Bash(git fetch:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)",
+      "Bash(git remote set-url:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
