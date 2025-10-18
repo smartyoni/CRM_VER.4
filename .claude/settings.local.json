@@ -13,7 +13,15 @@
       "Bash(git push:*)",
       "Bash(dir \"C:\\Users\\inaee\\Downloads\\앱개발\\고객관리ver3\")",
       "Bash(dir \"C:\\Users\\inaee\\Downloads\\앱개발\\고객관리ver3\\CRM_VER3\")",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git subtree push:*)",
+      "Bash(git branch:*)",
+      "Bash(npx gh-pages:*)",
+      "Bash(git fetch:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)",
+      "Bash(git remote set-url:*)"
     ],
     "deny": [],
     "ask": []
