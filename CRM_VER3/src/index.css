@@ -228,7 +228,7 @@ button {
 }
 
 .detail-panel.open {
-  width: 1080px;
+  width: 972px;
 }
 
 .panel-header {
@@ -568,7 +568,7 @@ button {
     width: 200px;
   }
   .detail-panel.open {
-    width: 500px;
+    width: 450px;
   }
 }
 
