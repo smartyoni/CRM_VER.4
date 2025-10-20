@@ -23,7 +23,6 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
     const [formData, setFormData] = useState(initFormData());
     const [showPropertyModal, setShowPropertyModal] = useState(false);
     const [editingPropertyIndex, setEditingPropertyIndex] = useState(null);
-    const [showReportModal, setShowReportModal] = useState(false);
 
     const handlePropertyChange = (index, e) => {
         const newProperties = [...formData.properties];
@@ -78,99 +77,6 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
       onCancel(); // 현재 폼 닫기
     };
 
-    const generateReport = (properties) => {
-      return properties.map(prop => {
-        const lines = prop.info.split('\n').filter(line => line.trim());
-        // 7번째 줄(부동산)과 마지막 줄(연락처) 제거
-        if (lines.length > 1) {
-          // 7번째 줄 제거 (index 6)
-          if (lines.length > 6) {
-            lines.splice(6, 1);
-          }
-          // 마지막 줄 제거
-          if (lines.length > 0) {
-            lines.pop();
-          }
-        }
-        return lines.join('\n');
-      }).join('\n\n');
-    };
-
-    const ReportModal = ({ onClose }) => {
-      const [reportText, setReportText] = useState(generateReport(formData.properties));
-      const [isEditing, setIsEditing] = useState(false);
-
-      const handleCopy = async () => {
-        try {
-          await navigator.clipboard.writeText(reportText);
-          alert('보고서가 클립보드에 복사되었습니다!');
-        } catch (err) {
-          alert('복사에 실패했습니다: ' + err.message);
-        }
-      };
-
-      return (
-        <div className="modal-overlay" style={{ zIndex: 1100 }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
-            <div className="modal-header">
-              <h3>매물 브리핑 보고서</h3>
-              <button className="btn-close" onClick={onClose}>×</button>
-            </div>
-            <div style={{ padding: '20px' }}>
-              {isEditing ? (
-                <textarea
-                  value={reportText}
-                  onChange={(e) => setReportText(e.target.value)}
-                  style={{
-                    width: '100%',
-                    minHeight: '400px',
-                    padding: '12px',
-                    fontSize: '14px',
-                    lineHeight: '1.6',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '4px',
-                    fontFamily: 'monospace',
-                    resize: 'vertical'
-                  }}
-                />
-              ) : (
-                <pre style={{
-                  whiteSpace: 'pre-wrap',
-                  wordWrap: 'break-word',
-                  backgroundColor: '#f5f5f5',
-                  padding: '15px',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  lineHeight: '1.6',
-                  maxHeight: '400px',
-                  overflowY: 'auto',
-                  border: '1px solid #e0e0e0'
-                }}>
-                  {reportText}
-                </pre>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button onClick={onClose} className="btn-secondary">닫기</button>
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="btn-primary"
-                style={{ marginLeft: '10px' }}
-              >
-                {isEditing ? '완료' : '수정'}
-              </button>
-              <button
-                onClick={handleCopy}
-                className="btn-primary"
-                style={{ marginLeft: '10px' }}
-              >
-                복사
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    };
 
     const PropertyModal = ({ onClose, propertyToEdit, editIndex }) => {
       const [propertyData, setPropertyData] = useState(
@@ -370,62 +276,6 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                   + 매물 추가
                 </button>
                 <button
-                  onClick={() => setShowReportModal(true)}
-                  disabled={formData.properties.length === 0}
-                  style={{
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: formData.properties.length === 0 ? 'not-allowed' : 'pointer',
-                    opacity: formData.properties.length === 0 ? 0.5 : 1,
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (formData.properties.length > 0) {
-                      e.target.style.backgroundColor = '#d32f2f';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (formData.properties.length > 0) {
-                      e.target.style.backgroundColor = '#f44336';
-                    }
-                  }}
-                >
-                  📋 보고서 생성
-                </button>
-                <button
-                  onClick={handleCreateMeeting}
-                  disabled={formData.properties.length === 0}
-                  style={{
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    backgroundColor: '#9C27B0',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: formData.properties.length === 0 ? 'not-allowed' : 'pointer',
-                    opacity: formData.properties.length === 0 ? 0.5 : 1,
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (formData.properties.length > 0) {
-                      e.target.style.backgroundColor = '#7B1FA2';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (formData.properties.length > 0) {
-                      e.target.style.backgroundColor = '#9C27B0';
-                    }
-                  }}
-                >
-                  📅 미팅내역추가
-                </button>
-                <button
                   onClick={handleSubmit}
                   className="btn-primary"
                   style={{
@@ -446,10 +296,6 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                 editIndex={editingPropertyIndex}
               />
             )}
-
-            {showReportModal && (
-              <ReportModal onClose={() => setShowReportModal(false)} />
-            )}
           </div>
         </div>
     )
@@ -464,6 +310,37 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
   const PropertiesViewModal = ({ selection, onClose }) => {
     const [editingPropertyIndex, setEditingPropertyIndex] = useState(null);
     const [showPropertyEditModal, setShowPropertyEditModal] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+
+    const generateReport = (properties) => {
+      return properties.map(prop => {
+        const lines = prop.info.split('\n').filter(line => line.trim());
+        // 7번째 줄(부동산)과 마지막 줄(연락처) 제거
+        if (lines.length > 1) {
+          // 7번째 줄 제거 (index 6)
+          if (lines.length > 6) {
+            lines.splice(6, 1);
+          }
+          // 마지막 줄 제거
+          if (lines.length > 0) {
+            lines.pop();
+          }
+        }
+        return lines.join('\n');
+      }).join('\n\n');
+    };
+
+    const handleCreateMeeting = () => {
+      if (selection.properties.length === 0) {
+        alert('매물을 먼저 추가해주세요.');
+        return;
+      }
+
+      // 매물선정은 이미 저장됨
+      // 미팅 생성 모드로 전환
+      onCreateMeetingFromSelection(selection.properties);
+      onClose(); // 현재 모달 닫기
+    };
 
     const handlePropertyEdit = (propertyIndex) => {
       setEditingPropertyIndex(propertyIndex);
@@ -614,6 +491,82 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
       );
     };
 
+    const ReportModal = ({ onClose }) => {
+      const [reportText, setReportText] = useState(generateReport(selection.properties));
+      const [isEditing, setIsEditing] = useState(false);
+
+      const handleCopy = async () => {
+        try {
+          await navigator.clipboard.writeText(reportText);
+          alert('보고서가 클립보드에 복사되었습니다!');
+        } catch (err) {
+          alert('복사에 실패했습니다: ' + err.message);
+        }
+      };
+
+      return (
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+            <div className="modal-header">
+              <h3>매물 브리핑 보고서</h3>
+              <button className="btn-close" onClick={onClose}>×</button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              {isEditing ? (
+                <textarea
+                  value={reportText}
+                  onChange={(e) => setReportText(e.target.value)}
+                  style={{
+                    width: '100%',
+                    minHeight: '400px',
+                    padding: '12px',
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                    resize: 'vertical'
+                  }}
+                />
+              ) : (
+                <pre style={{
+                  whiteSpace: 'pre-wrap',
+                  wordWrap: 'break-word',
+                  backgroundColor: '#f5f5f5',
+                  padding: '15px',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  maxHeight: '400px',
+                  overflowY: 'auto',
+                  border: '1px solid #e0e0e0'
+                }}>
+                  {reportText}
+                </pre>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button onClick={onClose} className="btn-secondary">닫기</button>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="btn-primary"
+                style={{ marginLeft: '10px' }}
+              >
+                {isEditing ? '완료' : '수정'}
+              </button>
+              <button
+                onClick={handleCopy}
+                className="btn-primary"
+                style={{ marginLeft: '10px' }}
+              >
+                복사
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     return (
       <div className="modal-overlay">
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -664,9 +617,70 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
               </div>
             )}
           </div>
-          <div className="modal-footer">
+          <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <button onClick={onClose} className="btn-primary">닫기</button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setShowReportModal(true)}
+                disabled={!selection.properties || selection.properties.length === 0}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (!selection.properties || selection.properties.length === 0) ? 'not-allowed' : 'pointer',
+                  opacity: (!selection.properties || selection.properties.length === 0) ? 0.5 : 1,
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (selection.properties && selection.properties.length > 0) {
+                    e.target.style.backgroundColor = '#d32f2f';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selection.properties && selection.properties.length > 0) {
+                    e.target.style.backgroundColor = '#f44336';
+                  }
+                }}
+              >
+                📋 보고서 생성
+              </button>
+              <button
+                onClick={handleCreateMeeting}
+                disabled={!selection.properties || selection.properties.length === 0}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#9C27B0',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (!selection.properties || selection.properties.length === 0) ? 'not-allowed' : 'pointer',
+                  opacity: (!selection.properties || selection.properties.length === 0) ? 0.5 : 1,
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (selection.properties && selection.properties.length > 0) {
+                    e.target.style.backgroundColor = '#7B1FA2';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selection.properties && selection.properties.length > 0) {
+                    e.target.style.backgroundColor = '#9C27B0';
+                  }
+                }}
+              >
+                📅 미팅내역추가
+              </button>
+            </div>
           </div>
+          {showReportModal && (
+            <ReportModal onClose={() => setShowReportModal(false)} />
+          )}
           {showPropertyEditModal && (
             <PropertyEditModal
               propertyToEdit={editingPropertyIndex !== null ? selection.properties[editingPropertyIndex] : null}
