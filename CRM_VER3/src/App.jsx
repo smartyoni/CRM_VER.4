@@ -7,12 +7,15 @@ import {
   subscribeToCustomers,
   subscribeToActivities,
   subscribeToMeetings,
+  subscribeToPropertySelections,
   saveCustomer,
   deleteCustomer,
   saveActivity,
   deleteActivity,
   saveMeeting,
-  deleteMeeting
+  deleteMeeting,
+  savePropertySelection,
+  deletePropertySelection
 } from './utils/storage';
 
 // Mock data for initial setup
@@ -38,6 +41,7 @@ function App() {
   const [customers, setCustomers] = useState([]);
   const [activities, setActivities] = useState([]);
   const [meetings, setMeetings] = useState([]);
+  const [propertySelections, setPropertySelections] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
@@ -60,11 +64,16 @@ function App() {
       setMeetings(meetings);
     });
 
+    const unsubscribePropertySelections = subscribeToPropertySelections((propertySelections) => {
+      setPropertySelections(propertySelections);
+    });
+
     // Cleanup subscriptions on unmount
     return () => {
       unsubscribeCustomers();
       unsubscribeActivities();
       unsubscribeMeetings();
+      unsubscribePropertySelections();
     };
   }, []);
 
@@ -163,11 +172,22 @@ function App() {
     }
   };
 
+  const handleSavePropertySelection = async (propertySelectionData) => {
+    await savePropertySelection(propertySelectionData);
+  };
+
+  const handleDeletePropertySelection = async (propertySelectionId) => {
+    if (confirm('정말 이 매물선정을 삭제하시겠습니까?')) {
+      await deletePropertySelection(propertySelectionId);
+    }
+  };
+
   const handleBackup = () => {
     const backupData = {
         customers,
         activities,
         meetings,
+        propertySelections,
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -190,10 +210,11 @@ function App() {
         const data = JSON.parse(e.target.result);
         if (data && Array.isArray(data.customers) && Array.isArray(data.activities)) {
           // Firestore에 각 문서 저장
-          const { saveCustomers, saveActivities, saveMeetings } = await import('./utils/storage');
+          const { saveCustomers, saveActivities, saveMeetings, savePropertySelections } = await import('./utils/storage');
           await saveCustomers(data.customers || []);
           await saveActivities(data.activities || []);
           await saveMeetings(data.meetings || []);
+          await savePropertySelections(data.propertySelections || []);
           alert('데이터가 성공적으로 복원되었습니다.');
         } else {
           throw new Error('잘못된 파일 형식입니다.');
@@ -470,6 +491,9 @@ function App() {
         meetings={meetings}
         onSaveMeeting={handleSaveMeeting}
         onDeleteMeeting={handleDeleteMeeting}
+        propertySelections={propertySelections}
+        onSavePropertySelection={handleSavePropertySelection}
+        onDeletePropertySelection={handleDeletePropertySelection}
       />
 
       <CustomerModal 

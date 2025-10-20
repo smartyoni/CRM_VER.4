@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BasicInfo from './BasicInfo';
 import ActivityTab from './ActivityTab';
 import MeetingTab from './MeetingTab';
+import PropertySelectionTab from './PropertySelectionTab';
 import { STATUSES, PROGRESS_STATUSES } from '../../constants';
 
 const CustomerDetailPanel = ({
@@ -15,14 +16,19 @@ const CustomerDetailPanel = ({
     onDeleteActivity,
     meetings,
     onSaveMeeting,
-    onDeleteMeeting
+    onDeleteMeeting,
+    propertySelections,
+    onSavePropertySelection,
+    onDeletePropertySelection
 }) => {
   const [activeTab, setActiveTab] = useState('기본정보');
+  const [pendingMeetingProperties, setPendingMeetingProperties] = useState(null);
 
   // 고객이 변경될 때마다 탭을 기본정보로 리셋
   useEffect(() => {
     if (selectedCustomer) {
       setActiveTab('기본정보');
+      setPendingMeetingProperties(null);
     }
   }, [selectedCustomer?.id]);
 
@@ -45,6 +51,14 @@ const CustomerDetailPanel = ({
       progress
     };
     onUpdateCustomer(updatedCustomer);
+  };
+
+  // 매물선정에서 미팅 생성 핸들러
+  const handleCreateMeetingFromSelection = (properties) => {
+    // 매물에 visitTime: '' 추가
+    const meetingProperties = properties.map(p => ({...p, visitTime: ''}));
+    setPendingMeetingProperties(meetingProperties);
+    setActiveTab('미팅 내역');
   };
 
   return (
@@ -147,7 +161,7 @@ const CustomerDetailPanel = ({
               marginBottom: '15px',
               border: '1px solid #bbdefb'
             }}>
-              {['기본정보', '활동 내역', '미팅 내역'].map((tab, index) => (
+              {['기본정보', '활동 내역', '미팅 내역', '매물선정'].map((tab, index) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -182,9 +196,9 @@ const CustomerDetailPanel = ({
             </div>
             <div className="tab-content">
               {activeTab === '기본정보' && <BasicInfo customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} activities={activities} meetings={meetings} onTabChange={setActiveTab} />}
-              {activeTab === '활동 내역' && 
-                <ActivityTab 
-                    customerId={selectedCustomer.id} 
+              {activeTab === '활동 내역' &&
+                <ActivityTab
+                    customerId={selectedCustomer.id}
                     activities={activities}
                     onSaveActivity={onSaveActivity}
                     onDeleteActivity={onDeleteActivity}
@@ -196,6 +210,18 @@ const CustomerDetailPanel = ({
                     meetings={meetings}
                     onSaveMeeting={onSaveMeeting}
                     onDeleteMeeting={onDeleteMeeting}
+                    initialProperties={pendingMeetingProperties}
+                    onClearInitialProperties={() => setPendingMeetingProperties(null)}
+                />}
+              {activeTab === '매물선정' &&
+                <PropertySelectionTab
+                    customerId={selectedCustomer.id}
+                    customerName={selectedCustomer.name}
+                    propertySelections={propertySelections}
+                    onSavePropertySelection={onSavePropertySelection}
+                    onDeletePropertySelection={onDeletePropertySelection}
+                    onTabChange={setActiveTab}
+                    onCreateMeetingFromSelection={handleCreateMeetingFromSelection}
                 />}
             </div>
           </div>

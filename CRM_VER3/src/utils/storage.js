@@ -12,6 +12,7 @@ import { db } from '../firebase/config';
 const CUSTOMERS_COLLECTION = 'customers';
 const ACTIVITIES_COLLECTION = 'activities';
 const MEETINGS_COLLECTION = 'meetings';
+const PROPERTY_SELECTIONS_COLLECTION = 'propertySelections';
 
 // ========== Customer Functions ==========
 
@@ -157,5 +158,54 @@ export const subscribeToMeetings = (callback) => {
     callback(meetings);
   }, (error) => {
     console.error('Error in meetings subscription:', error);
+  });
+};
+
+// ========== Property Selection Functions ==========
+
+export const getPropertySelections = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, PROPERTY_SELECTIONS_COLLECTION));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error fetching property selections:', error);
+    return [];
+  }
+};
+
+export const savePropertySelections = async (propertySelections) => {
+  try {
+    const promises = propertySelections.map(selection =>
+      setDoc(doc(db, PROPERTY_SELECTIONS_COLLECTION, selection.id), selection)
+    );
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Error saving property selections:', error);
+  }
+};
+
+export const savePropertySelection = async (propertySelection) => {
+  try {
+    await setDoc(doc(db, PROPERTY_SELECTIONS_COLLECTION, propertySelection.id), propertySelection);
+  } catch (error) {
+    console.error('Error saving property selection:', error);
+  }
+};
+
+export const deletePropertySelection = async (propertySelectionId) => {
+  try {
+    await deleteDoc(doc(db, PROPERTY_SELECTIONS_COLLECTION, propertySelectionId));
+  } catch (error) {
+    console.error('Error deleting property selection:', error);
+  }
+};
+
+// Realtime subscription for property selections
+export const subscribeToPropertySelections = (callback) => {
+  return onSnapshot(collection(db, PROPERTY_SELECTIONS_COLLECTION), (snapshot) => {
+    const propertySelections = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(propertySelections);
+  }, (error) => {
+    console.error('Error in property selections subscription:', error);
   });
 };

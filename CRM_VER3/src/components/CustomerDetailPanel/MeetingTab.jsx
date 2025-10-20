@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PROPERTY_STATUSES } from '../../constants';
 import { generateId, formatDateTime } from '../../utils/helpers';
 import { parsePropertyDetails } from '../../utils/textParser';
 
-const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDeleteMeeting }) => {
+const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDeleteMeeting, initialProperties, onClearInitialProperties }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [viewingMeeting, setViewingMeeting] = useState(null);
+  const [initialPropertiesData, setInitialPropertiesData] = useState(null);
+
+  // initialProperties가 있으면 자동으로 폼 열기
+  useEffect(() => {
+    if (initialProperties && initialProperties.length > 0) {
+      setInitialPropertiesData(initialProperties);
+      setIsAdding(true);
+      // 클리어
+      if (onClearInitialProperties) {
+        onClearInitialProperties();
+      }
+    }
+  }, [initialProperties, onClearInitialProperties]);
 
   const customerMeetings = meetings.filter(m => m.customerId === customerId);
 
-  const MeetingForm = ({ onCancel, meetingData }) => {
+  const MeetingForm = ({ onCancel, meetingData, initialPropertiesData }) => {
     const initFormData = () => {
       if (meetingData) {
         // 수정 모드: 기존 데이터를 date와 time으로 분리
@@ -25,7 +38,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       return {
         date: new Date().toISOString().slice(0, 10),
         time: '12:00',
-        properties: []
+        properties: initialPropertiesData || []
       };
     };
 
@@ -489,7 +502,13 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             </button>
           )}
         </div>
-        {isAdding && <MeetingForm onCancel={() => setIsAdding(false)} />}
+        {isAdding && <MeetingForm
+          onCancel={() => {
+            setIsAdding(false);
+            setInitialPropertiesData(null);
+          }}
+          initialPropertiesData={initialPropertiesData}
+        />}
 
         {editingMeeting ? (
           <MeetingForm key={editingMeeting.id} meetingData={editingMeeting} onCancel={() => setEditingMeeting(null)} />
