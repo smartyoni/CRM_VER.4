@@ -38,6 +38,7 @@ export const extractAgencyName = (text) => {
 
 /**
  * 매물 정보 텍스트의 마지막 줄에서 연락처(전화번호만) 추출
+ * 유선번호(고정전화) 우선, 없으면 핸드폰번호
  * @param {string} text - 매물 정보 전체 텍스트
  * @returns {string} - 추출된 전화번호
  */
@@ -50,13 +51,29 @@ export const extractContactNumber = (text) => {
   if (lines.length > 0) {
     const lastLine = lines[lines.length - 1].trim();
 
-    // 전화번호 패턴 매칭 (010-1234-5678, 01012345678, 02-123-4567 등)
-    // 숫자와 하이픈으로 이루어진 10~13자리 패턴 찾기
-    const phonePattern = /(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/;
-    const match = lastLine.match(phonePattern);
+    // 1. 유선번호(고정전화) 우선: 02, 031-055, 061-064 등
+    // 02 (서울), 0xx (지역번호), 070/080 (특수번호)
+    const landlinePattern = /(0(2|3[1-3]|4[1-5]|5[1-5]|6[1-4]|7[0,1]|8[0])[-\s]?\d{3,4}[-\s]?\d{4})/;
+    const landlineMatch = lastLine.match(landlinePattern);
 
-    if (match) {
-      return match[0].trim();
+    if (landlineMatch) {
+      return landlineMatch[0].trim();
+    }
+
+    // 2. 핸드폰번호: 01x-xxxx-xxxx
+    const phonePattern = /(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
+    const phoneMatch = lastLine.match(phonePattern);
+
+    if (phoneMatch) {
+      return phoneMatch[0].trim();
+    }
+
+    // 3. 일반 전화번호 패턴 매칭
+    const generalPattern = /(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/;
+    const generalMatch = lastLine.match(generalPattern);
+
+    if (generalMatch) {
+      return generalMatch[0].trim();
     }
 
     // 패턴이 없으면 숫자와 하이픈만 추출
@@ -130,13 +147,120 @@ export const parsePropertyDetails = (text) => {
 };
 
 /**
- * 원본 매물정보를 7개 항목으로 정리된 형식으로 변환
- * @param {string} rawText - 원본 매물 정보 텍스트
+ * 형식 감지: 네이버 부동산 형식 여부 판단
+ * @param {string} text - 매물 정보 텍스트
+ * @returns {boolean} - 네이버 형식 여부
+ */
+const detectNaverFormat = (text) => {
+  return text.includes('계약/전용면적') ||
+         text.includes('해당층/총층') ||
+         text.includes('매물특징');
+};
+
+/**
+ * 네이버 부동산 형식 파싱
+ * @param {string} rawText - 네이버 형식 매물정보
  * @returns {string} - 정리된 매물정보 (7개 항목)
  */
-export const generateStructuredPropertyInfo = (rawText) => {
-  if (!rawText) return '';
+const parseNaverFormat = (rawText) => {
+  let propertyInfo = '🏠 매물정보';
 
+  // 1. 소재지: 제목(첫 줄)에서 건물명만 추출
+  let location = '';
+  const lines = rawText.split('\n').filter(line => line.trim());
+  if (lines.length > 0) {
+    // 첫 줄에서 숫자동, 층수 정보 제거
+    const titleLine = lines[0].trim();
+    const buildingName = titleLine.replace(/\s*\d+동\s*(저층|고층|중층)?.*$/, '').trim();
+    if (buildingName) {
+      location = `• 소재지: ${buildingName}`;
+    }
+  }
+
+  // 2. 임대료: "월세X억 X,XXX/X" → 보증금/월세
+  let rent = '';
+  const naverRentMatch = rawText.match(/월세(\d+)억\s*([0-9,]+)\/(\d+)/);
+  if (naverRentMatch) {
+    const eok = naverRentMatch[1];
+    const man = naverRentMatch[2];
+    const monthlyRent = naverRentMatch[3];
+    // 억을 만 단위로 변환
+    const depositMoney = parseInt(eok) * 10000 + parseInt(man.replace(/,/g, ''));
+    rent = `• 임대료: ${depositMoney}/${monthlyRent}`;
+  }
+
+  // 3. 구조정보: "계약/전용면적" + "방수/욕실수" → 전용면적㎡ (약X평)/방X,욕실X
+  let structure = '';
+  // 계약면적과 전용면적 모두 추출 (전용면적이 더 작은 값)
+  const naverAreaMatch = rawText.match(/계약\/전용면적\s*([\d.]+)㎡\/([\d.]+)㎡/);
+  const naverRoomMatch = rawText.match(/방수\/욕실수\s*(\d+)\/(\d+)/);
+
+  if (naverAreaMatch && naverRoomMatch) {
+    const area1 = parseFloat(naverAreaMatch[1]);
+    const area2 = parseFloat(naverAreaMatch[2]);
+    // 작은 면적을 전용면적으로 선택
+    const area = Math.min(area1, area2).toString();
+    const rooms = naverRoomMatch[1];
+    const baths = naverRoomMatch[2];
+    const pyeong = Math.round(parseFloat(area) / 3.3058);
+    structure = `• 구조정보: ${area}㎡ (약${pyeong}평)/방${rooms},욕실${baths}`;
+  }
+
+  // 4. 동/층: 제목에서 "동" + "해당층/총층"에서 층 정보
+  let floorInfo = '';
+  const dongMatch = lines[0]?.match(/(\d+)동/);
+  const naverFloorMatch = rawText.match(/해당층\/총층\s*([^/]+)\/(\d+)층/);
+
+  if (dongMatch && naverFloorMatch) {
+    const dong = dongMatch[1];
+    const floor = naverFloorMatch[1].trim();
+    floorInfo = `• 동/층: ${dong}동/${floor}`;
+  }
+
+  // 5. 특징: "매물특징" 뒤의 내용
+  let feature = '';
+  const naverFeatureMatch = rawText.match(/매물특징\s*(.+?)(?=계약\/전용면적|해당층|$)/);
+  if (naverFeatureMatch) {
+    const featureText = naverFeatureMatch[1].trim();
+    if (featureText) {
+      feature = `• 특징: ${featureText}`;
+    }
+  }
+
+  // 6. 부동산: "중개사" 뒤의 이름
+  let agency = '';
+  const naverAgencyMatch = rawText.match(/중개사\s*(.+?공인중개사사무소)/);
+  if (naverAgencyMatch) {
+    agency = `• 부동산: ${naverAgencyMatch[1].trim()}`;
+  }
+
+  // 7. 연락처: 유선번호 우선, 없으면 핸드폰 번호
+  let contact = '';
+  // 유선번호(고정전화) 우선: 02, 031-055, 061-064 등
+  const naverLandlineMatch = rawText.match(/(0(2|3[1-3]|4[1-5]|5[1-5]|6[1-4]|7[0,1]|8[0])[-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 핸드폰 번호: 01x-xxxx-xxxx
+  const naverPhoneMatch = rawText.match(/(01[0-9]-\d{4}-\d{4})/);
+
+  if (naverLandlineMatch) {
+    contact = `• 연락처: ${naverLandlineMatch[1]}`;
+  } else if (naverPhoneMatch) {
+    contact = `• 연락처: ${naverPhoneMatch[1]}`;
+  }
+
+  // 모든 항목 결합
+  const result = [propertyInfo, location, rent, structure, floorInfo, feature, agency, contact]
+    .filter(item => item !== '')
+    .join('\n');
+
+  return result;
+};
+
+/**
+ * 기존 형식 (매물번호 형식) 파싱
+ * @param {string} rawText - 기존 형식 매물정보
+ * @returns {string} - 정리된 매물정보 (7개 항목)
+ */
+const parseOriginalFormat = (rawText) => {
   // 매물정보 헤더
   let propertyInfo = '🏠 매물정보';
 
@@ -175,12 +299,18 @@ export const generateStructuredPropertyInfo = (rawText) => {
 
   // 3. 구조정보: 전용면적/방갯수,욕실갯수 → 면적㎡ (약X평)/방X,욕실X
   let structure = '';
-  // 전용면적의 모든 숫자를 찾아서 가장 큰 값을 사용 (보통 마지막이 정확한 전용면적)
+  // 전용면적이 2개일 때 작은 값을 전용면적으로 선택
   const allAreasMatch = rawText.match(/전용면적[\s(]*([0-9.]+)[\s)]*[\s]*([0-9.]*)/);
   let area = '';
   if (allAreasMatch) {
-    // 두 번째 값이 있으면 사용, 없으면 첫 번째 값 사용
-    area = allAreasMatch[2] ? allAreasMatch[2].trim() : allAreasMatch[1].trim();
+    const area1 = parseFloat(allAreasMatch[1]);
+    // 두 번째 값이 있으면 두 값 중 작은 값 선택, 없으면 첫 번째 값 사용
+    if (allAreasMatch[2] && allAreasMatch[2].trim()) {
+      const area2 = parseFloat(allAreasMatch[2].trim());
+      area = Math.min(area1, area2).toString();
+    } else {
+      area = area1.toString();
+    }
   }
 
   const roomMatch = rawText.match(/방\s*수\s*(\d+)/);
@@ -231,12 +361,16 @@ export const generateStructuredPropertyInfo = (rawText) => {
     agency = `• 부동산: ${agencyMatch[1].trim()}`;
   }
 
-  // 7. 연락처: 핸드폰번호 또는 070번호
+  // 7. 연락처: 유선번호 우선, 없으면 핸드폰번호
   let contact = '';
+  // 유선번호(고정전화) 우선: 02 (서울), 0xx (지역번호)
+  const landlineMatch = rawText.match(/(?:유선|대표|전화)\s*(?:번호)?\s*(0(2|3[1-3]|4[1-5]|5[1-5]|6[1-4]|7[0,1]|8[0])[-\s]?\d{3,4}[-\s]?\d{4})/);
   const phoneMatch = rawText.match(/핸드폰번호\s*(0\d{1,2}-\d{3,4}-\d{4}|0\d{10,11})/);
   const emergencyMatch = rawText.match(/070\s*번호\s*(070-\d{4}-\d{4}|070\d{8})/);
 
-  if (phoneMatch) {
+  if (landlineMatch) {
+    contact = `• 연락처: ${landlineMatch[1].trim()}`;
+  } else if (phoneMatch) {
     contact = `• 연락처: ${phoneMatch[1].trim()}`;
   } else if (emergencyMatch) {
     contact = `• 연락처: ${emergencyMatch[1].trim()}`;
@@ -248,4 +382,21 @@ export const generateStructuredPropertyInfo = (rawText) => {
     .join('\n');
 
   return result;
+};
+
+/**
+ * 원본 매물정보를 7개 항목으로 정리된 형식으로 변환
+ * 자동으로 형식을 감지하여 적절한 파싱 함수 호출
+ * @param {string} rawText - 원본 매물 정보 텍스트
+ * @returns {string} - 정리된 매물정보 (7개 항목)
+ */
+export const generateStructuredPropertyInfo = (rawText) => {
+  if (!rawText) return '';
+
+  // 형식 자동 감지
+  if (detectNaverFormat(rawText)) {
+    return parseNaverFormat(rawText);
+  } else {
+    return parseOriginalFormat(rawText);
+  }
 };
