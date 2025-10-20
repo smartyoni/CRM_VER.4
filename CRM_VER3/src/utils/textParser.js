@@ -231,9 +231,16 @@ const parseNaverFormat = (rawText) => {
     }
   }
 
-  // 6. 부동산: "중개사" 뒤의 이름
+  // 6. 부동산: "중개사" 또는 "중개법인" 뒤의 이름
   let agency = '';
-  const naverAgencyMatch = rawText.match(/중개사\s*(.+?공인중개사사무소)/);
+  // 공인중개사 패턴 또는 중개법인 패턴
+  let naverAgencyMatch = rawText.match(/중개사\s*(.+?공인중개사사무소)/);
+
+  if (!naverAgencyMatch) {
+    // 중개법인 패턴
+    naverAgencyMatch = rawText.match(/중개[사법인]*\s*(.+?중개법인)/);
+  }
+
   if (naverAgencyMatch) {
     agency = `• 부동산: ${naverAgencyMatch[1].trim()}`;
   }
@@ -364,9 +371,15 @@ const parseOriginalFormat = (rawText) => {
     }
   }
 
-  // 6. 부동산명: 공인중개사 정보에서 추출
+  // 6. 부동산명: 공인중개사 또는 중개법인 정보에서 추출
   let agency = '';
-  const agencyMatch = rawText.match(/(.+?공인중개사.*?사무소)/);
+  // 공인중개사 패턴 또는 중개법인 패턴
+  let agencyMatch = rawText.match(/(.+?공인중개사.*?사무소)/);
+
+  if (!agencyMatch) {
+    // 중개법인 패턴
+    agencyMatch = rawText.match(/(.+?중개법인)/);
+  }
 
   if (agencyMatch) {
     agency = `• 부동산: ${agencyMatch[1].trim()}`;
