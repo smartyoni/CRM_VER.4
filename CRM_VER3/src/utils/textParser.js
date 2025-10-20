@@ -47,6 +47,56 @@ export const extractContactNumber = (text) => {
 
   const lines = text.split('\n').filter(line => line.trim() !== '');
 
+  // 전화번호 추출 헬퍼 함수
+  const extractPhoneFromLine = (line) => {
+    // 관리소전화는 제외
+    if (line.match(/관리소|관리팀|관리사무소/i)) {
+      return null;
+    }
+
+    // "팩 스", "팩스", "fax", "FAX" 라벨이 바로 앞에 있으면 제외
+    if (line.match(/(팩\s*스|팩스|fax|FAX)\s*[\d\-]/i)) {
+      return null;
+    }
+
+    // 1. "전 화 번 호" 또는 "전화번호" 라벨 뒤의 02- 번호 (띄어쓰기 허용)
+    const labeledSeoulPattern = /(전\s*화\s*번\s*호|전화번호)\s*(02[-\s]?\d{3,4}[-\s]?\d{4})/;
+    const labeledSeoulMatch = line.match(labeledSeoulPattern);
+    if (labeledSeoulMatch) {
+      return labeledSeoulMatch[2].replace(/\s/g, '').trim();
+    }
+
+    // 2. 02- 번호 최우선 (라벨 없음)
+    const seoulPattern = /(02[-\s]?\d{3,4}[-\s]?\d{4})/;
+    const seoulMatch = line.match(seoulPattern);
+    if (seoulMatch) {
+      return seoulMatch[1].replace(/\s/g, '').trim();
+    }
+
+    // 3. "핸드폰번호" 라벨 뒤의 01x-xxxx-xxxx
+    const labeledPhonePattern = /(핸드폰\s*번호|휴대폰\s*번호)\s*(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
+    const labeledPhoneMatch = line.match(labeledPhonePattern);
+    if (labeledPhoneMatch) {
+      return labeledPhoneMatch[2].replace(/\s/g, '').trim();
+    }
+
+    // 4. 핸드폰번호: 01x-xxxx-xxxx (라벨 없음)
+    const phonePattern = /(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
+    const phoneMatch = line.match(phonePattern);
+    if (phoneMatch) {
+      return phoneMatch[1].replace(/\s/g, '').trim();
+    }
+
+    // 5. 일반 전화번호 패턴 매칭
+    const generalPattern = /(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/;
+    const generalMatch = line.match(generalPattern);
+    if (generalMatch) {
+      return generalMatch[1].replace(/\s/g, '').trim();
+    }
+
+    return null;
+  };
+
   // 공인중개사사무소 또는 중개법인을 찾기
   let agencyLineIndex = -1;
   for (let i = 0; i < lines.length; i++) {
@@ -56,45 +106,30 @@ export const extractContactNumber = (text) => {
     }
   }
 
-  // 공인중개사사무소/중개법인 뒤의 라인들을 확인
+  // 1. 공인중개사사무소/중개법인 라인 자체에서 확인
+  if (agencyLineIndex >= 0) {
+    const phone = extractPhoneFromLine(lines[agencyLineIndex]);
+    if (phone) {
+      return phone;
+    }
+  }
+
+  // 2. 공인중개사사무소/중개법인 뒤의 라인들을 확인
   if (agencyLineIndex >= 0 && agencyLineIndex < lines.length - 1) {
-    // 다음 5개 라인까지 확인
-    for (let i = agencyLineIndex + 1; i < Math.min(agencyLineIndex + 5, lines.length); i++) {
-      const line = lines[i].trim();
-
-      // 관리소전화는 제외
-      if (line.match(/관리소|관리팀|관리사무소/i)) {
-        continue;
+    // 다음 10개 라인까지 확인
+    for (let i = agencyLineIndex + 1; i < Math.min(agencyLineIndex + 10, lines.length); i++) {
+      const phone = extractPhoneFromLine(lines[i]);
+      if (phone) {
+        return phone;
       }
+    }
+  }
 
-      // 팩스번호는 제외
-      if (line.match(/\b(팩스|fax|FAX)\b/i)) {
-        continue;
-      }
-
-      // 1. 02- 번호 최우선 (서울 지역번호)
-      const seoulPattern = /(02[-\s]?\d{3,4}[-\s]?\d{4})/;
-      const seoulMatch = line.match(seoulPattern);
-
-      if (seoulMatch) {
-        return seoulMatch[0].trim();
-      }
-
-      // 2. 핸드폰번호: 01x-xxxx-xxxx
-      const phonePattern = /(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
-      const phoneMatch = line.match(phonePattern);
-
-      if (phoneMatch) {
-        return phoneMatch[0].trim();
-      }
-
-      // 3. 일반 전화번호 패턴 매칭
-      const generalPattern = /(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/;
-      const generalMatch = line.match(generalPattern);
-
-      if (generalMatch) {
-        return generalMatch[0].trim();
-      }
+  // 3. 공인중개사를 찾지 못했다면 마지막 라인에서 확인
+  if (agencyLineIndex < 0 && lines.length > 0) {
+    const phone = extractPhoneFromLine(lines[lines.length - 1]);
+    if (phone) {
+      return phone;
     }
   }
 
