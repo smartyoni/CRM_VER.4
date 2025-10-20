@@ -110,7 +110,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
       };
 
       return (
-        <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
             <div className="modal-header">
               <h3>매물 브리핑 보고서</h3>
@@ -231,7 +231,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
       };
 
       return (
-        <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editIndex !== null && editIndex !== undefined ? '매물 수정' : '매물 추가'}</h3>
@@ -300,7 +300,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
     };
 
     return (
-        <div className="modal-overlay" onClick={onCancel}>
+        <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>매물선정 - {customerName ? customerName.slice(0, 30) : ''}</h3>
@@ -546,7 +546,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
       };
 
       return (
-        <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>매물 수정</h3>
@@ -615,7 +615,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
     };
 
     return (
-      <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-overlay">
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <h3>선정 매물 - {formatCreatedDate(selection.createdAt)}</h3>

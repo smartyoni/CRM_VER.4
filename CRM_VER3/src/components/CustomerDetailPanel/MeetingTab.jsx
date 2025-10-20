@@ -113,7 +113,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       };
 
       return (
-        <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editIndex !== null && editIndex !== undefined ? '매물 수정' : '매물 추가'}</h3>
@@ -165,7 +165,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     };
 
     return (
-        <div className="modal-overlay" onClick={onCancel}>
+        <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>미팅 추가 - {customerName ? customerName.slice(0, 30) : ''}</h3>
@@ -351,7 +351,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       };
 
       return (
-        <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>매물 수정</h3>
@@ -403,7 +403,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     };
 
     return (
-      <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-overlay">
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <h3>미팅 매물 - {formatDateTime(meeting.date)}</h3>
