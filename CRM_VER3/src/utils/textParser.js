@@ -37,8 +37,8 @@ export const extractAgencyName = (text) => {
 };
 
 /**
- * 매물 정보 텍스트의 마지막 줄에서 연락처(전화번호만) 추출
- * 유선번호(고정전화) 우선, 없으면 핸드폰번호
+ * 공인중개사사무소 또는 중개법인 뒤의 연락처(전화번호만) 추출
+ * 유선번호(02-) 우선, 없으면 핸드폰번호
  * @param {string} text - 매물 정보 전체 텍스트
  * @returns {string} - 추출된 전화번호
  */
@@ -47,43 +47,54 @@ export const extractContactNumber = (text) => {
 
   const lines = text.split('\n').filter(line => line.trim() !== '');
 
-  // 마지막 줄에서 전화번호 패턴 추출
-  if (lines.length > 0) {
-    const lastLine = lines[lines.length - 1].trim();
-
-    // 팩스번호인지 확인 (팩스, FAX, fax 라벨이 있으면 제외)
-    if (lastLine.match(/\b(팩스|fax|FAX)\b/i)) {
-      return '';
+  // 공인중개사사무소 또는 중개법인을 찾기
+  let agencyLineIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].match(/공인중개사.*사무소|중개법인/)) {
+      agencyLineIndex = i;
+      break;
     }
+  }
 
-    // 1. 02- 번호 최우선 (서울 지역번호)
-    const seoulPattern = /(02[-\s]?\d{3,4}[-\s]?\d{4})/;
-    const seoulMatch = lastLine.match(seoulPattern);
+  // 공인중개사사무소/중개법인 뒤의 라인들을 확인
+  if (agencyLineIndex >= 0 && agencyLineIndex < lines.length - 1) {
+    // 다음 5개 라인까지 확인
+    for (let i = agencyLineIndex + 1; i < Math.min(agencyLineIndex + 5, lines.length); i++) {
+      const line = lines[i].trim();
 
-    if (seoulMatch) {
-      return seoulMatch[0].trim();
-    }
+      // 관리소전화는 제외
+      if (line.match(/관리소|관리팀|관리사무소/i)) {
+        continue;
+      }
 
-    // 2. 핸드폰번호: 01x-xxxx-xxxx
-    const phonePattern = /(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
-    const phoneMatch = lastLine.match(phonePattern);
+      // 팩스번호는 제외
+      if (line.match(/\b(팩스|fax|FAX)\b/i)) {
+        continue;
+      }
 
-    if (phoneMatch) {
-      return phoneMatch[0].trim();
-    }
+      // 1. 02- 번호 최우선 (서울 지역번호)
+      const seoulPattern = /(02[-\s]?\d{3,4}[-\s]?\d{4})/;
+      const seoulMatch = line.match(seoulPattern);
 
-    // 3. 일반 전화번호 패턴 매칭
-    const generalPattern = /(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/;
-    const generalMatch = lastLine.match(generalPattern);
+      if (seoulMatch) {
+        return seoulMatch[0].trim();
+      }
 
-    if (generalMatch) {
-      return generalMatch[0].trim();
-    }
+      // 2. 핸드폰번호: 01x-xxxx-xxxx
+      const phonePattern = /(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
+      const phoneMatch = line.match(phonePattern);
 
-    // 패턴이 없으면 숫자와 하이픈만 추출
-    const numbersOnly = lastLine.replace(/[^\d-]/g, '');
-    if (numbersOnly.length >= 9) {
-      return numbersOnly;
+      if (phoneMatch) {
+        return phoneMatch[0].trim();
+      }
+
+      // 3. 일반 전화번호 패턴 매칭
+      const generalPattern = /(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/;
+      const generalMatch = line.match(generalPattern);
+
+      if (generalMatch) {
+        return generalMatch[0].trim();
+      }
     }
   }
 
@@ -126,8 +137,8 @@ export const parsePropertyDetails = (text) => {
       } else if (line.includes('부동산:')) {
         // 부동산: 부동산명 → 부동산명 추출
         agencyName = line.replace('부동산:', '').trim();
-      } else if (line.includes('연락처:') && !line.match(/\b(팩스|fax|FAX)\b/i)) {
-        // 연락처: 전화번호 → 전화번호 추출 (팩스는 제외)
+      } else if (line.includes('연락처:') && !line.match(/\b(팩스|fax|FAX|관리소|관리팀|관리사무소)\b/i)) {
+        // 연락처: 전화번호 → 전화번호 추출 (팩스, 관리소전화는 제외)
         const match = line.match(/연락처:\s*([\d\-]+)/);
         if (match) {
           contactNumber = match[1].trim();
@@ -245,24 +256,11 @@ const parseNaverFormat = (rawText) => {
     agency = `• 부동산: ${naverAgencyMatch[1].trim()}`;
   }
 
-  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰 번호 (팩스번호는 제외)
+  // 7. 연락처: 공인중개사사무소/중개법인 뒤의 전화번호 (관리소전화, 팩스 제외)
   let contact = '';
-  // 팩스번호인지 확인 (팩스, FAX 라벨이 있으면 제외)
-  const naverHasFax = rawText.match(/\b(팩스|fax|FAX)\b/i);
-
-  // 02- 번호 최우선 (서울 지역번호, 팩스 제외)
-  const naverSeoulMatch = !naverHasFax ? rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/) : null;
-  // 핸드폰 번호: 01x-xxxx-xxxx
-  const naverPhoneMatch = rawText.match(/(01[0-9]-\d{4}-\d{4})/);
-  // 기타 유선번호 (팩스 제외)
-  const naverOtherLandlineMatch = !naverHasFax ? rawText.match(/(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/) : null;
-
-  if (naverSeoulMatch) {
-    contact = `• 연락처: ${naverSeoulMatch[1]}`;
-  } else if (naverPhoneMatch) {
-    contact = `• 연락처: ${naverPhoneMatch[1]}`;
-  } else if (naverOtherLandlineMatch) {
-    contact = `• 연락처: ${naverOtherLandlineMatch[1]}`;
+  const naverContactNumber = extractContactNumber(rawText);
+  if (naverContactNumber) {
+    contact = `• 연락처: ${naverContactNumber}`;
   }
 
   // 모든 항목 결합
@@ -385,27 +383,11 @@ const parseOriginalFormat = (rawText) => {
     agency = `• 부동산: ${agencyMatch[1].trim()}`;
   }
 
-  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰번호 (팩스번호는 제외)
+  // 7. 연락처: 공인중개사사무소/중개법인 뒤의 전화번호 (관리소전화, 팩스 제외)
   let contact = '';
-  // 팩스번호인지 확인 (팩스, FAX 라벨이 있으면 제외)
-  const hasFax = rawText.match(/\b(팩스|fax|FAX)\b/i);
-
-  // 02- 번호 최우선 (서울 지역번호, 팩스 제외)
-  const seoulMatch = !hasFax ? rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/) : null;
-  // 핸드폰번호
-  const phoneMatch = rawText.match(/핸드폰번호\s*(0\d{1,2}-\d{3,4}-\d{4}|0\d{10,11})/);
-  // 기타 유선번호 (팩스 제외)
-  const otherLandlineMatch = !hasFax ? rawText.match(/(?:유선|대표|전화)\s*(?:번호)?\s*(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/) : null;
-  const emergencyMatch = rawText.match(/070\s*번호\s*(070-\d{4}-\d{4}|070\d{8})/);
-
-  if (seoulMatch) {
-    contact = `• 연락처: ${seoulMatch[1].trim()}`;
-  } else if (phoneMatch) {
-    contact = `• 연락처: ${phoneMatch[1].trim()}`;
-  } else if (otherLandlineMatch) {
-    contact = `• 연락처: ${otherLandlineMatch[1].trim()}`;
-  } else if (emergencyMatch) {
-    contact = `• 연락처: ${emergencyMatch[1].trim()}`;
+  const contactNumber = extractContactNumber(rawText);
+  if (contactNumber) {
+    contact = `• 연락처: ${contactNumber}`;
   }
 
   // 모든 항목 결합
