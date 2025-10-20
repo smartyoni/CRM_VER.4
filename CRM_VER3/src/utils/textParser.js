@@ -51,6 +51,11 @@ export const extractContactNumber = (text) => {
   if (lines.length > 0) {
     const lastLine = lines[lines.length - 1].trim();
 
+    // 팩스번호인지 확인 (팩스, FAX, fax 라벨이 있으면 제외)
+    if (lastLine.match(/\b(팩스|fax|FAX)\b/i)) {
+      return '';
+    }
+
     // 1. 02- 번호 최우선 (서울 지역번호)
     const seoulPattern = /(02[-\s]?\d{3,4}[-\s]?\d{4})/;
     const seoulMatch = lastLine.match(seoulPattern);
@@ -121,8 +126,8 @@ export const parsePropertyDetails = (text) => {
       } else if (line.includes('부동산:')) {
         // 부동산: 부동산명 → 부동산명 추출
         agencyName = line.replace('부동산:', '').trim();
-      } else if (line.includes('연락처:')) {
-        // 연락처: 전화번호 → 전화번호 추출
+      } else if (line.includes('연락처:') && !line.match(/\b(팩스|fax|FAX)\b/i)) {
+        // 연락처: 전화번호 → 전화번호 추출 (팩스는 제외)
         const match = line.match(/연락처:\s*([\d\-]+)/);
         if (match) {
           contactNumber = match[1].trim();
@@ -233,14 +238,17 @@ const parseNaverFormat = (rawText) => {
     agency = `• 부동산: ${naverAgencyMatch[1].trim()}`;
   }
 
-  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰 번호
+  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰 번호 (팩스번호는 제외)
   let contact = '';
-  // 02- 번호 최우선 (서울 지역번호)
-  const naverSeoulMatch = rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 팩스번호인지 확인 (팩스, FAX 라벨이 있으면 제외)
+  const naverHasFax = rawText.match(/\b(팩스|fax|FAX)\b/i);
+
+  // 02- 번호 최우선 (서울 지역번호, 팩스 제외)
+  const naverSeoulMatch = !naverHasFax ? rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/) : null;
   // 핸드폰 번호: 01x-xxxx-xxxx
   const naverPhoneMatch = rawText.match(/(01[0-9]-\d{4}-\d{4})/);
-  // 기타 유선번호
-  const naverOtherLandlineMatch = rawText.match(/(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 기타 유선번호 (팩스 제외)
+  const naverOtherLandlineMatch = !naverHasFax ? rawText.match(/(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/) : null;
 
   if (naverSeoulMatch) {
     contact = `• 연락처: ${naverSeoulMatch[1]}`;
@@ -364,14 +372,17 @@ const parseOriginalFormat = (rawText) => {
     agency = `• 부동산: ${agencyMatch[1].trim()}`;
   }
 
-  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰번호
+  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰번호 (팩스번호는 제외)
   let contact = '';
-  // 02- 번호 최우선 (서울 지역번호)
-  const seoulMatch = rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 팩스번호인지 확인 (팩스, FAX 라벨이 있으면 제외)
+  const hasFax = rawText.match(/\b(팩스|fax|FAX)\b/i);
+
+  // 02- 번호 최우선 (서울 지역번호, 팩스 제외)
+  const seoulMatch = !hasFax ? rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/) : null;
   // 핸드폰번호
   const phoneMatch = rawText.match(/핸드폰번호\s*(0\d{1,2}-\d{3,4}-\d{4}|0\d{10,11})/);
-  // 기타 유선번호
-  const otherLandlineMatch = rawText.match(/(?:유선|대표|전화)\s*(?:번호)?\s*(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 기타 유선번호 (팩스 제외)
+  const otherLandlineMatch = !hasFax ? rawText.match(/(?:유선|대표|전화)\s*(?:번호)?\s*(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/) : null;
   const emergencyMatch = rawText.match(/070\s*번호\s*(070-\d{4}-\d{4}|070\d{8})/);
 
   if (seoulMatch) {
