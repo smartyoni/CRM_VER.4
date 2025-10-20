@@ -51,13 +51,12 @@ export const extractContactNumber = (text) => {
   if (lines.length > 0) {
     const lastLine = lines[lines.length - 1].trim();
 
-    // 1. 유선번호(고정전화) 우선: 02, 031-055, 061-064 등
-    // 02 (서울), 0xx (지역번호), 070/080 (특수번호)
-    const landlinePattern = /(0(2|3[1-3]|4[1-5]|5[1-5]|6[1-4]|7[0,1]|8[0])[-\s]?\d{3,4}[-\s]?\d{4})/;
-    const landlineMatch = lastLine.match(landlinePattern);
+    // 1. 02- 번호 최우선 (서울 지역번호)
+    const seoulPattern = /(02[-\s]?\d{3,4}[-\s]?\d{4})/;
+    const seoulMatch = lastLine.match(seoulPattern);
 
-    if (landlineMatch) {
-      return landlineMatch[0].trim();
+    if (seoulMatch) {
+      return seoulMatch[0].trim();
     }
 
     // 2. 핸드폰번호: 01x-xxxx-xxxx
@@ -234,17 +233,21 @@ const parseNaverFormat = (rawText) => {
     agency = `• 부동산: ${naverAgencyMatch[1].trim()}`;
   }
 
-  // 7. 연락처: 유선번호 우선, 없으면 핸드폰 번호
+  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰 번호
   let contact = '';
-  // 유선번호(고정전화) 우선: 02, 031-055, 061-064 등
-  const naverLandlineMatch = rawText.match(/(0(2|3[1-3]|4[1-5]|5[1-5]|6[1-4]|7[0,1]|8[0])[-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 02- 번호 최우선 (서울 지역번호)
+  const naverSeoulMatch = rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/);
   // 핸드폰 번호: 01x-xxxx-xxxx
   const naverPhoneMatch = rawText.match(/(01[0-9]-\d{4}-\d{4})/);
+  // 기타 유선번호
+  const naverOtherLandlineMatch = rawText.match(/(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/);
 
-  if (naverLandlineMatch) {
-    contact = `• 연락처: ${naverLandlineMatch[1]}`;
+  if (naverSeoulMatch) {
+    contact = `• 연락처: ${naverSeoulMatch[1]}`;
   } else if (naverPhoneMatch) {
     contact = `• 연락처: ${naverPhoneMatch[1]}`;
+  } else if (naverOtherLandlineMatch) {
+    contact = `• 연락처: ${naverOtherLandlineMatch[1]}`;
   }
 
   // 모든 항목 결합
@@ -361,17 +364,22 @@ const parseOriginalFormat = (rawText) => {
     agency = `• 부동산: ${agencyMatch[1].trim()}`;
   }
 
-  // 7. 연락처: 유선번호 우선, 없으면 핸드폰번호
+  // 7. 연락처: 02- 번호 최우선, 없으면 핸드폰번호
   let contact = '';
-  // 유선번호(고정전화) 우선: 02 (서울), 0xx (지역번호)
-  const landlineMatch = rawText.match(/(?:유선|대표|전화)\s*(?:번호)?\s*(0(2|3[1-3]|4[1-5]|5[1-5]|6[1-4]|7[0,1]|8[0])[-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 02- 번호 최우선 (서울 지역번호)
+  const seoulMatch = rawText.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/);
+  // 핸드폰번호
   const phoneMatch = rawText.match(/핸드폰번호\s*(0\d{1,2}-\d{3,4}-\d{4}|0\d{10,11})/);
+  // 기타 유선번호
+  const otherLandlineMatch = rawText.match(/(?:유선|대표|전화)\s*(?:번호)?\s*(0(3|4|5|6|7|8)[0-9][-\s]?\d{3,4}[-\s]?\d{4})/);
   const emergencyMatch = rawText.match(/070\s*번호\s*(070-\d{4}-\d{4}|070\d{8})/);
 
-  if (landlineMatch) {
-    contact = `• 연락처: ${landlineMatch[1].trim()}`;
+  if (seoulMatch) {
+    contact = `• 연락처: ${seoulMatch[1].trim()}`;
   } else if (phoneMatch) {
     contact = `• 연락처: ${phoneMatch[1].trim()}`;
+  } else if (otherLandlineMatch) {
+    contact = `• 연락처: ${otherLandlineMatch[1].trim()}`;
   } else if (emergencyMatch) {
     contact = `• 연락처: ${emergencyMatch[1].trim()}`;
   }
