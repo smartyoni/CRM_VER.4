@@ -66,6 +66,14 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
     return '';
   };
 
+  // 오늘 날짜 확인 함수
+  const isToday = (dateString) => {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const activityDate = dateString.slice(0, 10);
+    return activityDate === todayStr;
+  };
+
   const truncateText = (text, maxLength = 50) => {
     if (!text) return '-';
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
@@ -564,55 +572,65 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
               </tr>
             </thead>
             <tbody>
-              {customerActivities.map(activity => (
-                <tr
-                  key={activity.id}
-                  onContextMenu={(e) => handleContextMenu(e, activity)}
-                  style={{ cursor: 'context-menu' }}
-                >
-                  <td style={{ fontSize: '13px' }}>{formatActivityDate(activity.date)}</td>
-                  <td
-                    onClick={() => setViewingActivity(activity)}
+              {customerActivities.map(activity => {
+                const isTodayActivity = isToday(activity.date);
+                return (
+                  <tr
+                    key={activity.id}
+                    onContextMenu={(e) => handleContextMenu(e, activity)}
                     style={{
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      width: '360px',
-                      maxWidth: '360px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      cursor: 'context-menu',
+                      backgroundColor: isTodayActivity ? 'rgba(211, 47, 47, 0.08)' : 'transparent',
+                      color: isTodayActivity ? '#d32f2f' : 'inherit',
+                      fontWeight: isTodayActivity ? 'bold' : 'normal'
                     }}
-                    title={activity.content}
                   >
-                    {truncateText(activity.content || '', 30)}
-                    {activity.followUps && activity.followUps.length > 0 && (
-                      <span style={{ marginLeft: '8px', fontSize: '12px', color: '#7f8c8d' }}>
-                        💬{activity.followUps.length}
-                      </span>
-                    )}
-                    {activity.images && activity.images.length > 0 && (
-                      <span style={{ marginLeft: '8px', fontSize: '12px', color: '#7f8c8d' }}>
-                        📷{activity.images.length}
-                      </span>
-                    )}
-                  </td>
-                  <td
-                    onClick={() => setViewingActivity(activity)}
-                    style={{
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      width: '720px',
-                      maxWidth: '720px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
-                    title={getLatestFollowUp(activity)}
-                  >
-                    {truncateText(getLatestFollowUp(activity), 50)}
-                  </td>
-                </tr>
-              ))}
+                    <td style={{ fontSize: '13px', color: isTodayActivity ? '#d32f2f' : 'inherit' }}>{formatActivityDate(activity.date)}</td>
+                    <td
+                      onClick={() => setViewingActivity(activity)}
+                      style={{
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        width: '360px',
+                        maxWidth: '360px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        color: isTodayActivity ? '#d32f2f' : 'inherit'
+                      }}
+                      title={activity.content}
+                    >
+                      {truncateText(activity.content || '', 30)}
+                      {activity.followUps && activity.followUps.length > 0 && (
+                        <span style={{ marginLeft: '8px', fontSize: '12px', color: isTodayActivity ? '#d32f2f' : '#7f8c8d' }}>
+                          💬{activity.followUps.length}
+                        </span>
+                      )}
+                      {activity.images && activity.images.length > 0 && (
+                        <span style={{ marginLeft: '8px', fontSize: '12px', color: isTodayActivity ? '#d32f2f' : '#7f8c8d' }}>
+                          📷{activity.images.length}
+                        </span>
+                      )}
+                    </td>
+                    <td
+                      onClick={() => setViewingActivity(activity)}
+                      style={{
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        width: '720px',
+                        maxWidth: '720px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        color: isTodayActivity ? '#d32f2f' : 'inherit'
+                      }}
+                      title={getLatestFollowUp(activity)}
+                    >
+                      {truncateText(getLatestFollowUp(activity), 50)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

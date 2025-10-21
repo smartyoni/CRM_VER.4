@@ -21,6 +21,14 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     }
   }, [initialProperties, onClearInitialProperties]);
 
+  // 오늘 날짜 확인 함수
+  const isToday = (dateString) => {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const meetingDate = dateString.slice(0, 10);
+    return meetingDate === todayStr;
+  };
+
   const customerMeetings = meetings.filter(m => m.customerId === customerId);
 
   const MeetingForm = ({ onCancel, meetingData, initialPropertiesData }) => {
@@ -523,37 +531,45 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               </tr>
             </thead>
             <tbody>
-              {customerMeetings.map(meeting => (
-                <tr key={meeting.id}>
-                  <td>{formatMeetingDate(meeting.date)}</td>
-                  <td>{formatMeetingTime(meeting.date)}</td>
-                  <td
-                    onClick={() => setViewingMeeting(meeting)}
-                    style={{
-                      cursor: 'pointer',
-                      color: 'var(--primary-blue)',
-                      textDecoration: 'underline'
-                    }}
-                  >
-                    {meeting.properties?.length || 0}개 매물
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => setEditingMeeting(meeting)}
-                      style={{ fontSize: '12px', padding: '4px 8px', marginRight: '5px' }}
+              {customerMeetings.map(meeting => {
+                const isTodayMeeting = isToday(meeting.date);
+                return (
+                  <tr key={meeting.id} style={{
+                    backgroundColor: isTodayMeeting ? 'rgba(211, 47, 47, 0.08)' : 'transparent',
+                    color: isTodayMeeting ? '#d32f2f' : 'inherit',
+                    fontWeight: isTodayMeeting ? 'bold' : 'normal'
+                  }}>
+                    <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit' }}>{formatMeetingDate(meeting.date)}</td>
+                    <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit' }}>{formatMeetingTime(meeting.date)}</td>
+                    <td
+                      onClick={() => setViewingMeeting(meeting)}
+                      style={{
+                        cursor: 'pointer',
+                        color: isTodayMeeting ? '#d32f2f' : 'var(--primary-blue)',
+                        textDecoration: 'underline',
+                        fontWeight: isTodayMeeting ? 'bold' : 'normal'
+                      }}
                     >
-                      수정
-                    </button>
-                    <button
-                      onClick={() => onDeleteMeeting(meeting.id)}
-                      className="btn-secondary"
-                      style={{ fontSize: '12px', padding: '4px 8px' }}
-                    >
-                      삭제
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      {meeting.properties?.length || 0}개 매물
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => setEditingMeeting(meeting)}
+                        style={{ fontSize: '12px', padding: '4px 8px', marginRight: '5px', color: isTodayMeeting ? '#d32f2f' : 'inherit' }}
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => onDeleteMeeting(meeting.id)}
+                        className="btn-secondary"
+                        style={{ fontSize: '12px', padding: '4px 8px', color: isTodayMeeting ? '#d32f2f' : 'inherit' }}
+                      >
+                        삭제
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         ) : (

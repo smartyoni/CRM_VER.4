@@ -53,6 +53,14 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
   // 다음 미팅 찾기
   const nextMeeting = customerMeetings.find(m => new Date(m.date) > new Date());
 
+  // 오늘 날짜 확인 함수
+  const isToday = (dateString) => {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const activityDate = dateString.slice(0, 10);
+    return activityDate === todayStr;
+  };
+
   const truncateText = (text, maxLength = 40) => {
     if (!text) return '-';
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
@@ -196,16 +204,23 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
             </div>
             {recentActivities.length > 0 ? (
               <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-                {recentActivities.map((activity, idx) => (
-                  <div key={idx} style={{
-                    padding: '6px 0',
-                    borderTop: idx > 0 ? '1px solid #f0f0f0' : 'none',
-                    color: '#555'
-                  }}>
-                    <span style={{ color: '#999', marginRight: '4px' }}>{activity.date}</span>
-                    {truncateText(activity.content, 30)}
-                  </div>
-                ))}
+                {recentActivities.map((activity, idx) => {
+                  const isTodayActivity = isToday(activity.date);
+                  return (
+                    <div key={idx} style={{
+                      padding: '6px 0',
+                      borderTop: idx > 0 ? '1px solid #f0f0f0' : 'none',
+                      color: isTodayActivity ? '#d32f2f' : '#555',
+                      fontWeight: isTodayActivity ? 'bold' : 'normal',
+                      backgroundColor: isTodayActivity ? 'rgba(211, 47, 47, 0.05)' : 'transparent',
+                      paddingLeft: isTodayActivity ? '8px' : '0px',
+                      borderRadius: isTodayActivity ? '4px' : '0px'
+                    }}>
+                      <span style={{ color: isTodayActivity ? '#d32f2f' : '#999', marginRight: '4px' }}>{activity.date}</span>
+                      {truncateText(activity.content, 30)}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div style={{ fontSize: '12px', color: '#999', textAlign: 'center', padding: '8px' }}>
@@ -252,18 +267,25 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
             </div>
             {recentMeetings.length > 0 ? (
               <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-                {recentMeetings.map((meeting, idx) => (
-                  <div key={idx} style={{
-                    padding: '6px 0',
-                    borderTop: idx > 0 ? '1px solid #f0f0f0' : 'none',
-                    color: '#555'
-                  }}>
-                    <span style={{ color: '#999', marginRight: '4px' }}>{meeting.date.slice(0, 10)}</span>
-                    <span style={{ color: '#2196F3', fontWeight: 'bold' }}>
-                      {meeting.properties?.length || 0}개 매물
-                    </span>
-                  </div>
-                ))}
+                {recentMeetings.map((meeting, idx) => {
+                  const isTodayMeeting = isToday(meeting.date);
+                  return (
+                    <div key={idx} style={{
+                      padding: '6px 0',
+                      borderTop: idx > 0 ? '1px solid #f0f0f0' : 'none',
+                      color: isTodayMeeting ? '#d32f2f' : '#555',
+                      fontWeight: isTodayMeeting ? 'bold' : 'normal',
+                      backgroundColor: isTodayMeeting ? 'rgba(211, 47, 47, 0.05)' : 'transparent',
+                      paddingLeft: isTodayMeeting ? '8px' : '0px',
+                      borderRadius: isTodayMeeting ? '4px' : '0px'
+                    }}>
+                      <span style={{ color: isTodayMeeting ? '#d32f2f' : '#999', marginRight: '4px' }}>{meeting.date.slice(0, 10)}</span>
+                      <span style={{ color: isTodayMeeting ? '#d32f2f' : '#2196F3', fontWeight: 'bold' }}>
+                        {meeting.properties?.length || 0}개 매물
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div style={{ fontSize: '12px', color: '#999', textAlign: 'center', padding: '8px' }}>
