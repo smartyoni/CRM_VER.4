@@ -137,12 +137,92 @@ export const extractContactNumber = (text) => {
 };
 
 /**
+ * 네이버 부동산에서 호실명 추출 (1번째 줄)
+ * @param {string} text - 매물 정보 전체 텍스트
+ * @returns {string} - 추출된 호실명
+ */
+export const extractPropertyNameNaver = (text) => {
+  if (!text) return '';
+
+  const lines = text.split('\n').filter(line => line.trim() !== '');
+
+  // 1번째 줄 반환 (인덱스 0)
+  if (lines.length > 0) {
+    return lines[0].trim();
+  }
+
+  return '';
+};
+
+/**
+ * 네이버 부동산에서 부동산명 추출 (중개사 섹션의 첫 줄)
+ * @param {string} text - 매물 정보 전체 텍스트
+ * @returns {string} - 추출된 부동산명
+ */
+export const extractAgencyNameNaver = (text) => {
+  if (!text) return '';
+
+  const lines = text.split('\n');
+
+  // "중개사" 라벨을 찾고 다음 라인에서 부동산명 추출
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('중개사') && i + 1 < lines.length) {
+      const nextLine = lines[i + 1].trim();
+      if (nextLine && !nextLine.includes('대표') && !nextLine.includes('등록')) {
+        return nextLine;
+      }
+    }
+  }
+
+  return '';
+};
+
+/**
+ * 네이버 부동산에서 연락처 추출 ("전화" 라벨 바로 뒤의 번호)
+ * 우선순위: 02- (서울) > 기타 지역번호 > 핸드폰
+ * @param {string} text - 매물 정보 전체 텍스트
+ * @returns {string} - 추출된 전화번호
+ */
+export const extractContactNumberNaver = (text) => {
+  if (!text) return '';
+
+  // "전화" 라벨 바로 뒤의 번호 패턴 매칭
+  const phoneLinePattern = /전화([\d\-,\s]+)(?:최근|$)/;
+  const match = text.match(phoneLinePattern);
+
+  if (match) {
+    const phoneNumbers = match[1].trim();
+
+    // 1순위: 02- (서울 유선)
+    const seoulMatch = phoneNumbers.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/);
+    if (seoulMatch) {
+      return seoulMatch[1].replace(/\s/g, '');
+    }
+
+    // 2순위: 기타 지역번호 (0xx-)
+    const landlineMatch = phoneNumbers.match(/(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/);
+    if (landlineMatch) {
+      return landlineMatch[1].replace(/\s/g, '');
+    }
+
+    // 3순위: 핸드폰 (010-)
+    const mobileMatch = phoneNumbers.match(/(010[-\s]?\d{4}[-\s]?\d{4})/);
+    if (mobileMatch) {
+      return mobileMatch[1].replace(/\s/g, '');
+    }
+  }
+
+  return '';
+};
+
+/**
  * 매물 정보 텍스트 붙여넣기 시 자동으로 건물명, 부동산, 연락처 추출
  * 원본 포맷과 정리본 포맷 모두 지원
  * @param {string} text - 매물 정보 전체 텍스트
+ * @param {string} source - 매물 소스 ('TEN' 또는 '네이버부동산')
  * @returns {object} - { propertyName, agencyName, contactNumber }
  */
-export const parsePropertyDetails = (text) => {
+export const parsePropertyDetails = (text, source = 'TEN') => {
   if (!text) {
     return {
       propertyName: '',
@@ -186,8 +266,15 @@ export const parsePropertyDetails = (text) => {
       agencyName,
       contactNumber
     };
+  } else if (source === '네이버부동산') {
+    // 네이버부동산 포맷에서 추출
+    return {
+      propertyName: extractPropertyNameNaver(text),
+      agencyName: extractAgencyNameNaver(text),
+      contactNumber: extractContactNumberNaver(text)
+    };
   } else {
-    // 원본 포맷에서 추출 (기존 방식)
+    // TEN 원본 포맷에서 추출 (기존 방식)
     return {
       propertyName: extractPropertyName(text),
       agencyName: extractAgencyName(text),

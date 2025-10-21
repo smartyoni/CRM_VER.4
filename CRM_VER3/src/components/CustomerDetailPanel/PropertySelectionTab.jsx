@@ -82,10 +82,11 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
       const [propertyData, setPropertyData] = useState(
         propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] }
       );
+      const [source, setSource] = useState('TEN');
 
       const handleInfoChange = (e) => {
         const info = e.target.value;
-        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(info);
+        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(info, source);
 
         setPropertyData({
           ...propertyData,
@@ -145,7 +146,71 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
             </div>
             <div className="form-grid">
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label>매물정보 (전체 텍스트 붙여넣기)</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <label style={{ margin: 0 }}>매물정보 (전체 텍스트 붙여넣기)</label>
+
+                  {/* 세그먼티드 컨트롤 */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '0',
+                    backgroundColor: '#f0f0f0',
+                    borderRadius: '6px',
+                    padding: '2px'
+                  }}>
+                    <button
+                      onClick={() => setSource('TEN')}
+                      style={{
+                        padding: '6px 14px',
+                        backgroundColor: source === 'TEN' ? '#2196F3' : 'transparent',
+                        color: source === 'TEN' ? 'white' : '#666',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (source !== 'TEN') {
+                          e.target.style.backgroundColor = '#e0e0e0';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (source !== 'TEN') {
+                          e.target.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      TEN
+                    </button>
+                    <button
+                      onClick={() => setSource('네이버부동산')}
+                      style={{
+                        padding: '6px 14px',
+                        backgroundColor: source === '네이버부동산' ? '#2196F3' : 'transparent',
+                        color: source === '네이버부동산' ? 'white' : '#666',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (source !== '네이버부동산') {
+                          e.target.style.backgroundColor = '#e0e0e0';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (source !== '네이버부동산') {
+                          e.target.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      네이버부동산
+                    </button>
+                  </div>
+                </div>
                 <textarea
                   className="large"
                   placeholder="매물 정보를 붙여넣으세요&#10;2번째 줄 → 호실명 자동입력&#10;7번째 줄 → 부동산 자동입력&#10;마지막 줄 → 연락처 자동입력"
@@ -174,7 +239,9 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                   ⚡ 매물정보 자동 생성
                 </button>
                 <p className="form-hint">
-                  매물 정보를 붙여넣으면 2번째 줄이 호실명, 7번째 줄이 부동산, 마지막 줄이 연락처로 자동 입력됩니다.
+                  {source === 'TEN'
+                    ? '매물 정보를 붙여넣으면 2번째 줄이 호실명, 7번째 줄이 부동산, 마지막 줄이 연락처로 자동 입력됩니다.'
+                    : '매물 정보를 붙여넣으면 첫 줄이 호실명, 중개사 섹션의 부동산명, 전화 라벨 뒤의 연락처가 자동 입력됩니다.'}
                 </p>
               </div>
               <div className="form-group">
@@ -460,7 +527,9 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                   ⚡ 매물정보 자동 생성
                 </button>
                 <p className="form-hint">
-                  매물 정보를 붙여넣으면 2번째 줄이 호실명, 7번째 줄이 부동산, 마지막 줄이 연락처로 자동 입력됩니다.
+                  {source === 'TEN'
+                    ? '매물 정보를 붙여넣으면 2번째 줄이 호실명, 7번째 줄이 부동산, 마지막 줄이 연락처로 자동 입력됩니다.'
+                    : '매물 정보를 붙여넣으면 첫 줄이 호실명, 중개사 섹션의 부동산명, 전화 라벨 뒤의 연락처가 자동 입력됩니다.'}
                 </p>
               </div>
               <div className="form-group">
