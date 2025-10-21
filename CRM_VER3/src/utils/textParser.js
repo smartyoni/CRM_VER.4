@@ -59,35 +59,42 @@ export const extractContactNumber = (text) => {
       return null;
     }
 
-    // 1. "전 화 번 호" 또는 "전화번호" 라벨 뒤의 02- 번호 (띄어쓰기 허용)
+    // 1. "전화" 라벨 (띄어쓰기 없음) 뒤의 02- 번호 - 최우선
+    const phoneDirectPattern = /전화(02[-\s]?\d{3,4}[-\s]?\d{4})/;
+    const phoneDirectMatch = line.match(phoneDirectPattern);
+    if (phoneDirectMatch) {
+      return phoneDirectMatch[1].replace(/\s/g, '').trim();
+    }
+
+    // 2. "전 화 번 호" 또는 "전화번호" 라벨 뒤의 02- 번호 (띄어쓰기 허용)
     const labeledSeoulPattern = /(전\s*화\s*번\s*호|전화번호)\s*(02[-\s]?\d{3,4}[-\s]?\d{4})/;
     const labeledSeoulMatch = line.match(labeledSeoulPattern);
     if (labeledSeoulMatch) {
       return labeledSeoulMatch[2].replace(/\s/g, '').trim();
     }
 
-    // 2. 02- 번호 최우선 (라벨 없음)
+    // 3. 02- 번호 최우선 (라벨 없음)
     const seoulPattern = /(02[-\s]?\d{3,4}[-\s]?\d{4})/;
     const seoulMatch = line.match(seoulPattern);
     if (seoulMatch) {
       return seoulMatch[1].replace(/\s/g, '').trim();
     }
 
-    // 3. "핸드폰번호" 라벨 뒤의 01x-xxxx-xxxx
+    // 4. "핸드폰번호" 라벨 뒤의 01x-xxxx-xxxx
     const labeledPhonePattern = /(핸드폰\s*번호|휴대폰\s*번호)\s*(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
     const labeledPhoneMatch = line.match(labeledPhonePattern);
     if (labeledPhoneMatch) {
       return labeledPhoneMatch[2].replace(/\s/g, '').trim();
     }
 
-    // 4. 핸드폰번호: 01x-xxxx-xxxx (라벨 없음)
+    // 5. 핸드폰번호: 01x-xxxx-xxxx (라벨 없음)
     const phonePattern = /(01[0-9][-\s]?\d{3,4}[-\s]?\d{4})/;
     const phoneMatch = line.match(phonePattern);
     if (phoneMatch) {
       return phoneMatch[1].replace(/\s/g, '').trim();
     }
 
-    // 5. 일반 전화번호 패턴 매칭
+    // 6. 일반 전화번호 패턴 매칭
     const generalPattern = /(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/;
     const generalMatch = line.match(generalPattern);
     if (generalMatch) {
