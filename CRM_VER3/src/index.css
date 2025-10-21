@@ -395,7 +395,7 @@ button {
 /* Property Card Styles */
 .property-card {
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 2px solid #1a1a1a;
   border-radius: 8px;
   margin-top: 15px;
   overflow: hidden;

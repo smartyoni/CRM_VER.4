@@ -8,7 +8,9 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
   const [editingSelection, setEditingSelection] = useState(null);
   const [viewingSelection, setViewingSelection] = useState(null);
 
-  const customerSelections = propertySelections.filter(s => s.customerId === customerId);
+  const customerSelections = propertySelections
+    .filter(s => s.customerId === customerId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const PropertySelectionForm = ({ onCancel, selectionData }) => {
     const initFormData = () => {
