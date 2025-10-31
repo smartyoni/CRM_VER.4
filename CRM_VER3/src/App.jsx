@@ -475,6 +475,8 @@ function App() {
             onProgressFilterChange={handleProgressFilterChange}
             allCustomers={customers}
             onFavoriteCustomer={handleFavoriteCustomer}
+            activities={activities}
+            meetings={meetings}
           />
         </main>
       </div>

@@ -669,3 +669,38 @@ button {
     font-size: 12px;
   }
 }
+
+/* --- Context Menu Styles --- */
+.context-menu {
+  background-color: white;
+  border: 1px solid var(--medium-gray);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background-color: white;
+  color: var(--text-color);
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.context-menu-item:hover {
+  background-color: var(--light-gray);
+}
+
+.context-menu-item.delete {
+  color: var(--danger-red);
+}
+
+.context-menu-item.delete:hover {
+  background-color: rgba(231, 76, 60, 0.1);
+}

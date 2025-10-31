@@ -27,10 +27,6 @@ const FilterSidebar = ({ activeFilter, onFilterChange, customers, meetings, acti
       return customers.filter(c => c.isFavorite).length;
     }
 
-    if (status === '장기관리고객') {
-      return customers.filter(c => c.status === '장기관리고객').length;
-    }
-
     if (status === '오늘미팅') {
       return customers.filter(c => {
         const customerMeetings = meetings.filter(m => m.customerId === c.id);
@@ -52,41 +48,17 @@ const FilterSidebar = ({ activeFilter, onFilterChange, customers, meetings, acti
       }).length;
     }
 
-    // 활동 기반 필터
-    if (status === '오늘연락') {
+    // 활동 기록이 있는데 답장이 없는 고객
+    if (status === '답장대기') {
       return customers.filter(c => {
         const customerActivities = activities.filter(a => a.customerId === c.id);
-        return customerActivities.some(a => {
-          const activityDate = new Date(a.date);
-          activityDate.setHours(0, 0, 0, 0);
-          return activityDate.getTime() === today.getTime();
-        });
-      }).length;
-    }
-    if (status === '어제연락') {
-      return customers.filter(c => {
-        const customerActivities = activities.filter(a => a.customerId === c.id);
-        return customerActivities.some(a => {
-          const activityDate = new Date(a.date);
-          activityDate.setHours(0, 0, 0, 0);
-          const yesterday = new Date(today);
-          yesterday.setDate(yesterday.getDate() - 1);
-          return activityDate.getTime() === yesterday.getTime();
-        });
-      }).length;
-    }
-    if (status === '연락할고객') {
-      return customers.filter(c => {
-        if (c.status === '보류') return false;
-        const customerActivities = activities.filter(a => a.customerId === c.id);
-        const today2 = new Date(today);
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
+        if (customerActivities.length === 0) return false; // 활동 기록이 없으면 제외
 
-        return !customerActivities.some(a => {
-          const activityDate = new Date(a.date);
-          activityDate.setHours(0, 0, 0, 0);
-          return activityDate.getTime() === today2.getTime() || activityDate.getTime() === yesterday.getTime();
+        // 모든 활동에 대해 "답장"이 없는지 확인
+        return customerActivities.some(activity => {
+          const followUps = activity.followUps || [];
+          // 이 활동에 "답장"이 없으면 true
+          return !followUps.some(followUp => followUp.author === '답장');
         });
       }).length;
     }
@@ -99,13 +71,10 @@ const FilterSidebar = ({ activeFilter, onFilterChange, customers, meetings, acti
     '보류',
     '신규',
     '진행중',
-    '장기관리고객',
     '집중고객',
     '오늘미팅',
     '미팅일확정',
-    '오늘연락',
-    '어제연락',
-    '연락할고객'
+    '답장대기'
   ];
 
   const handleFilterClick = (status) => {

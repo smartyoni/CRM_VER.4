@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BasicInfo from './BasicInfo';
+import BasicInfoSection from './BasicInfoSection';
 import ActivityTab from './ActivityTab';
 import MeetingTab from './MeetingTab';
 import PropertySelectionTab from './PropertySelectionTab';
@@ -194,6 +195,10 @@ const CustomerDetailPanel = ({
                 </button>
               ))}
             </div>
+
+            {/* 기본정보 섹션 - 모든 탭에서 표시 */}
+            <BasicInfoSection customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} />
+
             <div className="tab-content">
               {activeTab === '기본정보' && <BasicInfo customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} activities={activities} meetings={meetings} onTabChange={setActiveTab} />}
               {activeTab === '활동 내역' &&

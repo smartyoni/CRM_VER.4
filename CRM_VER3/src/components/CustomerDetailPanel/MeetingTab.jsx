@@ -30,8 +30,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
   };
 
   const customerMeetings = meetings
-    .filter(m => m.customerId === customerId)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+    .filter(m => m.customerId === customerId);
 
   const MeetingForm = ({ onCancel, meetingData, initialPropertiesData }) => {
     const initFormData = () => {
@@ -360,6 +359,84 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     return formatVisitTime(time);
   };
 
+  // 미팅일시 통합 포맷: "10월22일 13시 (3개)"
+  const formatMeetingDateTime = (dateTime, propertyCount) => {
+    if (!dateTime) return '';
+    const date = new Date(dateTime);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    return `${month}월${day}일 ${hours}시 (${propertyCount}개)`;
+  };
+
+  // 건물명 추출 (주소 및 지번 제외, 최대 5글자, 나머지는 ...)
+  const extractBuildingName = (roomName) => {
+    if (!roomName) return '';
+
+    let text = roomName.trim();
+
+    // 1단계: 이모지 및 특수문자 제거
+    text = text.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim(); // 이모지 제거
+    text = text.replace(/[→↓↑←]/g, '').trim(); // 화살표 제거
+    text = text.replace(/[^\w\s가-힣()]/g, '').trim(); // 특수문자 제거
+
+    // 2단계: 괄호 안의 모든 내용 제거 (주소 정보)
+    const beforeParen = text.split('(')[0].trim();
+
+    // 3단계: 모든 주소 요소 제거
+    let cleanText = beforeParen;
+
+    // 시도 제거 (서울시, 부산시 등)
+    cleanText = cleanText.replace(/서울시|부산시|대구시|인천시|광주시|대전시|울산시|세종시|경기도|강원도|충청북도|충청남도|전라북도|전라남도|경상북도|경상남도|제주도/g, '').trim();
+
+    // 구 제거 (강남구, 강서구 등 - 앞에 한글이 있고 뒤에 구가 붙는 형태)
+    cleanText = cleanText.replace(/[가-힣]+[구]/g, '').trim();
+
+    // 동/로/길 제거 (앞에 한글이 있고 끝이 동/로/길인 형태)
+    cleanText = cleanText.replace(/[가-힣]+[동로길]/g, '').trim();
+
+    // 지번 패턴 제거 (예: 123-45, 123, 456-7 등)
+    cleanText = cleanText.replace(/\b\d+(-\d+)?\b/g, '').trim();
+
+    // 4단계: 불필요한 공백 정리
+    cleanText = cleanText.replace(/\s+/g, ' ').trim();
+
+    // 5단계: 빈 문자열인 경우 '-' 반환
+    if (!cleanText) return '-';
+
+    // 6단계: 5글자 초과시 "..." 추가
+    if (cleanText.length > 5) {
+      return cleanText.substring(0, 5) + '...';
+    }
+
+    return cleanText;
+  };
+
+  // 매물명 리스트 생성 (쉼표로 구분)
+  const formatPropertyNames = (properties) => {
+    if (!properties || properties.length === 0) return '-';
+    const names = properties.map(prop => extractBuildingName(prop.roomName)).filter(name => name);
+    return names.join(', ') || '-';
+  };
+
+  // 우클릭 컨텍스트 메뉴 상태
+  const [contextMenu, setContextMenu] = useState(null);
+  const [contextMenuMeeting, setContextMenuMeeting] = useState(null);
+
+  const handleContextMenu = (e, meeting) => {
+    e.preventDefault();
+    setContextMenuMeeting(meeting);
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+
+  const handleContextMenuClose = () => {
+    setContextMenu(null);
+    setContextMenuMeeting(null);
+  };
+
   const PropertiesViewModal = ({ meeting, onClose }) => {
     const [editingPropertyIndex, setEditingPropertyIndex] = useState(null);
     const [showPropertyEditModal, setShowPropertyEditModal] = useState(false);
@@ -657,57 +734,95 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         {editingMeeting ? (
           <MeetingForm key={editingMeeting.id} meetingData={editingMeeting} onCancel={() => setEditingMeeting(null)} />
         ) : customerMeetings.length > 0 ? (
-          <table className="customer-table">
-            <thead>
-              <tr>
-                <th>미팅날짜</th>
-                <th>미팅시간</th>
-                <th>매물수</th>
-                <th>액션</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customerMeetings.map(meeting => {
-                const isTodayMeeting = isToday(meeting.date);
-                return (
-                  <tr key={meeting.id} style={{
-                    backgroundColor: isTodayMeeting ? 'rgba(211, 47, 47, 0.08)' : 'transparent',
-                    color: isTodayMeeting ? '#d32f2f' : 'inherit',
-                    fontWeight: isTodayMeeting ? 'bold' : 'normal'
-                  }}>
-                    <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit' }}>{formatMeetingDate(meeting.date)}</td>
-                    <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit' }}>{formatMeetingTime(meeting.date)}</td>
-                    <td
-                      onClick={() => setViewingMeeting(meeting)}
+          <>
+            <table className="customer-table">
+              <thead>
+                <tr>
+                  <th>미팅일시</th>
+                  <th>매물명</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customerMeetings.map(meeting => {
+                  const isTodayMeeting = isToday(meeting.date);
+                  return (
+                    <tr
+                      key={meeting.id}
                       style={{
-                        cursor: 'pointer',
-                        color: isTodayMeeting ? '#d32f2f' : 'var(--primary-blue)',
-                        textDecoration: 'underline',
-                        fontWeight: isTodayMeeting ? 'bold' : 'normal'
+                        backgroundColor: isTodayMeeting ? 'rgba(211, 47, 47, 0.08)' : 'transparent',
+                        color: isTodayMeeting ? '#d32f2f' : 'inherit',
+                        fontWeight: isTodayMeeting ? 'bold' : 'normal',
+                        cursor: 'context-menu'
                       }}
+                      onContextMenu={(e) => handleContextMenu(e, meeting)}
                     >
-                      {meeting.properties?.length || 0}개 매물
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => setEditingMeeting(meeting)}
-                        style={{ fontSize: '12px', padding: '4px 8px', marginRight: '5px', color: isTodayMeeting ? '#d32f2f' : 'inherit' }}
+                      <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit' }}>
+                        {formatMeetingDateTime(meeting.date, meeting.properties?.length || 0)}
+                      </td>
+                      <td
+                        onClick={() => setViewingMeeting(meeting)}
+                        style={{
+                          cursor: 'pointer',
+                          color: isTodayMeeting ? '#d32f2f' : 'var(--primary-blue)',
+                          textDecoration: 'underline',
+                          fontWeight: isTodayMeeting ? 'bold' : 'normal'
+                        }}
                       >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => onDeleteMeeting(meeting.id)}
-                        className="btn-secondary"
-                        style={{ fontSize: '12px', padding: '4px 8px', color: isTodayMeeting ? '#d32f2f' : 'inherit' }}
-                      >
-                        삭제
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        {formatPropertyNames(meeting.properties)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* 우클릭 컨텍스트 메뉴 */}
+            {contextMenu && contextMenuMeeting && (
+              <div
+                className="context-menu"
+                style={{
+                  position: 'fixed',
+                  top: contextMenu.y,
+                  left: contextMenu.x,
+                  zIndex: 1000
+                }}
+              >
+                <button
+                  className="context-menu-item"
+                  onClick={() => {
+                    setEditingMeeting(contextMenuMeeting);
+                    handleContextMenuClose();
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  className="context-menu-item delete"
+                  onClick={() => {
+                    onDeleteMeeting(contextMenuMeeting.id);
+                    handleContextMenuClose();
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            )}
+
+            {/* 컨텍스트 메뉴 외부 클릭 감지 */}
+            {contextMenu && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 999
+                }}
+                onClick={handleContextMenuClose}
+              />
+            )}
+          </>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
             등록된 미팅이 없습니다.

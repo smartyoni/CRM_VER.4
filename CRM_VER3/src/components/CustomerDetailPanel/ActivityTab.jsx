@@ -83,6 +83,7 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
     const [followUps, setFollowUps] = useState(activity.followUps || []);
     const [editingFollowUpId, setEditingFollowUpId] = useState(null);
     const [newFollowUpContent, setNewFollowUpContent] = useState('');
+    const [newFollowUpAuthor, setNewFollowUpAuthor] = useState('상황기록');
     const [viewingImage, setViewingImage] = useState(null);
 
     const handleAddFollowUp = () => {
@@ -92,6 +93,7 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
         id: generateId(),
         date: new Date().toISOString(),
         content: newFollowUpContent,
+        author: newFollowUpAuthor,
         createdAt: new Date().toISOString()
       };
       const updatedFollowUps = [...followUps, followUp];
@@ -99,6 +101,7 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
       handleSave(updatedActivity);
       setFollowUps(updatedFollowUps);
       setNewFollowUpContent('');
+      setNewFollowUpAuthor('상황기록');
     };
 
     const handleKeyPress = (e) => {
@@ -152,6 +155,71 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
 
               {/* 후속 기록 입력창 */}
               <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '5px', padding: '10px', marginBottom: '15px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="author"
+                      value="나"
+                      checked={newFollowUpAuthor === '나'}
+                      onChange={(e) => setNewFollowUpAuthor(e.target.value)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: newFollowUpAuthor === '나' ? '#2196F3' : '#999',
+                      padding: '4px 10px',
+                      backgroundColor: newFollowUpAuthor === '나' ? '#e3f2fd' : '#f5f5f5',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s'
+                    }}>
+                      나
+                    </span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="author"
+                      value="답장"
+                      checked={newFollowUpAuthor === '답장'}
+                      onChange={(e) => setNewFollowUpAuthor(e.target.value)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: newFollowUpAuthor === '답장' ? '#9c27b0' : '#999',
+                      padding: '4px 10px',
+                      backgroundColor: newFollowUpAuthor === '답장' ? '#f3e5f5' : '#f5f5f5',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s'
+                    }}>
+                      답장
+                    </span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="author"
+                      value="상황기록"
+                      checked={newFollowUpAuthor === '상황기록'}
+                      onChange={(e) => setNewFollowUpAuthor(e.target.value)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: newFollowUpAuthor === '상황기록' ? '#ff9800' : '#999',
+                      padding: '4px 10px',
+                      backgroundColor: newFollowUpAuthor === '상황기록' ? '#fff3e0' : '#f5f5f5',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s'
+                    }}>
+                      상황기록
+                    </span>
+                  </label>
+                </div>
                 <textarea
                   value={newFollowUpContent}
                   onChange={(e) => setNewFollowUpContent(e.target.value)}
@@ -167,98 +235,99 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
                     fontFamily: 'inherit'
                   }}
                 />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => setNewFollowUpContent(prev => (prev ? prev + '\n[나] ' : '[나] '))}
-                      style={{
-                        fontSize: '12px',
-                        padding: '6px 12px',
-                        backgroundColor: '#e3f2fd',
-                        color: '#2196F3',
-                        border: '1px solid #2196F3',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      나
-                    </button>
-                    <button
-                      onClick={() => setNewFollowUpContent(prev => (prev ? prev + '\n[고객] ' : '[고객] '))}
-                      style={{
-                        fontSize: '12px',
-                        padding: '6px 12px',
-                        backgroundColor: '#f3e5f5',
-                        color: '#9c27b0',
-                        border: '1px solid #9c27b0',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      고객
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={handleAddFollowUp} className="btn-primary" style={{ fontSize: '12px', padding: '6px 16px' }}>
-                      입력
-                    </button>
-                    <button
-                      onClick={() => setNewFollowUpContent('')}
-                      style={{
-                        fontSize: '12px',
-                        padding: '6px 16px',
-                        backgroundColor: '#f5f5f5',
-                        color: '#666',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: '500'
-                      }}
-                    >
-                      초기화
-                    </button>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                  <button onClick={handleAddFollowUp} className="btn-primary" style={{ fontSize: '12px', padding: '6px 16px' }}>
+                    입력
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewFollowUpContent('');
+                      setNewFollowUpAuthor('상황기록');
+                    }}
+                    style={{
+                      fontSize: '12px',
+                      padding: '6px 16px',
+                      backgroundColor: '#f5f5f5',
+                      color: '#666',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: '500'
+                    }}
+                  >
+                    초기화
+                  </button>
                 </div>
               </div>
 
               {/* 입력된 후속 기록들 */}
               {sortedFollowUps.length > 0 ? (
-                sortedFollowUps.map(followUp => (
-                  <div key={followUp.id} style={{ background: '#f8f9fa', padding: '12px', borderRadius: '5px', marginBottom: '10px', borderLeft: '3px solid var(--primary-blue)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '13px', color: '#7f8c8d' }}>{formatDateTime(followUp.date)}</span>
-                      <div style={{ display: 'flex', gap: '5px' }}>
-                        <button
-                          onClick={() => setEditingFollowUpId(followUp.id)}
-                          style={{ fontSize: '11px', padding: '3px 8px' }}
-                        >
-                          수정
-                        </button>
-                        <button
-                          onClick={() => handleDeleteFollowUp(followUp.id)}
-                          className="btn-secondary"
-                          style={{ fontSize: '11px', padding: '3px 8px' }}
-                        >
-                          삭제
-                        </button>
+                sortedFollowUps.map(followUp => {
+                  let authorColor, authorBgColor, borderColor;
+
+                  if (followUp.author === '나') {
+                    authorColor = '#2196F3';
+                    authorBgColor = '#e3f2fd';
+                    borderColor = '#2196F3';
+                  } else if (followUp.author === '답장') {
+                    authorColor = '#9c27b0';
+                    authorBgColor = '#f3e5f5';
+                    borderColor = '#9c27b0';
+                  } else {
+                    authorColor = '#ff9800';
+                    authorBgColor = '#fff3e0';
+                    borderColor = '#ff9800';
+                  }
+
+                  const displayAuthor = followUp.author === '고객' ? '답장' : followUp.author;
+
+                  return (
+                    <div key={followUp.id} style={{ background: '#f8f9fa', padding: '12px', borderRadius: '5px', marginBottom: '10px', borderLeft: `3px solid ${borderColor}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            color: authorColor,
+                            backgroundColor: authorBgColor,
+                            padding: '2px 8px',
+                            borderRadius: '3px'
+                          }}>
+                            {displayAuthor || '기록'}
+                          </span>
+                          <span style={{ fontSize: '13px', color: '#7f8c8d' }}>{formatDateTime(followUp.date)}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '5px' }}>
+                          <button
+                            onClick={() => setEditingFollowUpId(followUp.id)}
+                            style={{ fontSize: '11px', padding: '3px 8px' }}
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFollowUp(followUp.id)}
+                            className="btn-secondary"
+                            style={{ fontSize: '11px', padding: '3px 8px' }}
+                          >
+                            삭제
+                          </button>
+                        </div>
                       </div>
+                      {editingFollowUpId === followUp.id ? (
+                        <div>
+                          <textarea
+                            defaultValue={followUp.content}
+                            onBlur={(e) => handleEditFollowUp(followUp.id, e.target.value)}
+                            style={{ width: '100%', padding: '8px', minHeight: '60px' }}
+                            autoFocus
+                          />
+                        </div>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: '14px', whiteSpace: 'pre-line', lineHeight: '1.5' }}>{followUp.content}</p>
+                      )}
                     </div>
-                    {editingFollowUpId === followUp.id ? (
-                      <div>
-                        <textarea
-                          defaultValue={followUp.content}
-                          onBlur={(e) => handleEditFollowUp(followUp.id, e.target.value)}
-                          style={{ width: '100%', padding: '8px', minHeight: '60px' }}
-                          autoFocus
-                        />
-                      </div>
-                    ) : (
-                      <p style={{ margin: 0, fontSize: '14px', whiteSpace: 'pre-line', lineHeight: '1.5' }}>{followUp.content}</p>
-                    )}
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p style={{ textAlign: 'center', color: '#999', padding: '20px' }}>후속 기록이 없습니다.</p>
               )}
@@ -626,7 +695,40 @@ const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity 
                       }}
                       title={getLatestFollowUp(activity)}
                     >
-                      {truncateText(getLatestFollowUp(activity), 50)}
+                      {activity.followUps && activity.followUps.length > 0 && (() => {
+                        const latestFollowUp = activity.followUps[activity.followUps.length - 1];
+                        let authorColor, authorBgColor;
+
+                        if (latestFollowUp.author === '나') {
+                          authorColor = '#2196F3';
+                          authorBgColor = '#e3f2fd';
+                        } else if (latestFollowUp.author === '답장') {
+                          authorColor = '#9c27b0';
+                          authorBgColor = '#f3e5f5';
+                        } else {
+                          authorColor = '#ff9800';
+                          authorBgColor = '#fff3e0';
+                        }
+
+                        return (
+                          <>
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              color: authorColor,
+                              backgroundColor: authorBgColor,
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              marginRight: '6px'
+                            }}>
+                              {latestFollowUp.author || '기록'}
+                            </span>
+                            <span style={{ fontSize: '12px', color: isTodayActivity ? '#d32f2f' : '#7f8c8d' }}>
+                              ({activity.followUps.length})
+                            </span>
+                          </>
+                        );
+                      })()}
                     </td>
                   </tr>
                 );

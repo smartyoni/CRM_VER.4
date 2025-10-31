@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { PROGRESS_STATUSES } from '../constants';
 
-const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selectedCustomerId, activeFilter, activeProgressFilter, onProgressFilterChange, allCustomers, onFavoriteCustomer }) => {
+const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selectedCustomerId, activeFilter, activeProgressFilter, onProgressFilterChange, allCustomers, onFavoriteCustomer, activities, meetings }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedCustomer: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -14,9 +14,39 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
 
     // 정렬 적용
     const sorted = [...filtered].sort((a, b) => {
+      // 장기관리고객을 보류 바로 위로 이동
+      if (a.status === '장기관리' && b.status !== '장기관리') return 1;
+      if (a.status !== '장기관리' && b.status === '장기관리') return -1;
+
+      // 보류 고객을 가장 아래로 이동
+      if (a.status === '보류' && b.status !== '보류') return 1;
+      if (a.status !== '보류' && b.status === '보류') return -1;
+
       // 즐겨찾기된 고객을 먼저 표시
       if (a.isFavorite && !b.isFavorite) return -1;
       if (!a.isFavorite && b.isFavorite) return 1;
+
+      // 활동일 정렬 처리
+      if (sortConfig.key === 'latestActivityDate') {
+        const aActivities = activities.filter(act => act.customerId === a.id).sort((x, y) => new Date(y.date) - new Date(x.date));
+        const bActivities = activities.filter(act => act.customerId === b.id).sort((x, y) => new Date(y.date) - new Date(x.date));
+
+        const aDate = aActivities.length > 0 ? new Date(aActivities[0].date) : new Date(0);
+        const bDate = bActivities.length > 0 ? new Date(bActivities[0].date) : new Date(0);
+
+        return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+      }
+
+      // 미팅일 정렬 처리
+      if (sortConfig.key === 'latestMeetingDate') {
+        const aMeetings = meetings.filter(m => m.customerId === a.id).sort((x, y) => new Date(y.date) - new Date(x.date));
+        const bMeetings = meetings.filter(m => m.customerId === b.id).sort((x, y) => new Date(y.date) - new Date(x.date));
+
+        const aDate = aMeetings.length > 0 ? new Date(aMeetings[0].date) : new Date(0);
+        const bDate = bMeetings.length > 0 ? new Date(bMeetings[0].date) : new Date(0);
+
+        return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+      }
 
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
@@ -43,7 +73,7 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
     });
 
     return sorted;
-  }, [customers, searchTerm, sortConfig]);
+  }, [customers, searchTerm, sortConfig, activities, meetings]);
 
   const handleContextMenu = (e, customer) => {
     e.preventDefault();
@@ -85,18 +115,25 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
     return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
   };
 
-  // 매물 종류별 배경색 (파스텔톤)
-  const getPropertyTypeColor = (propertyType) => {
-    switch (propertyType) {
-      case '매매':
-        return 'rgba(229, 57, 53, 0.12)'; // 빨강 파스텔
-      case '전세':
-        return 'rgba(67, 160, 71, 0.12)'; // 초록/민트 파스텔
-      case '월세':
-        return 'rgba(255, 179, 0, 0.12)'; // 노랑/주황 파스텔
-      default:
-        return 'transparent';
+  // 접수일 기준 배경색 (오늘=보라, 과거 홀수=핑크, 과거 짝수=초록)
+  const getDateBasedColor = (createdAt, dateGroupIndex) => {
+    // 오늘 날짜 계산
+    const today = new Date();
+    const customerDate = new Date(createdAt);
+    const isToday =
+      today.getFullYear() === customerDate.getFullYear() &&
+      today.getMonth() === customerDate.getMonth() &&
+      today.getDate() === customerDate.getDate();
+
+    // 오늘 접수되면 보라색 반환
+    if (isToday) {
+      return 'rgba(156, 39, 176, 0.12)'; // 보라 파스텔
     }
+
+    // 과거 날짜: 홀수 그룹=핑크, 짝수 그룹=초록
+    return dateGroupIndex % 2 === 0
+      ? 'rgba(67, 160, 71, 0.12)'   // 초록 파스텔
+      : 'rgba(229, 57, 53, 0.12)';   // 핑크 파스텔
   };
 
   // 접수일을 M월D일 형식으로 포맷
@@ -106,6 +143,132 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
     const month = date.getMonth() + 1;
     const day = date.getDate();
     return `${month}월${day}일`;
+  };
+
+  // 가장 최근의 활동일 조회 (일자만 표기)
+  const getLatestActivityDate = (customerId) => {
+    const customerActivities = activities
+      .filter(a => a.customerId === customerId)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (customerActivities.length === 0) return '활동필요';
+
+    const latestActivity = customerActivities[0];
+    const date = new Date(latestActivity.date);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}월${day}일`;
+  };
+
+  // 가장 최근의 활동 내용 조회 (30글자까지)
+  const getLatestActivityContent = (customerId) => {
+    const customerActivities = activities
+      .filter(a => a.customerId === customerId)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (customerActivities.length === 0) return '-';
+
+    const latestActivity = customerActivities[0];
+    const content = latestActivity.content || '-';
+
+    // 30글자까지만 표시
+    if (content.length > 30) {
+      return content.substring(0, 30) + '...';
+    }
+    return content;
+  };
+
+  // 가장 최근의 미팅일 조회 및 오늘 미팅 여부 확인
+  const getLatestMeetingDate = (customerId) => {
+    const customerMeetings = meetings
+      .filter(m => m.customerId === customerId)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (customerMeetings.length === 0) return '-';
+
+    const latestMeeting = customerMeetings[0];
+    const date = new Date(latestMeeting.date);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+
+    // 오늘 미팅인지 확인
+    const today = new Date();
+    const isToday =
+      today.getFullYear() === date.getFullYear() &&
+      today.getMonth() === date.getMonth() &&
+      today.getDate() === date.getDate();
+
+    if (isToday) {
+      return { text: '*오늘미팅*', isToday: true };
+    }
+
+    return { text: `${month}월${day}일`, isToday: false };
+  };
+
+  // 미팅 횟수 조회 (예정된 미팅 / 진행한 미팅)
+  const getMeetingCount = (customerId) => {
+    const customerMeetings = meetings.filter(m => m.customerId === customerId);
+
+    if (customerMeetings.length === 0) return '-';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 오늘 포함 앞으로 예정된 미팅
+    const upcomingMeetings = customerMeetings.filter(m => {
+      const meetingDate = new Date(m.date);
+      meetingDate.setHours(0, 0, 0, 0);
+      return meetingDate >= today;
+    });
+
+    // 이전에 진행한 미팅
+    const pastMeetings = customerMeetings.filter(m => {
+      const meetingDate = new Date(m.date);
+      meetingDate.setHours(0, 0, 0, 0);
+      return meetingDate < today;
+    });
+
+    return `${upcomingMeetings.length}/${pastMeetings.length}`;
+  };
+
+  // 활동일 색상 결정
+  const getActivityDateColor = (customerId) => {
+    const customerActivities = activities
+      .filter(a => a.customerId === customerId)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (customerActivities.length === 0) return '#e53935'; // 경고 색상 (진한 빨강)
+
+    const latestActivity = customerActivities[0];
+    const today = new Date();
+    const activityDate = new Date(latestActivity.date);
+    const daysAgo = Math.floor((today - activityDate) / (1000 * 60 * 60 * 24));
+
+    // 오늘
+    if (
+      today.getFullYear() === activityDate.getFullYear() &&
+      today.getMonth() === activityDate.getMonth() &&
+      today.getDate() === activityDate.getDate()
+    ) {
+      return '#ff0000'; // 빨간색
+    }
+
+    // 1일, 2일, 3일 전
+    if (daysAgo >= 1 && daysAgo <= 3) {
+      return '#0000ff'; // 파란색
+    }
+
+    // 4일, 5일, 6일, 7일 전
+    if (daysAgo >= 4 && daysAgo <= 7) {
+      return '#ff9800'; // 노란색
+    }
+
+    // 8일 이상
+    if (daysAgo >= 8) {
+      return '#999999'; // 회색
+    }
+
+    return 'inherit'; // 기본 색상
   };
 
   // 특정 날짜에 접수된 고객 수 계산
@@ -137,15 +300,45 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
     return count;
   };
 
-  // 날짜별 그룹 인덱스 계산 (교차 색상용)
+  // 날짜별 그룹 인덱스 계산 (과거 날짜가 변경될 때마다 교차)
   const getDateGroupIndex = (customer, index) => {
-    let groupIndex = 0;
-    for (let i = 0; i < index; i++) {
-      if (i === 0 || formatCreatedDate(filteredCustomers[i].createdAt) !== formatCreatedDate(filteredCustomers[i - 1].createdAt)) {
-        groupIndex++;
+    const today = new Date();
+    const isToday =
+      today.getFullYear() === new Date(customer.createdAt).getFullYear() &&
+      today.getMonth() === new Date(customer.createdAt).getMonth() &&
+      today.getDate() === new Date(customer.createdAt).getDate();
+
+    // 오늘이면 -1 반환 (특수 처리)
+    if (isToday) {
+      return -1;
+    }
+
+    // 과거 날짜의 경우, 처음 만난 과거 날짜부터 카운트
+    let pastDateGroupIndex = 0;
+    let lastPastDate = null;
+
+    for (let i = 0; i <= index; i++) {
+      const iToday =
+        today.getFullYear() === new Date(filteredCustomers[i].createdAt).getFullYear() &&
+        today.getMonth() === new Date(filteredCustomers[i].createdAt).getMonth() &&
+        today.getDate() === new Date(filteredCustomers[i].createdAt).getDate();
+
+      // 오늘이 아닌 과거 날짜만 처리
+      if (!iToday) {
+        const currentDate = formatCreatedDate(filteredCustomers[i].createdAt);
+
+        if (lastPastDate === null) {
+          lastPastDate = currentDate;
+          pastDateGroupIndex = 0;
+        } else if (lastPastDate !== currentDate) {
+          // 날짜가 변경되면 인덱스 증가
+          lastPastDate = currentDate;
+          pastDateGroupIndex++;
+        }
       }
     }
-    return groupIndex;
+
+    return pastDateGroupIndex;
   };
 
   // 날짜 셀 배경색 (교차)
@@ -182,20 +375,44 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
             />
         </div>
 
-        {/* 매물 종류 색상 범례 */}
-        <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', fontSize: '13px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 'bold', color: '#555' }}>매물 종류:</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(229, 57, 53, 0.12)', border: '1px solid rgba(229, 57, 53, 0.3)', borderRadius: '3px' }}></div>
-            <span>매매</span>
+        {/* 색상 범례 */}
+        <div style={{ display: 'flex', gap: '30px', marginBottom: '15px', fontSize: '13px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* 접수일 범례 */}
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <span style={{ fontWeight: 'bold', color: '#555' }}>접수일:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(156, 39, 176, 0.12)', border: '1px solid rgba(156, 39, 176, 0.3)', borderRadius: '3px' }}></div>
+              <span>오늘</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(229, 57, 53, 0.12)', border: '1px solid rgba(229, 57, 53, 0.3)', borderRadius: '3px' }}></div>
+              <span>과거 (홀수)</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(67, 160, 71, 0.12)', border: '1px solid rgba(67, 160, 71, 0.3)', borderRadius: '3px' }}></div>
+              <span>과거 (짝수)</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(67, 160, 71, 0.12)', border: '1px solid rgba(67, 160, 71, 0.3)', borderRadius: '3px' }}></div>
-            <span>전세</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(255, 179, 0, 0.12)', border: '1px solid rgba(255, 179, 0, 0.3)', borderRadius: '3px' }}></div>
-            <span>월세</span>
+
+          {/* 활동일 범례 */}
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <span style={{ fontWeight: 'bold', color: '#555' }}>활동일:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: '#ff0000', borderRadius: '3px' }}></div>
+              <span>오늘</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: '#0000ff', borderRadius: '3px' }}></div>
+              <span>1~3일</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: '#ff9800', borderRadius: '3px' }}></div>
+              <span>4~7일</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '20px', height: '20px', backgroundColor: '#999999', borderRadius: '3px' }}></div>
+              <span>8일 이상</span>
+            </div>
           </div>
         </div>
 
@@ -237,28 +454,21 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
             </th>
             <th>연락처</th>
             <th
-              onClick={() => handleSort('moveInDate')}
+              onClick={() => handleSort('latestActivityDate')}
               style={{ cursor: 'pointer', userSelect: 'none' }}
               title="클릭하여 정렬"
             >
-              입주희망일{getSortIcon('moveInDate')}
+              활동일{getSortIcon('latestActivityDate')}
             </th>
+            <th>활동내용</th>
             <th
-              onClick={() => handleSort('hopefulDeposit')}
+              onClick={() => handleSort('latestMeetingDate')}
               style={{ cursor: 'pointer', userSelect: 'none' }}
               title="클릭하여 정렬"
             >
-              희망보증금{getSortIcon('hopefulDeposit')}
+              미팅일{getSortIcon('latestMeetingDate')}
             </th>
-            <th
-              onClick={() => handleSort('hopefulMonthlyRent')}
-              style={{ cursor: 'pointer', userSelect: 'none' }}
-              title="클릭하여 정렬"
-            >
-              희망월세{getSortIcon('hopefulMonthlyRent')}
-            </th>
-            <th>금액 지역 상세정보</th>
-            <th>매물종류</th>
+            <th>미팅횟수</th>
           </tr>
         </thead>
         <tbody>
@@ -273,9 +483,13 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
                 onClick={() => onSelectCustomer(customer)}
                 onContextMenu={(e) => handleContextMenu(e, customer)}
                 style={{
-                  backgroundColor: customer.isFavorite
+                  backgroundColor: customer.status === '보류'
+                    ? '#f0f0f0'
+                    : customer.status === '장기관리'
+                    ? '#fff3e0'
+                    : customer.isFavorite
                     ? 'rgba(156, 39, 176, 0.15)'
-                    : getPropertyTypeColor(customer.propertyType),
+                    : getDateBasedColor(customer.createdAt, dateGroupIndex),
                   borderLeft: customer.isFavorite ? '3px solid #9C27B0' : 'none',
                   boxShadow: customer.isFavorite ? '0 2px 4px rgba(156, 39, 176, 0.3)' : 'none',
                   ...spacingStyle
@@ -299,11 +513,17 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
                   {customer.name}
                 </td>
                 <td><a href={`sms:${customer.phone}`}>{customer.phone}</a></td>
-                <td>{customer.moveInDate}</td>
-                <td>{customer.hopefulDeposit ? `${customer.hopefulDeposit}만원` : '-'}</td>
-                <td>{customer.hopefulMonthlyRent ? `${customer.hopefulMonthlyRent}만원` : '-'}</td>
-                <td className="preferred-area" title={customer.preferredArea}>{customer.preferredArea}</td>
-                <td>{customer.propertyType}</td>
+                <td style={{ color: getActivityDateColor(customer.id), fontWeight: getActivityDateColor(customer.id) !== 'inherit' ? 'bold' : 'normal' }}>
+                  {getLatestActivityDate(customer.id)}
+                </td>
+                <td title={getLatestActivityContent(customer.id) !== '-' ? getLatestActivityContent(customer.id) : ''}>{getLatestActivityContent(customer.id)}</td>
+                <td style={{
+                  color: getLatestMeetingDate(customer.id) !== '-' && getLatestMeetingDate(customer.id).isToday ? '#ff0000' : 'inherit',
+                  fontWeight: getLatestMeetingDate(customer.id) !== '-' && getLatestMeetingDate(customer.id).isToday ? 'bold' : 'normal'
+                }}>
+                  {getLatestMeetingDate(customer.id) === '-' ? '-' : getLatestMeetingDate(customer.id).text}
+                </td>
+                <td>{getMeetingCount(customer.id)}</td>
               </tr>
             );
           })}
