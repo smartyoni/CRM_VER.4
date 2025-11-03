@@ -440,6 +440,8 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
   const PropertiesViewModal = ({ meeting, onClose }) => {
     const [editingPropertyIndex, setEditingPropertyIndex] = useState(null);
     const [showPropertyEditModal, setShowPropertyEditModal] = useState(false);
+    const [editingInfoIndex, setEditingInfoIndex] = useState(null);
+    const [editingInfoValue, setEditingInfoValue] = useState('');
 
     // 방문시간 순으로 정렬 (원본 인덱스 보존)
     const sortedProperties = meeting.properties ? meeting.properties.map((prop, originalIndex) => ({ prop, originalIndex }))
@@ -464,6 +466,36 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         onSaveMeeting(updatedMeeting);
         // viewingMeeting 상태도 업데이트
         setViewingMeeting(updatedMeeting);
+      }
+    };
+
+    const handleInfoDoubleClick = (originalIndex) => {
+      setEditingInfoIndex(originalIndex);
+      setEditingInfoValue(meeting.properties[originalIndex].info || '');
+    };
+
+    const handleInfoSave = (originalIndex) => {
+      if (editingInfoIndex === originalIndex) {
+        const newProperties = [...meeting.properties];
+        newProperties[originalIndex] = { ...newProperties[originalIndex], info: editingInfoValue };
+        const updatedMeeting = { ...meeting, properties: newProperties };
+        onSaveMeeting(updatedMeeting);
+        setViewingMeeting(updatedMeeting);
+        setEditingInfoIndex(null);
+        setEditingInfoValue('');
+      }
+    };
+
+    const handleInfoCancel = () => {
+      setEditingInfoIndex(null);
+      setEditingInfoValue('');
+    };
+
+    const handleInfoKeyDown = (e, originalIndex) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        handleInfoSave(originalIndex);
+      } else if (e.key === 'Escape') {
+        handleInfoCancel();
       }
     };
 
@@ -653,7 +685,80 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                   </div>
                   <div className="property-card-body">
                     <div className="property-info-label">📋 매물정보</div>
-                    <div className="property-info-content">{prop.info}</div>
+                    {editingInfoIndex === originalIndex ? (
+                      <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
+                        <textarea
+                          value={editingInfoValue}
+                          onChange={(e) => setEditingInfoValue(e.target.value)}
+                          onKeyDown={(e) => handleInfoKeyDown(e, originalIndex)}
+                          onBlur={() => handleInfoSave(originalIndex)}
+                          autoFocus
+                          style={{
+                            width: '100%',
+                            minHeight: '80px',
+                            padding: '8px',
+                            border: '1px solid #FF6B9D',
+                            borderRadius: '4px',
+                            fontSize: '13px',
+                            fontFamily: 'inherit',
+                            resize: 'vertical'
+                          }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleInfoSave(originalIndex)}
+                            style={{
+                              padding: '4px 12px',
+                              backgroundColor: '#4CAF50',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            ✓ 저장
+                          </button>
+                          <button
+                            onClick={handleInfoCancel}
+                            style={{
+                              padding: '4px 12px',
+                              backgroundColor: '#999',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            ✕ 취소
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="property-info-content"
+                        onDoubleClick={() => handleInfoDoubleClick(originalIndex)}
+                        style={{
+                          padding: '8px',
+                          backgroundColor: '#f9f9f9',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          border: '1px solid transparent',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f0f0f0';
+                          e.currentTarget.style.border = '1px solid #e0e0e0';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f9f9f9';
+                          e.currentTarget.style.border = '1px solid transparent';
+                        }}
+                      >
+                        {prop.info || '(비어있음)'}
+                      </div>
+                    )}
                   </div>
                   <div className="property-card-footer">
                     <span className="property-detail">🏢 {prop.agency}</span>
