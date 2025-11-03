@@ -444,15 +444,29 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [editingInfoValue, setEditingInfoValue] = useState('');
     const [editingResponseIndex, setEditingResponseIndex] = useState(null);
     const [editingResponseValue, setEditingResponseValue] = useState('');
+    const [photoSourcePropertyIndex, setPhotoSourcePropertyIndex] = useState(null);
     const fileInputRefs = React.useRef({});
 
+    // 파일 입력 ref 저장 (안정적인 방식)
+    const setFileInputRef = (key, el) => {
+      if (el) {
+        fileInputRefs.current[key] = el;
+      }
+    };
+
     // 방문시간 순으로 정렬 (원본 인덱스 보존)
-    const sortedProperties = meeting.properties ? meeting.properties.map((prop, originalIndex) => ({ prop, originalIndex }))
+    // photos 필드 초기화
+    const normalizedProperties = meeting.properties?.map(prop => ({
+      ...prop,
+      photos: prop.photos || ['', '']
+    })) || [];
+
+    const sortedProperties = normalizedProperties.map((prop, originalIndex) => ({ prop, originalIndex }))
       .sort((a, b) => {
         if (!a.prop.visitTime) return 1;
         if (!b.prop.visitTime) return -1;
         return a.prop.visitTime.localeCompare(b.prop.visitTime);
-      }) : [];
+      });
 
     const handlePropertyEdit = (propertyIndex) => {
       setEditingPropertyIndex(propertyIndex);
@@ -561,13 +575,33 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     };
 
     const triggerPhotoUpload = (originalIndex) => {
-      const emptyPhotoIndex = meeting.properties[originalIndex]?.photos?.findIndex(p => !p);
-      if (emptyPhotoIndex !== -1 && emptyPhotoIndex !== undefined) {
-        const key = `photo-${originalIndex}-${emptyPhotoIndex}`;
-        fileInputRefs.current[key]?.click();
+      const property = meeting.properties[originalIndex];
+      const photos = property?.photos || ['', ''];
+      const emptyPhotoIndex = photos.findIndex(p => !p);
+
+      if (emptyPhotoIndex !== -1) {
+        setPhotoSourcePropertyIndex(originalIndex);
       } else {
         alert('최대 2장까지만 첨부할 수 있습니다.');
       }
+    };
+
+    const handlePhotoSourceSelect = (source) => {
+      if (photoSourcePropertyIndex === null) return;
+
+      const property = meeting.properties[photoSourcePropertyIndex];
+      const photos = property?.photos || ['', ''];
+      const emptyPhotoIndex = photos.findIndex(p => !p);
+
+      if (source === 'camera') {
+        const key = `photo-camera-${photoSourcePropertyIndex}-${emptyPhotoIndex}`;
+        fileInputRefs.current[key]?.click();
+      } else if (source === 'file') {
+        const key = `photo-file-${photoSourcePropertyIndex}-${emptyPhotoIndex}`;
+        fileInputRefs.current[key]?.click();
+      }
+
+      setPhotoSourcePropertyIndex(null);
     };
 
     const handlePropertySave = (propertyData, editIndex) => {
@@ -997,18 +1031,23 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       📸 사진
                     </button>
                     {prop.photos && prop.photos.map((photo, idx) => (
-                      <input
-                        key={`photo-${originalIndex}-${idx}`}
-                        type="file"
-                        accept="image/*"
-                        ref={(el) => {
-                          if (el) {
-                            fileInputRefs.current[`photo-${originalIndex}-${idx}`] = el;
-                          }
-                        }}
-                        onChange={(e) => handlePhotoUpload(e, originalIndex, idx)}
-                        style={{ display: 'none' }}
-                      />
+                      <React.Fragment key={`photo-inputs-${originalIndex}-${idx}`}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          ref={(el) => setFileInputRef(`photo-camera-${originalIndex}-${idx}`, el)}
+                          onChange={(e) => handlePhotoUpload(e, originalIndex, idx)}
+                          style={{ display: 'none' }}
+                        />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={(el) => setFileInputRef(`photo-file-${originalIndex}-${idx}`, el)}
+                          onChange={(e) => handlePhotoUpload(e, originalIndex, idx)}
+                          style={{ display: 'none' }}
+                        />
+                      </React.Fragment>
                     ))}
                     <button onClick={() => handlePropertyEdit(originalIndex)} className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>수정</button>
                     <button onClick={() => handlePropertyDelete(originalIndex)} className="btn-secondary" style={{ fontSize: '12px', padding: '6px 12px' }}>삭제</button>
@@ -1030,6 +1069,75 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               editIndex={editingPropertyIndex}
               onClose={() => { setShowPropertyEditModal(false); setEditingPropertyIndex(null); }}
             />
+          )}
+
+          {/* 사진 촬영/파일 선택 모달 */}
+          {photoSourcePropertyIndex !== null && (
+            <div className="modal-overlay" style={{ zIndex: 1200 }}>
+              <div className="modal-content" style={{ width: '300px', padding: '20px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '20px', textAlign: 'center' }}>사진 추가</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <button
+                    onClick={() => handlePhotoSourceSelect('camera')}
+                    style={{
+                      padding: '12px 16px',
+                      backgroundColor: '#2196F3',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#1976D2'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#2196F3'}
+                  >
+                    📷 카메라로 촬영
+                  </button>
+                  <button
+                    onClick={() => handlePhotoSourceSelect('file')}
+                    style={{
+                      padding: '12px 16px',
+                      backgroundColor: '#4CAF50',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#4CAF50'}
+                  >
+                    📁 파일 선택
+                  </button>
+                  <button
+                    onClick={() => setPhotoSourcePropertyIndex(null)}
+                    style={{
+                      padding: '12px 16px',
+                      backgroundColor: '#999',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#777'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#999'}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
