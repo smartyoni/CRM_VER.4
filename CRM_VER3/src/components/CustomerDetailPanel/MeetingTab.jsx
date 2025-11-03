@@ -544,16 +544,46 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       const file = e.target.files?.[0];
       if (!file) return;
 
+      // 이미지 압축을 위해 Canvas 사용
       const reader = new FileReader();
       reader.onload = (event) => {
-        const base64String = event.target?.result;
-        const newProperties = [...meeting.properties];
-        const photos = newProperties[originalIndex].photos || ['', ''];
-        photos[photoIndex] = base64String;
-        newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
-        const updatedMeeting = { ...meeting, properties: newProperties };
-        onSaveMeeting(updatedMeeting);
-        setViewingMeeting(updatedMeeting);
+        const img = new Image();
+        img.onload = () => {
+          // Canvas 생성
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // 이미지 크기 조정 (최대 800x800)
+          let width = img.width;
+          let height = img.height;
+          const maxSize = 800;
+
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = Math.round((height * maxSize) / width);
+              width = maxSize;
+            } else {
+              width = Math.round((width * maxSize) / height);
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // JPEG 포맷으로 압축 (품질 0.7)
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          const newProperties = [...meeting.properties];
+          const photos = newProperties[originalIndex].photos || ['', ''];
+          photos[photoIndex] = compressedBase64;
+          newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
+          const updatedMeeting = { ...meeting, properties: newProperties };
+          onSaveMeeting(updatedMeeting);
+          setViewingMeeting(updatedMeeting);
+        };
+        img.src = event.target?.result;
       };
       reader.readAsDataURL(file);
     };
