@@ -1367,6 +1367,16 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
         })
     : [];
 
+  const [editingFields, setEditingFields] = useState({});
+
+  const handlePropertyFieldEdit = (propertyIdx, field, value) => {
+    const newProperties = [...meeting.properties];
+    if (field === 'customerResponse' || field === 'leaseInfo') {
+      newProperties[propertyIdx] = { ...newProperties[propertyIdx], [field]: value };
+      onSaveMeeting({ ...meeting, properties: newProperties });
+    }
+  };
+
   const handleSaveReport = () => {
     const updatedMeeting = { ...meeting, overallComment };
     onSaveMeeting(updatedMeeting);
@@ -1476,18 +1486,46 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
 
                   {/* 고객반응 및 임대차정보 */}
                   <div style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
-                    {prop.customerResponse && (
-                      <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #FF6B9D' }}>
-                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>💬 고객반응</div>
-                        <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4' }}>{prop.customerResponse}</div>
+                    <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #FF6B9D' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        💬 고객반응
+                        <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, [`response_${originalIndex}`]: !editingFields[`response_${originalIndex}`] })}>
+                          {editingFields[`response_${originalIndex}`] ? '✓' : '✎'}
+                        </span>
                       </div>
-                    )}
-                    {prop.leaseInfo && (
-                      <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #4CAF50' }}>
-                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>📑 임대차정보</div>
-                        <div style={{ color: '#333' }}>{prop.leaseInfo}</div>
+                      {editingFields[`response_${originalIndex}`] ? (
+                        <textarea
+                          value={prop.customerResponse || ''}
+                          onChange={(e) => handlePropertyFieldEdit(originalIndex, 'customerResponse', e.target.value)}
+                          style={{ width: '100%', minHeight: '80px', padding: '6px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'inherit', fontSize: '12px' }}
+                          placeholder="고객반응을 입력하세요"
+                        />
+                      ) : (
+                        <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4', minHeight: '20px' }}>
+                          {prop.customerResponse || '입력된 내용 없음'}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #4CAF50' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        📑 임대차정보
+                        <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, [`lease_${originalIndex}`]: !editingFields[`lease_${originalIndex}`] })}>
+                          {editingFields[`lease_${originalIndex}`] ? '✓' : '✎'}
+                        </span>
                       </div>
-                    )}
+                      {editingFields[`lease_${originalIndex}`] ? (
+                        <textarea
+                          value={prop.leaseInfo || ''}
+                          onChange={(e) => handlePropertyFieldEdit(originalIndex, 'leaseInfo', e.target.value)}
+                          style={{ width: '100%', minHeight: '80px', padding: '6px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'inherit', fontSize: '12px' }}
+                          placeholder="임대차정보를 입력하세요"
+                        />
+                      ) : (
+                        <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4', minHeight: '20px' }}>
+                          {prop.leaseInfo || '입력된 내용 없음'}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* 사진 */}
@@ -1517,31 +1555,34 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
 
           {/* 총평 */}
           <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '2px solid #333' }}>
-            <h4 style={{ margin: '0 0 15px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>📋 총평</h4>
-            <div style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '4px', minHeight: '80px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#333' }}>
-              {overallComment || '(종합 의견을 입력해주세요)'}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#333' }}>📋 총평</h4>
+              <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, 'overallComment': !editingFields['overallComment'] })}>
+                {editingFields['overallComment'] ? '✓' : '✎'}
+              </span>
             </div>
+            {editingFields['overallComment'] ? (
+              <textarea
+                value={overallComment}
+                onChange={(e) => setOverallComment(e.target.value)}
+                placeholder="미팅에 대한 종합 의견을 작성해주세요..."
+                style={{
+                  width: '100%',
+                  minHeight: '100px',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontFamily: 'inherit',
+                  fontSize: '13px',
+                  resize: 'vertical'
+                }}
+              />
+            ) : (
+              <div style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '4px', minHeight: '80px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#333' }}>
+                {overallComment || '(종합 의견을 입력해주세요)'}
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* 총평 입력 영역 */}
-        <div style={{ padding: '20px', borderTop: '1px solid #e0e0e0', backgroundColor: '#fafafa' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#333' }}>📝 총평 편집</label>
-          <textarea
-            value={overallComment}
-            onChange={(e) => setOverallComment(e.target.value)}
-            placeholder="미팅에 대한 종합 의견을 작성해주세요..."
-            style={{
-              width: '100%',
-              minHeight: '100px',
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontFamily: 'inherit',
-              fontSize: '13px',
-              resize: 'vertical'
-            }}
-          />
         </div>
 
         {/* 푸터 */}
