@@ -1461,12 +1461,6 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
 
                   {/* 매물 상세 정보 */}
                   <div style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
-                    {prop.info && (
-                      <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #2196F3' }}>
-                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>📋 매물정보</div>
-                        <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4' }}>{prop.info}</div>
-                      </div>
-                    )}
                     {prop.customerResponse && (
                       <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #FF6B9D' }}>
                         <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>💬 고객반응</div>
