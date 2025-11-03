@@ -10,11 +10,17 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
   const customerMeetings = meetings.filter(m => m.customerId === customer.id)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // 최근 3개 활동
-  const recentActivities = customerActivities.slice(0, 3);
+  // 가장 최신 활동 1개
+  const latestActivity = customerActivities.length > 0 ? customerActivities[0] : null;
 
   // 최근 3개 미팅
   const recentMeetings = customerMeetings.slice(0, 3);
+
+  // 최신 활동의 후속기록 (최신순 정렬)
+  const getLatestActivityFollowUps = () => {
+    if (!latestActivity || !latestActivity.followUps) return [];
+    return [...latestActivity.followUps].sort((a, b) => new Date(b.date) - new Date(a.date));
+  };
 
   // 다음 미팅 찾기
   const nextMeeting = customerMeetings.find(m => new Date(m.date) > new Date());
@@ -122,25 +128,113 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
                 </span>
               )}
             </div>
-            {recentActivities.length > 0 ? (
-              <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-                {recentActivities.map((activity, idx) => {
-                  const isTodayActivity = isToday(activity.date);
-                  return (
-                    <div key={idx} style={{
-                      padding: '6px 0',
-                      borderTop: idx > 0 ? '1px solid #f0f0f0' : 'none',
-                      color: isTodayActivity ? '#d32f2f' : '#555',
-                      fontWeight: isTodayActivity ? 'bold' : 'normal',
-                      backgroundColor: isTodayActivity ? 'rgba(211, 47, 47, 0.05)' : 'transparent',
-                      paddingLeft: isTodayActivity ? '8px' : '0px',
-                      borderRadius: isTodayActivity ? '4px' : '0px'
+            {latestActivity ? (
+              <div style={{ fontSize: '12px', lineHeight: '1.6', flex: 1, overflowY: 'auto' }}>
+                {/* 활동 내용 섹션 */}
+                <div style={{
+                  padding: '10px',
+                  backgroundColor: isToday(latestActivity.date) ? 'rgba(211, 47, 47, 0.05)' : '#f9f9f9',
+                  borderRadius: '4px',
+                  marginBottom: '10px',
+                  borderLeft: isToday(latestActivity.date) ? '3px solid #d32f2f' : '3px solid #2196F3'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      color: isToday(latestActivity.date) ? '#d32f2f' : '#2196F3',
+                      backgroundColor: isToday(latestActivity.date) ? 'rgba(211, 47, 47, 0.1)' : '#e3f2fd',
+                      padding: '2px 8px',
+                      borderRadius: '3px'
                     }}>
-                      <span style={{ color: isTodayActivity ? '#d32f2f' : '#999', marginRight: '4px' }}>{activity.date}</span>
-                      {truncateText(activity.content, 30)}
+                      활동내용
+                    </span>
+                    <span style={{ fontSize: '11px', color: isToday(latestActivity.date) ? '#d32f2f' : '#999' }}>
+                      {latestActivity.date}
+                    </span>
+                  </div>
+                  <p style={{
+                    margin: '0',
+                    fontSize: '12px',
+                    color: isToday(latestActivity.date) ? '#d32f2f' : '#333',
+                    fontWeight: isToday(latestActivity.date) ? 'bold' : 'normal',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word'
+                  }}>
+                    {latestActivity.content}
+                  </p>
+                </div>
+
+                {/* 후속기록 섹션 */}
+                {getLatestActivityFollowUps().length > 0 && (
+                  <div style={{ borderTop: '1px solid #e0e0e0', paddingTop: '10px' }}>
+                    <div style={{
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      color: '#7f8c8d',
+                      marginBottom: '8px'
+                    }}>
+                      📝 후속기록 ({getLatestActivityFollowUps().length})
                     </div>
-                  );
-                })}
+                    <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                      {getLatestActivityFollowUps().map((followUp, idx) => {
+                        let authorColor, authorBgColor, borderColor;
+
+                        if (followUp.author === '나') {
+                          authorColor = '#2196F3';
+                          authorBgColor = '#e3f2fd';
+                          borderColor = '#2196F3';
+                        } else if (followUp.author === '답장') {
+                          authorColor = '#9c27b0';
+                          authorBgColor = '#f3e5f5';
+                          borderColor = '#9c27b0';
+                        } else {
+                          authorColor = '#ff9800';
+                          authorBgColor = '#fff3e0';
+                          borderColor = '#ff9800';
+                        }
+
+                        return (
+                          <div key={idx} style={{
+                            padding: '8px',
+                            backgroundColor: '#f8f9fa',
+                            borderLeft: `3px solid ${borderColor}`,
+                            marginBottom: '6px',
+                            borderRadius: '3px',
+                            fontSize: '11px'
+                          }}>
+                            <div style={{ display: 'flex', gap: '6px', marginBottom: '4px', alignItems: 'center' }}>
+                              <span style={{
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                color: authorColor,
+                                backgroundColor: authorBgColor,
+                                padding: '1px 6px',
+                                borderRadius: '2px'
+                              }}>
+                                {followUp.author || '기록'}
+                              </span>
+                              <span style={{ fontSize: '10px', color: '#999' }}>
+                                {followUp.date ? followUp.date.slice(5, 10) : ''}
+                              </span>
+                            </div>
+                            <p style={{
+                              margin: 0,
+                              fontSize: '11px',
+                              color: '#333',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                              maxHeight: '60px',
+                              overflow: 'hidden'
+                            }}>
+                              {followUp.content}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div style={{ fontSize: '12px', color: '#999', textAlign: 'center', padding: '8px' }}>
