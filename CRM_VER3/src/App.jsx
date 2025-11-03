@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FilterSidebar from './components/FilterSidebar';
 import CustomerTable from './components/CustomerTable';
+import PropertyTable from './components/PropertyTable';
 import CustomerModal from './components/CustomerModal';
+import PropertyModal from './components/PropertyModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
+import PropertyDetailPanel from './components/PropertyDetailPanel';
 import {
   subscribeToCustomers,
   subscribeToActivities,
   subscribeToMeetings,
   subscribeToPropertySelections,
+  subscribeToProperties,
   saveCustomer,
   deleteCustomer,
   saveActivity,
@@ -15,7 +19,9 @@ import {
   saveMeeting,
   deleteMeeting,
   savePropertySelection,
-  deletePropertySelection
+  deletePropertySelection,
+  saveProperty,
+  deleteProperty
 } from './utils/storage';
 
 // Mock data for initial setup
@@ -42,12 +48,18 @@ function App() {
   const [activities, setActivities] = useState([]);
   const [meetings, setMeetings] = useState([]);
   const [propertySelections, setPropertySelections] = useState([]);
+  const [properties, setProperties] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('전체');
+  const [editingProperty, setEditingProperty] = useState(null);
+  const [activeCustomerFilter, setActiveCustomerFilter] = useState('전체');
+  const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록' 또는 '매물장'
   const restoreInputRef = useRef(null);
 
   useEffect(() => {
@@ -68,12 +80,17 @@ function App() {
       setPropertySelections(propertySelections);
     });
 
+    const unsubscribeProperties = subscribeToProperties((properties) => {
+      setProperties(properties);
+    });
+
     // Cleanup subscriptions on unmount
     return () => {
       unsubscribeCustomers();
       unsubscribeActivities();
       unsubscribeMeetings();
       unsubscribePropertySelections();
+      unsubscribeProperties();
     };
   }, []);
 
@@ -99,8 +116,12 @@ function App() {
   }, [customers, meetings]);
 
   const handleFilterChange = (filter) => {
-    setActiveFilter(filter);
-    setActiveProgressFilter(null); // 상태 변경 시 진행상황 필터 초기화
+    if (activeTab === '고객목록') {
+      setActiveCustomerFilter(filter);
+      setActiveProgressFilter(null); // 상태 변경 시 진행상황 필터 초기화
+    } else {
+      setActivePropertyFilter(filter);
+    }
   };
 
   const handleProgressFilterChange = (progress) => {
@@ -182,12 +203,49 @@ function App() {
     }
   };
 
+  const handleSelectProperty = (property) => {
+    // 이미 선택된 매물을 다시 클릭하면 패널 닫기 (토글)
+    if (selectedPropertyId === property.id) {
+      setSelectedPropertyId(null);
+    } else {
+      setSelectedPropertyId(property.id);
+    }
+  };
+
+  const handleOpenPropertyModal = (property = null) => {
+    setEditingProperty(property);
+    setIsPropertyModalOpen(true);
+    // 모바일에서 detail panel 닫기
+    if (property && property.id === selectedPropertyId) {
+      setSelectedPropertyId(null);
+    }
+  };
+
+  const handleClosePropertyModal = () => {
+    setIsPropertyModalOpen(false);
+    setEditingProperty(null);
+  };
+
+  const handleSaveProperty = async (propertyData) => {
+    await saveProperty(propertyData);
+  };
+
+  const handleDeleteProperty = async (property) => {
+    if (confirm(`"${property.buildingName}" 매물을 정말 삭제하시겠습니까?`)) {
+      await deleteProperty(property.id);
+      if (selectedPropertyId === property.id) {
+        setSelectedPropertyId(null);
+      }
+    }
+  };
+
   const handleBackup = () => {
     const backupData = {
         customers,
         activities,
         meetings,
         propertySelections,
+        properties,
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -210,11 +268,12 @@ function App() {
         const data = JSON.parse(e.target.result);
         if (data && Array.isArray(data.customers) && Array.isArray(data.activities)) {
           // Firestore에 각 문서 저장
-          const { saveCustomers, saveActivities, saveMeetings, savePropertySelections } = await import('./utils/storage');
+          const { saveCustomers, saveActivities, saveMeetings, savePropertySelections, saveProperties } = await import('./utils/storage');
           await saveCustomers(data.customers || []);
           await saveActivities(data.activities || []);
           await saveMeetings(data.meetings || []);
           await savePropertySelections(data.propertySelections || []);
+          await saveProperties(data.properties || []);
           alert('데이터가 성공적으로 복원되었습니다.');
         } else {
           throw new Error('잘못된 파일 형식입니다.');
@@ -263,17 +322,17 @@ function App() {
 
     let filtered = customers.filter(customer => {
       // 집중고객 필터
-      if (activeFilter === '집중고객') {
+      if (activeCustomerFilter === '집중고객') {
         return customer.isFavorite;
       }
 
       // 장기관리고객 필터
-      if (activeFilter === '장기관리고객') {
+      if (activeCustomerFilter === '장기관리고객') {
         return customer.status === '장기관리고객';
       }
 
       // 오늘미팅 필터
-      if (activeFilter === '오늘미팅') {
+      if (activeCustomerFilter === '오늘미팅') {
         const customerMeetings = meetings.filter(m => m.customerId === customer.id);
         return customerMeetings.some(m => {
           const meetingDate = new Date(m.date);
@@ -283,7 +342,7 @@ function App() {
       }
 
       // 미팅일확정 필터
-      if (activeFilter === '미팅일확정') {
+      if (activeCustomerFilter === '미팅일확정') {
         const customerMeetings = meetings.filter(m => m.customerId === customer.id);
         return customerMeetings.some(m => {
           const meetingDate = new Date(m.date);
@@ -293,7 +352,7 @@ function App() {
       }
 
       // 오늘연락 필터
-      if (activeFilter === '오늘연락') {
+      if (activeCustomerFilter === '오늘연락') {
         const customerActivities = activities.filter(a => a.customerId === customer.id);
         return customerActivities.some(a => {
           const activityDate = new Date(a.date);
@@ -303,7 +362,7 @@ function App() {
       }
 
       // 어제연락 필터
-      if (activeFilter === '어제연락') {
+      if (activeCustomerFilter === '어제연락') {
         const customerActivities = activities.filter(a => a.customerId === customer.id);
         return customerActivities.some(a => {
           const activityDate = new Date(a.date);
@@ -315,7 +374,7 @@ function App() {
       }
 
       // 연락할고객 필터 (어제, 오늘 활동 기록 없음, 보류 상태 제외)
-      if (activeFilter === '연락할고객') {
+      if (activeCustomerFilter === '연락할고객') {
         if (customer.status === '보류') return false;
         const customerActivities = activities.filter(a => a.customerId === customer.id);
         const today2 = new Date(today);
@@ -329,15 +388,25 @@ function App() {
         });
       }
 
+      // 답장대기 필터
+      if (activeCustomerFilter === '답장대기') {
+        const customerActivities = activities.filter(a => a.customerId === customer.id);
+        if (customerActivities.length === 0) return false;
+
+        return customerActivities.some(activity => {
+          const followUps = activity.followUps || [];
+          return !followUps.some(followUp => followUp.author === '답장');
+        });
+      }
 
       // 기존 상태 필터
-      const statusMatch = activeFilter === '전체' || customer.status === activeFilter;
+      const statusMatch = activeCustomerFilter === '전체' || customer.status === activeCustomerFilter;
       const progressMatch = !activeProgressFilter || customer.progress === activeProgressFilter;
       return statusMatch && progressMatch;
     });
 
     // 정렬 로직
-    if (activeFilter === '오늘미팅') {
+    if (activeCustomerFilter === '오늘미팅') {
       // 오늘미팅 필터: 오늘 미팅 시간순 정렬
       filtered.sort((a, b) => {
         const aMeetings = meetings.filter(m => {
@@ -358,7 +427,7 @@ function App() {
         const bTime = new Date(bMeetings[0].date).getTime();
         return aTime - bTime;
       });
-    } else if (activeFilter === '미팅일확정') {
+    } else if (activeCustomerFilter === '미팅일확정') {
       // 미팅일확정 필터: 가장 가까운 미팅 날짜순 정렬
       filtered.sort((a, b) => {
         const aMeetings = meetings.filter(m => {
@@ -380,7 +449,7 @@ function App() {
 
         return new Date(aNextMeeting.date) - new Date(bNextMeeting.date);
       });
-    } else if (activeFilter === '오늘연락') {
+    } else if (activeCustomerFilter === '오늘연락') {
       // 오늘연락 필터: 활동 시간순 정렬
       filtered.sort((a, b) => {
         const aActivities = activities.filter(act => act.customerId === a.id && new Date(act.date).toDateString() === today.toDateString());
@@ -394,7 +463,7 @@ function App() {
 
         return new Date(bLatestActivity.date) - new Date(aLatestActivity.date);
       });
-    } else if (activeFilter === '어제연락') {
+    } else if (activeCustomerFilter === '어제연락') {
       // 어제연락 필터: 어제 활동 시간순 정렬
       filtered.sort((a, b) => {
         const yesterday = new Date(today);
@@ -410,7 +479,7 @@ function App() {
 
         return new Date(bLatestActivity.date) - new Date(aLatestActivity.date);
       });
-    } else if (activeFilter === '연락할고객') {
+    } else if (activeCustomerFilter === '연락할고객') {
       // 연락할고객 필터: 마지막 활동일이 오래된 순 정렬
       filtered.sort((a, b) => {
         const aLastActivity = getLastActivityDate(a.id);
@@ -425,85 +494,181 @@ function App() {
   })();
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
       {/* 모바일 오버레이 배경 */}
       {isMobileSidebarOpen && (
         <div className="mobile-overlay" onClick={() => setIsMobileSidebarOpen(false)} />
       )}
 
-      <FilterSidebar
-        activeFilter={activeFilter}
-        onFilterChange={handleFilterChange}
-        customers={customers}
-        meetings={meetings}
-        activities={activities}
-        isMobileOpen={isMobileSidebarOpen}
-        onMobileClose={() => setIsMobileSidebarOpen(false)}
-      />
+      {/* 상단 콘텐츠 영역 (사이드바 + 메인콘텐츠) */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <FilterSidebar
+          activeTab={activeTab}
+          activeFilter={activeTab === '고객목록' ? activeCustomerFilter : activePropertyFilter}
+          onFilterChange={handleFilterChange}
+          customers={customers}
+          meetings={meetings}
+          activities={activities}
+          properties={properties}
+          isMobileOpen={isMobileSidebarOpen}
+          onMobileClose={() => setIsMobileSidebarOpen(false)}
+        />
 
-      <div className="main-content">
-        <header className="main-header">
-          <button className="hamburger-btn" onClick={() => setIsMobileSidebarOpen(true)}>
-            ☰
-          </button>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <h1>고객 목록</h1>
-            {activeFilter !== '전체' && (
-              <span style={{ fontSize: '13px', color: '#7f8c8d' }}>
-                필터: {activeFilter} - {getFilterDescription(activeFilter)}
-              </span>
+        <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <header className="main-header">
+            <button className="hamburger-btn" onClick={() => setIsMobileSidebarOpen(true)}>
+              ☰
+            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <h1>{activeTab === '고객목록' ? '고객 목록' : '매물장'}</h1>
+              {activeTab === '고객목록' && activeCustomerFilter !== '전체' && (
+                <span style={{ fontSize: '13px', color: '#7f8c8d' }}>
+                  필터: {activeCustomerFilter} - {getFilterDescription(activeCustomerFilter)}
+                </span>
+              )}
+            </div>
+            <div className="header-actions">
+              {activeTab === '고객목록' ? (
+                <>
+                  <button onClick={() => handleOpenModal()} className="btn-primary">+ 고객 추가</button>
+                  <button onClick={handleBackup} className="btn-secondary">백업</button>
+                  <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
+                  <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => handleOpenPropertyModal()} className="btn-primary">+ 매물 추가</button>
+                  <button onClick={handleBackup} className="btn-secondary">백업</button>
+                  <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
+                  <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
+                </>
+              )}
+            </div>
+          </header>
+          <main className="table-container" style={{ flex: 1, overflow: 'auto' }}>
+            {activeTab === '고객목록' ? (
+              <CustomerTable
+                customers={filteredCustomers}
+                onSelectCustomer={handleSelectCustomer}
+                onEdit={handleOpenModal}
+                onDelete={handleDeleteCustomer}
+                selectedCustomerId={selectedCustomerId}
+                activeFilter={activeCustomerFilter}
+                activeProgressFilter={activeProgressFilter}
+                onProgressFilterChange={handleProgressFilterChange}
+                allCustomers={customers}
+                onFavoriteCustomer={handleFavoriteCustomer}
+                activities={activities}
+                meetings={meetings}
+              />
+            ) : (
+              <PropertyTable
+                properties={properties}
+                onSelectProperty={handleSelectProperty}
+                onEdit={handleOpenPropertyModal}
+                onDelete={handleDeleteProperty}
+                selectedPropertyId={selectedPropertyId}
+              />
             )}
-          </div>
-          <div className="header-actions">
-            <button onClick={() => handleOpenModal()} className="btn-primary">+ 고객 추가</button>
-            <button onClick={handleBackup} className="btn-secondary">백업</button>
-            <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
-            <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
-          </div>
-        </header>
-        <main className="table-container">
-          <CustomerTable
-            customers={filteredCustomers}
-            onSelectCustomer={handleSelectCustomer}
-            onEdit={handleOpenModal}
-            onDelete={handleDeleteCustomer}
-            selectedCustomerId={selectedCustomerId}
-            activeFilter={activeFilter}
-            activeProgressFilter={activeProgressFilter}
-            onProgressFilterChange={handleProgressFilterChange}
-            allCustomers={customers}
-            onFavoriteCustomer={handleFavoriteCustomer}
-            activities={activities}
-            meetings={meetings}
-          />
-        </main>
+          </main>
+        </div>
       </div>
 
-      <CustomerDetailPanel
-        selectedCustomer={selectedCustomer}
-        onClose={() => setSelectedCustomerId(null)}
-        onEditCustomer={handleOpenModal}
-        onUpdateCustomer={handleSaveCustomer}
-        onDeleteCustomer={handleDeleteCustomer}
-        activities={activities}
-        onSaveActivity={handleSaveActivity}
-        onDeleteActivity={handleDeleteActivity}
-        meetings={meetings}
-        onSaveMeeting={handleSaveMeeting}
-        onDeleteMeeting={handleDeleteMeeting}
-        propertySelections={propertySelections}
-        onSavePropertySelection={handleSavePropertySelection}
-        onDeletePropertySelection={handleDeletePropertySelection}
-      />
+      {/* 하단 탭바 */}
+      <div className="tab-bar" style={{
+        display: 'flex',
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#fff',
+        height: '60px',
+        justifyContent: 'center',
+        gap: '40px',
+        alignItems: 'center'
+      }}>
+        <button
+          onClick={() => setActiveTab('고객목록')}
+          style={{
+            padding: '8px 16px',
+            fontSize: '16px',
+            fontWeight: activeTab === '고객목록' ? 'bold' : 'normal',
+            color: activeTab === '고객목록' ? '#2196F3' : '#999',
+            border: 'none',
+            backgroundColor: 'transparent',
+            borderBottom: activeTab === '고객목록' ? '3px solid #2196F3' : '3px solid transparent',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          📋 고객목록
+        </button>
+        <button
+          onClick={() => setActiveTab('매물장')}
+          style={{
+            padding: '8px 16px',
+            fontSize: '16px',
+            fontWeight: activeTab === '매물장' ? 'bold' : 'normal',
+            color: activeTab === '매물장' ? '#2196F3' : '#999',
+            border: 'none',
+            backgroundColor: 'transparent',
+            borderBottom: activeTab === '매물장' ? '3px solid #2196F3' : '3px solid transparent',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          🏠 매물장
+        </button>
+      </div>
 
-      <CustomerModal 
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveCustomer}
-        editData={editingCustomer}
-      />
+      {activeTab === '고객목록' && (
+        <>
+          <CustomerDetailPanel
+            selectedCustomer={selectedCustomer}
+            onClose={() => setSelectedCustomerId(null)}
+            onEditCustomer={handleOpenModal}
+            onUpdateCustomer={handleSaveCustomer}
+            onDeleteCustomer={handleDeleteCustomer}
+            activities={activities}
+            onSaveActivity={handleSaveActivity}
+            onDeleteActivity={handleDeleteActivity}
+            meetings={meetings}
+            onSaveMeeting={handleSaveMeeting}
+            onDeleteMeeting={handleDeleteMeeting}
+            propertySelections={propertySelections}
+            onSavePropertySelection={handleSavePropertySelection}
+            onDeletePropertySelection={handleDeletePropertySelection}
+          />
+
+          <CustomerModal
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onSave={handleSaveCustomer}
+            editData={editingCustomer}
+          />
+        </>
+      )}
+
+      {activeTab === '매물장' && (
+        <>
+          {/* PropertyDetailPanel */}
+          <PropertyDetailPanel
+            selectedProperty={selectedProperty}
+            onClose={() => setSelectedPropertyId(null)}
+            onEditProperty={handleOpenPropertyModal}
+            onUpdateProperty={handleSaveProperty}
+            onDeleteProperty={handleDeleteProperty}
+          />
+
+          {/* PropertyModal */}
+          <PropertyModal
+            isOpen={isPropertyModalOpen}
+            onClose={handleClosePropertyModal}
+            onSave={handleSaveProperty}
+            editData={editingProperty}
+          />
+        </>
+      )}
     </div>
   );
 }

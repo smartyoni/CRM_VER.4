@@ -13,6 +13,7 @@ const CUSTOMERS_COLLECTION = 'customers';
 const ACTIVITIES_COLLECTION = 'activities';
 const MEETINGS_COLLECTION = 'meetings';
 const PROPERTY_SELECTIONS_COLLECTION = 'propertySelections';
+const PROPERTIES_COLLECTION = 'properties';
 
 // ========== Customer Functions ==========
 
@@ -207,5 +208,54 @@ export const subscribeToPropertySelections = (callback) => {
     callback(propertySelections);
   }, (error) => {
     console.error('Error in property selections subscription:', error);
+  });
+};
+
+// ========== Property Functions ==========
+
+export const getProperties = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, PROPERTIES_COLLECTION));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error fetching properties:', error);
+    return [];
+  }
+};
+
+export const saveProperties = async (properties) => {
+  try {
+    const promises = properties.map(property =>
+      setDoc(doc(db, PROPERTIES_COLLECTION, property.id), property)
+    );
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Error saving properties:', error);
+  }
+};
+
+export const saveProperty = async (property) => {
+  try {
+    await setDoc(doc(db, PROPERTIES_COLLECTION, property.id), property);
+  } catch (error) {
+    console.error('Error saving property:', error);
+  }
+};
+
+export const deleteProperty = async (propertyId) => {
+  try {
+    await deleteDoc(doc(db, PROPERTIES_COLLECTION, propertyId));
+  } catch (error) {
+    console.error('Error deleting property:', error);
+  }
+};
+
+// Realtime subscription for properties
+export const subscribeToProperties = (callback) => {
+  return onSnapshot(collection(db, PROPERTIES_COLLECTION), (snapshot) => {
+    const properties = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(properties);
+  }, (error) => {
+    console.error('Error in properties subscription:', error);
   });
 };

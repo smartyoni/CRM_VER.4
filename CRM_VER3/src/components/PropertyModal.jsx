@@ -1,0 +1,173 @@
+import React, { useState, useEffect } from 'react';
+import { generateId } from '../utils/helpers';
+
+const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
+  const PROPERTY_TYPES = ['매매', '임대'];
+  const CATEGORIES = ['오피스텔', '오피스', '상가', '지산', '아파트'];
+
+  const getInitialState = () => ({
+    id: editData?.id || null,
+    createdAt: editData?.createdAt || new Date().toISOString(),
+    propertyType: editData?.propertyType || PROPERTY_TYPES[0],
+    category: editData?.category || CATEGORIES[0],
+    buildingName: editData?.buildingName || '',
+    roomNumber: editData?.roomNumber || '',
+    price: editData?.price || '',
+    moveInDate: editData?.moveInDate || '',
+    ownerName: editData?.ownerName || '',
+    ownerPhone: editData?.ownerPhone || '',
+    leaseInfo: editData?.leaseInfo || '',
+    tenantPhone: editData?.tenantPhone || '',
+    memo: editData?.memo || '',
+  });
+
+  const [formData, setFormData] = useState(getInitialState());
+
+  useEffect(() => {
+    setFormData(getInitialState());
+  }, [editData, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePhoneChange = (e, fieldName) => {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length > 3 && value.length <= 7) {
+      value = `${value.slice(0, 3)}-${value.slice(3)}`;
+    } else if (value.length > 7) {
+      value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+    }
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.buildingName.trim()) {
+      alert('건물명을 입력해주세요.');
+      return;
+    }
+
+    const propertyToSave = {
+      ...formData,
+      id: formData.id || generateId(),
+      price: parseInt(formData.price, 10) || 0,
+      createdAt: formData.createdAt || new Date().toISOString(),
+    };
+
+    onSave(propertyToSave);
+    onClose();
+  };
+
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', paddingBottom: '10px' }}>
+          <h3>{editData ? '매물 수정' : '매물 추가'}</h3>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <label style={{ fontSize: '14px', marginBottom: 0 }}>매물유형</label>
+            <select name="propertyType" value={formData.propertyType} onChange={handleChange} style={{ fontSize: '14px' }}>
+              {PROPERTY_TYPES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <label style={{ fontSize: '14px', marginBottom: 0 }}>구분</label>
+            <select name="category" value={formData.category} onChange={handleChange} style={{ fontSize: '14px' }}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <button onClick={onClose} className="btn-close">✕</button>
+          </div>
+        </div>
+
+        {/* 접수일 */}
+        <div className="form-group">
+          <label>접수일</label>
+          <input
+            type="date"
+            name="createdAt"
+            value={formData.createdAt ? formData.createdAt.slice(0, 10) : ''}
+            onChange={handleDateChange}
+          />
+        </div>
+
+        {/* 건물명과 호실명 */}
+        <div className="form-grid">
+          <div className="form-group">
+            <label>건물명 *</label>
+            <input type="text" name="buildingName" value={formData.buildingName} onChange={handleChange} placeholder="건물명 입력" required />
+          </div>
+          <div className="form-group">
+            <label>호실명</label>
+            <input type="text" name="roomNumber" value={formData.roomNumber} onChange={handleChange} placeholder="호실명 입력" />
+          </div>
+        </div>
+
+        {/* 금액과 입주일 */}
+        <div className="form-grid">
+          <div className="form-group">
+            <label>금액 (만원)</label>
+            <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="금액 입력" />
+          </div>
+          <div className="form-group">
+            <label>입주일</label>
+            <input type="date" name="moveInDate" value={formData.moveInDate} onChange={handleDateChange} />
+          </div>
+        </div>
+
+        {/* 소유자 정보 */}
+        <div className="form-grid">
+          <div className="form-group">
+            <label>소유자</label>
+            <input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} placeholder="소유자명 입력" />
+          </div>
+          <div className="form-group">
+            <label>소유자번호</label>
+            <input
+              type="tel"
+              name="ownerPhone"
+              value={formData.ownerPhone}
+              onChange={(e) => handlePhoneChange(e, 'ownerPhone')}
+              placeholder="010-xxxx-xxxx"
+            />
+          </div>
+        </div>
+
+        {/* 임대차정보와 점주번호 */}
+        <div className="form-grid">
+          <div className="form-group">
+            <label>임대차정보</label>
+            <input type="text" name="leaseInfo" value={formData.leaseInfo} onChange={handleChange} placeholder="임대차 정보 입력" />
+          </div>
+          <div className="form-group">
+            <label>점주번호</label>
+            <input
+              type="tel"
+              name="tenantPhone"
+              value={formData.tenantPhone}
+              onChange={(e) => handlePhoneChange(e, 'tenantPhone')}
+              placeholder="010-xxxx-xxxx"
+            />
+          </div>
+        </div>
+
+        {/* 메모 */}
+        <div className="form-group">
+          <label>메모</label>
+          <textarea name="memo" value={formData.memo} onChange={handleChange} rows="3" placeholder="메모를 입력하세요"></textarea>
+        </div>
+
+        <div className="modal-footer">
+          <button onClick={onClose} className="btn-secondary">취소</button>
+          <button onClick={handleSubmit} className="btn-primary">저장</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PropertyModal;
