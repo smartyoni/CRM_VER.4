@@ -218,6 +218,10 @@ button {
 
 /* --- Customer Detail Panel --- */
 .detail-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
   width: 0;
   background: white;
   border-left: 1px solid var(--medium-gray);
@@ -225,6 +229,8 @@ button {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 50;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.1);
 }
 
 .detail-panel.open {
