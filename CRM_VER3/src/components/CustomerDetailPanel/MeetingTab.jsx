@@ -1459,7 +1459,22 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
                     매물 {idx + 1}. {prop.roomName || '미지정'}
                   </h3>
 
-                  {/* 매물 상세 정보 */}
+                  {/* 매물 상세 정보 - 소재지, 임대료, 구조정보, 특징만 표시 */}
+                  {prop.info && (
+                    <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #2196F3' }}>
+                      <div style={{ fontSize: '12px', lineHeight: '1.8', color: '#333' }}>
+                        {prop.info.split('\n').map((line, idx) => {
+                          // 소재지, 임대료, 구조정보, 특징만 표시 (부동산과 연락처는 제외)
+                          if (line.includes('• 소재지:') || line.includes('• 임대료:') || line.includes('• 구조정보:') || line.includes('• 특징:')) {
+                            return <div key={idx} style={{ marginBottom: '4px' }}>{line}</div>;
+                          }
+                          return null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 고객반응 및 임대차정보 */}
                   <div style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
                     {prop.customerResponse && (
                       <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #FF6B9D' }}>
