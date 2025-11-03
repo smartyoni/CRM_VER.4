@@ -605,8 +605,8 @@ function App() {
         borderTop: '2px solid #e0e0e0',
         backgroundColor: '#f8f8f8',
         height: '70px',
-        justifyContent: 'flex-end',
-        paddingRight: '40px',
+        justifyContent: 'flex-start',
+        paddingLeft: '40px',
         gap: '60px',
         alignItems: 'center'
       }}>
