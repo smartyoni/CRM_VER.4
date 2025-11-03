@@ -14,6 +14,7 @@ export const parsePropertyCSV = (csvContent) => {
 
   // 필드 매핑 (유연한 헤더 지원)
   const fieldMapping = {
+    'createdAt': ['접수일', 'created_at', 'createdAt', '등록일'],
     'buildingName': ['건물명', 'building_name', 'buildingName'],
     'roomNumber': ['호실명', 'room_number', 'roomNumber'],
     'propertyType': ['매물유형', 'property_type', 'propertyType', '유형'],
@@ -52,9 +53,20 @@ export const parsePropertyCSV = (csvContent) => {
     try {
       const values = parseCSVLine(line);
 
+      // 접수일 처리: CSV에 있으면 그 값 사용, 없으면 현재 시간
+      let createdAtValue = getValue(values, columnIndices['createdAt'], '');
+      let createdAt;
+      if (createdAtValue.trim()) {
+        // YYYY-MM-DD 형식을 ISO 형식으로 변환
+        const date = new Date(createdAtValue.trim());
+        createdAt = date.toString() === 'Invalid Date' ? new Date().toISOString() : date.toISOString();
+      } else {
+        createdAt = new Date().toISOString();
+      }
+
       const property = {
         id: generateId(),
-        createdAt: new Date().toISOString(),
+        createdAt: createdAt,
         buildingName: getValue(values, columnIndices['buildingName'], ''),
         roomNumber: getValue(values, columnIndices['roomNumber'], ''),
         propertyType: getValue(values, columnIndices['propertyType'], '매매'),
