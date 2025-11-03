@@ -3,7 +3,7 @@ import { PROPERTY_STATUSES } from '../../constants';
 import { generateId, formatDateTime } from '../../utils/helpers';
 import { parsePropertyDetails } from '../../utils/textParser';
 
-const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDeleteMeeting, initialProperties, onClearInitialProperties }) => {
+const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDeleteMeeting, initialProperties, onClearInitialProperties, selectedMeetingId }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [viewingMeeting, setViewingMeeting] = useState(null);
@@ -20,6 +20,16 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       }
     }
   }, [initialProperties, onClearInitialProperties]);
+
+  // 외부에서 미팅이 선택되면 모달 자동 오픈
+  useEffect(() => {
+    if (selectedMeetingId) {
+      const meeting = meetings.find(m => m.id === selectedMeetingId);
+      if (meeting) {
+        setViewingMeeting(meeting);
+      }
+    }
+  }, [selectedMeetingId, meetings]);
 
   // 오늘 날짜 확인 함수
   const isToday = (dateString) => {

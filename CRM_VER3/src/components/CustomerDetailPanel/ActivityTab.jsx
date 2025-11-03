@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateId, formatDateTime } from '../../utils/helpers';
 
-const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity }) => {
+const ActivityTab = ({ customerId, activities, onSaveActivity, onDeleteActivity, selectedActivityId }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingActivity, setEditingActivity] = useState(null);
   const [viewingActivity, setViewingActivity] = useState(null);
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedActivity: null });
+
+  // 외부에서 활동이 선택되면 모달 자동 오픈
+  useEffect(() => {
+    if (selectedActivityId) {
+      const activity = activities.find(a => a.id === selectedActivityId);
+      if (activity) {
+        setViewingActivity(activity);
+      }
+    }
+  }, [selectedActivityId, activities]);
 
   const customerActivities = activities
     .filter(a => a.customerId === customerId)

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [], onTabChange }) => {
+const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [], onTabChange, onOpenActivityDetail, onOpenMeetingDetail }) => {
   if (!customer) return null;
 
   // 고객 활동과 미팅 필터링
@@ -167,7 +167,7 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onTabChange && onTabChange('활동 내역');
+                    onOpenActivityDetail && onOpenActivityDetail(latestActivity);
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
@@ -327,7 +327,7 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onTabChange && onTabChange('미팅 내역');
+                      onOpenMeetingDetail && onOpenMeetingDetail(meeting);
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = isTodayMeeting ? 'rgba(211, 47, 47, 0.15)' : 'rgba(33, 150, 243, 0.1)';
@@ -352,6 +352,7 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
             )}
           </div>
         </div>
+
     </div>
   );
 };
