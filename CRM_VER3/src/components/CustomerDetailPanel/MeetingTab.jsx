@@ -1356,6 +1356,17 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
   const [overallComment, setOverallComment] = useState(meeting.overallComment || '');
   const reportRef = useRef(null);
 
+  // 방문시간 순으로 정렬된 매물 (원본 인덱스 보존)
+  const sortedPropertiesWithIndex = meeting.properties && meeting.properties.length > 0
+    ? meeting.properties
+        .map((prop, originalIndex) => ({ prop, originalIndex }))
+        .sort((a, b) => {
+          if (!a.prop.visitTime) return 1;
+          if (!b.prop.visitTime) return -1;
+          return a.prop.visitTime.localeCompare(b.prop.visitTime);
+        })
+    : [];
+
   const handleSaveReport = () => {
     const updatedMeeting = { ...meeting, overallComment };
     onSaveMeeting(updatedMeeting);
@@ -1439,9 +1450,9 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
           </div>
 
           {/* 매물 리스트 */}
-          {meeting.properties && meeting.properties.length > 0 ? (
+          {sortedPropertiesWithIndex && sortedPropertiesWithIndex.length > 0 ? (
             <div style={{ marginBottom: '30px' }}>
-              {meeting.properties.map((prop, idx) => (
+              {sortedPropertiesWithIndex.map(({ prop }, idx) => (
                 <div key={idx} style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #ddd' }}>
                   {/* 매물 번호와 호실 */}
                   <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: 'bold', color: '#2196F3' }}>
