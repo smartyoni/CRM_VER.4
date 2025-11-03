@@ -637,7 +637,7 @@ function App() {
             color: activeTab === '매물장' ? '#000' : '#888',
             border: 'none',
             backgroundColor: activeTab === '매물장' ? '#fff' : 'transparent',
-            borderBottom: activeTab === '매물장' ? '4px solid #FF6B9D' : '4px solid transparent',
+            borderBottom: activeTab === '매물장' ? '4px solid #2196F3' : '4px solid transparent',
             borderRadius: activeTab === '매물장' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
