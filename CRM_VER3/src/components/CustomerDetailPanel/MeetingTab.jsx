@@ -1029,8 +1029,24 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               </div>
             )}
           </div>
-          <div className="modal-footer">
-            <button onClick={onClose} className="btn-primary">닫기</button>
+          <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <button
+              onClick={onClose}
+              className="btn-secondary"
+              style={{ padding: '8px 16px', fontSize: '14px' }}
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                alert('모든 변경사항이 저장되었습니다.');
+                onClose();
+              }}
+              className="btn-primary"
+              style={{ padding: '8px 16px', fontSize: '14px' }}
+            >
+              저장
+            </button>
           </div>
           {showPropertyEditModal && (
             <PropertyEditModal
