@@ -230,67 +230,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <label>부동산</label>
                 <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
               </div>
-              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label>고객반응</label>
-                <textarea rows="3" value={propertyData.customerResponse} onChange={(e) => setPropertyData({...propertyData, customerResponse: e.target.value})} placeholder="고객 반응을 기록하세요"></textarea>
-              </div>
-              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label>사진 (최대 2장)</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  {[0, 1].map((idx) => (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ fontSize: '12px', color: '#666', fontWeight: '600' }}>사진 {idx + 1}</div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              const newPhotos = [...(propertyData.photos || ['', ''])];
-                              newPhotos[idx] = event.target.result;
-                              setPropertyData({...propertyData, photos: newPhotos});
-                            };
-                            reader.readAsDataURL(e.target.files[0]);
-                          }
-                        }}
-                        style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px' }}
-                      />
-                      {propertyData.photos && propertyData.photos[idx] && (
-                        <div style={{ position: 'relative' }}>
-                          <img src={propertyData.photos[idx]} alt={`사진 ${idx + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }} />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newPhotos = [...propertyData.photos];
-                              newPhotos[idx] = '';
-                              setPropertyData({...propertyData, photos: newPhotos});
-                            }}
-                            style={{
-                              position: 'absolute',
-                              top: '4px',
-                              right: '4px',
-                              backgroundColor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '50%',
-                              width: '28px',
-                              height: '28px',
-                              cursor: 'pointer',
-                              fontSize: '16px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
             <div className="modal-footer">
               <button onClick={onClose} className="btn-secondary">취소</button>
@@ -505,6 +444,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [editingInfoValue, setEditingInfoValue] = useState('');
     const [editingResponseIndex, setEditingResponseIndex] = useState(null);
     const [editingResponseValue, setEditingResponseValue] = useState('');
+    const fileInputRefs = React.useRef({});
 
     // 방문시간 순으로 정렬 (원본 인덱스 보존)
     const sortedProperties = meeting.properties ? meeting.properties.map((prop, originalIndex) => ({ prop, originalIndex }))
@@ -589,6 +529,44 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         handleResponseSave(originalIndex);
       } else if (e.key === 'Escape') {
         handleResponseCancel();
+      }
+    };
+
+    const handlePhotoUpload = (e, originalIndex, photoIndex) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64String = event.target?.result;
+        const newProperties = [...meeting.properties];
+        const photos = newProperties[originalIndex].photos || ['', ''];
+        photos[photoIndex] = base64String;
+        newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
+        const updatedMeeting = { ...meeting, properties: newProperties };
+        onSaveMeeting(updatedMeeting);
+        setViewingMeeting(updatedMeeting);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const handlePhotoDelete = (originalIndex, photoIndex) => {
+      const newProperties = [...meeting.properties];
+      const photos = newProperties[originalIndex].photos || ['', ''];
+      photos[photoIndex] = '';
+      newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
+      const updatedMeeting = { ...meeting, properties: newProperties };
+      onSaveMeeting(updatedMeeting);
+      setViewingMeeting(updatedMeeting);
+    };
+
+    const triggerPhotoUpload = (originalIndex) => {
+      const emptyPhotoIndex = meeting.properties[originalIndex]?.photos?.findIndex(p => !p);
+      if (emptyPhotoIndex !== -1 && emptyPhotoIndex !== undefined) {
+        const key = `photo-${originalIndex}-${emptyPhotoIndex}`;
+        fileInputRefs.current[key]?.click();
+      } else {
+        alert('최대 2장까지만 첨부할 수 있습니다.');
       }
     };
 
@@ -737,67 +715,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>부동산</label>
                 <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
-              </div>
-              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label>고객반응</label>
-                <textarea rows="3" value={propertyData.customerResponse} onChange={(e) => setPropertyData({...propertyData, customerResponse: e.target.value})} placeholder="고객 반응을 기록하세요"></textarea>
-              </div>
-              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label>사진 (최대 2장)</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  {[0, 1].map((idx) => (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ fontSize: '12px', color: '#666', fontWeight: '600' }}>사진 {idx + 1}</div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              const newPhotos = [...(propertyData.photos || ['', ''])];
-                              newPhotos[idx] = event.target.result;
-                              setPropertyData({...propertyData, photos: newPhotos});
-                            };
-                            reader.readAsDataURL(e.target.files[0]);
-                          }
-                        }}
-                        style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px' }}
-                      />
-                      {propertyData.photos && propertyData.photos[idx] && (
-                        <div style={{ position: 'relative' }}>
-                          <img src={propertyData.photos[idx]} alt={`사진 ${idx + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }} />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newPhotos = [...propertyData.photos];
-                              newPhotos[idx] = '';
-                              setPropertyData({...propertyData, photos: newPhotos});
-                            }}
-                            style={{
-                              position: 'absolute',
-                              top: '4px',
-                              right: '4px',
-                              backgroundColor: 'rgba(0,0,0,0.5)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '50%',
-                              width: '28px',
-                              height: '28px',
-                              cursor: 'pointer',
-                              fontSize: '16px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
             <div className="modal-footer">
@@ -1000,9 +917,34 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px', fontWeight: '600' }}>📷 사진</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                         {prop.photos.map((photo, idx) => (
-                          photo && (
-                            <img key={idx} src={photo} alt={`사진 ${idx + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }} />
-                          )
+                          <div key={idx} style={{ position: 'relative' }}>
+                            {photo ? (
+                              <>
+                                <img src={photo} alt={`사진 ${idx + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }} />
+                                <button
+                                  onClick={() => handlePhotoDelete(originalIndex, idx)}
+                                  style={{
+                                    position: 'absolute',
+                                    top: '4px',
+                                    right: '4px',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '24px',
+                                    height: '24px',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </>
+                            ) : null}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -1035,7 +977,39 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       방문
                     </span>
                   </div>
-                  <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                  <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    <button
+                      onClick={() => triggerPhotoUpload(originalIndex)}
+                      style={{
+                        backgroundColor: '#FF9800',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="사진 촬영/첨부"
+                    >
+                      📸 사진
+                    </button>
+                    {prop.photos && prop.photos.map((photo, idx) => (
+                      <input
+                        key={`photo-${originalIndex}-${idx}`}
+                        type="file"
+                        accept="image/*"
+                        ref={(el) => {
+                          if (el) {
+                            fileInputRefs.current[`photo-${originalIndex}-${idx}`] = el;
+                          }
+                        }}
+                        onChange={(e) => handlePhotoUpload(e, originalIndex, idx)}
+                        style={{ display: 'none' }}
+                      />
+                    ))}
                     <button onClick={() => handlePropertyEdit(originalIndex)} className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>수정</button>
                     <button onClick={() => handlePropertyDelete(originalIndex)} className="btn-secondary" style={{ fontSize: '12px', padding: '6px 12px' }}>삭제</button>
                   </div>
