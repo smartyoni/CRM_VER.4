@@ -84,12 +84,12 @@ const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete }) =>
             📞 연락처 정보
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
-              <span style={{ fontWeight: '600', color: '#666' }}>공동현관:</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>공동현관비번:</span>
               <span style={{ color: '#333' }}>{selectedBuilding.entrance || '-'}</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
-              <span style={{ fontWeight: '600', color: '#666' }}>관리실:</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>관리실번호:</span>
               <span style={{ color: '#333' }}>{selectedBuilding.office || '-'}</span>
             </div>
           </div>
