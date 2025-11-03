@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PROPERTY_STATUSES } from '../../constants';
 import { generateId, formatDateTime } from '../../utils/helpers';
 import { parsePropertyDetails } from '../../utils/textParser';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDeleteMeeting, initialProperties, onClearInitialProperties, selectedMeetingId }) => {
   const [isAdding, setIsAdding] = useState(false);
@@ -447,7 +449,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     setContextMenuMeeting(null);
   };
 
-  const PropertiesViewModal = ({ meeting, onClose }) => {
+  const PropertiesViewModal = ({ meeting, onClose, onSaveMeeting }) => {
     const [editingPropertyIndex, setEditingPropertyIndex] = useState(null);
     const [showPropertyEditModal, setShowPropertyEditModal] = useState(false);
     const [editingInfoIndex, setEditingInfoIndex] = useState(null);
@@ -455,6 +457,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [editingResponseIndex, setEditingResponseIndex] = useState(null);
     const [editingResponseValue, setEditingResponseValue] = useState('');
     const [photoSourcePropertyIndex, setPhotoSourcePropertyIndex] = useState(null);
+    const [showReportModal, setShowReportModal] = useState(false);
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
 
@@ -1071,6 +1074,13 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           </div>
           <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
             <button
+              onClick={() => setShowReportModal(true)}
+              className="btn-primary"
+              style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: '#FF6B9D' }}
+            >
+              📄 보고서
+            </button>
+            <button
               onClick={onClose}
               className="btn-secondary"
               style={{ padding: '8px 16px', fontSize: '14px' }}
@@ -1088,6 +1098,15 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               저장
             </button>
           </div>
+
+          {/* 보고서 모달 */}
+          {showReportModal && (
+            <MeetingReportModal
+              meeting={meeting}
+              onClose={() => setShowReportModal(false)}
+              onSaveMeeting={onSaveMeeting}
+            />
+          )}
           {showPropertyEditModal && (
             <PropertyEditModal
               propertyToEdit={editingPropertyIndex !== null ? meeting.properties[editingPropertyIndex] : null}
@@ -1327,7 +1346,228 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           </div>
         )}
 
-        {viewingMeeting && <PropertiesViewModal meeting={viewingMeeting} onClose={() => setViewingMeeting(null)} />}
+        {viewingMeeting && <PropertiesViewModal meeting={viewingMeeting} onClose={() => setViewingMeeting(null)} onSaveMeeting={onSaveMeeting} />}
+    </div>
+  );
+};
+
+// 미팅 보고서 모달 컴포넌트
+const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
+  const [overallComment, setOverallComment] = useState(meeting.overallComment || '');
+  const reportRef = useRef(null);
+
+  const handleSaveReport = () => {
+    const updatedMeeting = { ...meeting, overallComment };
+    onSaveMeeting(updatedMeeting);
+    alert('보고서가 저장되었습니다.');
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current) return;
+
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= 297;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= 297;
+      }
+
+      const fileName = `미팅보고서_${formatDateTime(meeting.date).replace(/[:\s]/g, '_')}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      alert('PDF 다운로드에 실패했습니다: ' + error.message);
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    if (!reportRef.current) return;
+
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `미팅보고서_${formatDateTime(meeting.date).replace(/[:\s]/g, '_')}.png`;
+      link.click();
+    } catch (error) {
+      alert('이미지 다운로드에 실패했습니다: ' + error.message);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>미팅 보고서</h3>
+          <button className="btn-close" onClick={onClose}>×</button>
+        </div>
+
+        {/* 보고서 프리뷰 */}
+        <div ref={reportRef} style={{ padding: '40px', backgroundColor: '#ffffff', fontSize: '14px', lineHeight: '1.8' }}>
+          {/* 헤더 */}
+          <div style={{ textAlign: 'center', marginBottom: '30px', paddingBottom: '20px', borderBottom: '2px solid #333' }}>
+            <h2 style={{ margin: '0 0 10px 0', fontSize: '24px', fontWeight: 'bold' }}>미팅 보고서</h2>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', fontSize: '13px', color: '#666' }}>
+              <span><strong>미팅날짜:</strong> {formatDateTime(meeting.date)}</span>
+            </div>
+          </div>
+
+          {/* 매물 리스트 */}
+          {meeting.properties && meeting.properties.length > 0 ? (
+            <div style={{ marginBottom: '30px' }}>
+              {meeting.properties.map((prop, idx) => (
+                <div key={idx} style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #ddd' }}>
+                  {/* 매물 번호와 호실 */}
+                  <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: 'bold', color: '#2196F3' }}>
+                    매물 {idx + 1}. {prop.roomName || '미지정'}
+                  </h3>
+
+                  {/* 고객반응 */}
+                  {prop.customerResponse && (
+                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '5px' }}>💬 고객반응</div>
+                      <div style={{ padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', minHeight: '40px' }}>
+                        {prop.customerResponse}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 사진 */}
+                  {prop.photos && prop.photos.some(photo => photo) && (
+                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '8px' }}>📷 사진</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        {prop.photos.map((photo, photoIdx) => (
+                          photo && (
+                            <img
+                              key={photoIdx}
+                              src={photo}
+                              alt={`사진 ${photoIdx + 1}`}
+                              style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
+                            />
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>등록된 매물이 없습니다.</div>
+          )}
+
+          {/* 총평 */}
+          <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '2px solid #333' }}>
+            <h4 style={{ margin: '0 0 15px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>📋 총평</h4>
+            <div style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '4px', minHeight: '80px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#333' }}>
+              {overallComment || '(종합 의견을 입력해주세요)'}
+            </div>
+          </div>
+        </div>
+
+        {/* 총평 입력 영역 */}
+        <div style={{ padding: '20px', borderTop: '1px solid #e0e0e0', backgroundColor: '#fafafa' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#333' }}>📝 총평 편집</label>
+          <textarea
+            value={overallComment}
+            onChange={(e) => setOverallComment(e.target.value)}
+            placeholder="미팅에 대한 종합 의견을 작성해주세요..."
+            style={{
+              width: '100%',
+              minHeight: '100px',
+              padding: '10px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontFamily: 'inherit',
+              fontSize: '13px',
+              resize: 'vertical'
+            }}
+          />
+        </div>
+
+        {/* 푸터 */}
+        <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', padding: '15px' }}>
+          <button
+            onClick={handleDownloadImage}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: '600'
+            }}
+          >
+            🖼️ 이미지 저장
+          </button>
+          <button
+            onClick={handleDownloadPDF}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: '600'
+            }}
+          >
+            📄 PDF 저장
+          </button>
+          <button
+            onClick={handleSaveReport}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#FF6B9D',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: '600'
+            }}
+          >
+            💾 저장
+          </button>
+          <button
+            onClick={onClose}
+            className="btn-secondary"
+            style={{ padding: '8px 16px', fontSize: '13px' }}
+          >
+            취소
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
