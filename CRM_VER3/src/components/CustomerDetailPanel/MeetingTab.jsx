@@ -1371,7 +1371,7 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
 
   const handlePropertyFieldEdit = (propertyIdx, field, value) => {
     const newProperties = [...meeting.properties];
-    if (field === 'customerResponse' || field === 'leaseInfo') {
+    if (field === 'customerResponse' || field === 'leaseInfo' || field === 'info') {
       newProperties[propertyIdx] = { ...newProperties[propertyIdx], [field]: value };
       onSaveMeeting({ ...meeting, properties: newProperties });
     }
@@ -1470,19 +1470,33 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
                   </h3>
 
                   {/* 매물 상세 정보 - 소재지, 임대료, 구조정보, 특징만 표시 */}
-                  {prop.info && (
-                    <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #2196F3' }}>
+                  <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #2196F3' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      📋 매물정보
+                      <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, [`info_${originalIndex}`]: !editingFields[`info_${originalIndex}`] })}>
+                        {editingFields[`info_${originalIndex}`] ? '✓' : '✎'}
+                      </span>
+                    </div>
+                    {editingFields[`info_${originalIndex}`] ? (
+                      <textarea
+                        value={prop.info || ''}
+                        onChange={(e) => handlePropertyFieldEdit(originalIndex, 'info', e.target.value)}
+                        style={{ width: '100%', minHeight: '120px', padding: '6px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'inherit', fontSize: '12px' }}
+                        placeholder="매물정보를 입력하세요"
+                      />
+                    ) : (
                       <div style={{ fontSize: '12px', lineHeight: '1.8', color: '#333' }}>
-                        {prop.info.split('\n').map((line, idx) => {
+                        {prop.info && prop.info.split('\n').map((line, idx) => {
                           // 소재지, 임대료, 구조정보, 특징만 표시 (부동산과 연락처는 제외)
                           if (line.includes('• 소재지:') || line.includes('• 임대료:') || line.includes('• 구조정보:') || line.includes('• 특징:')) {
                             return <div key={idx} style={{ marginBottom: '4px' }}>{line}</div>;
                           }
                           return null;
                         })}
+                        {(!prop.info || prop.info.trim() === '') && <div style={{ color: '#999' }}>입력된 내용 없음</div>}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   {/* 고객반응 및 임대차정보 */}
                   <div style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
