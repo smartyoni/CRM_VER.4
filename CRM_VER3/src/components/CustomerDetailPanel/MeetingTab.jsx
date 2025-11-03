@@ -1462,7 +1462,7 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
           {/* 매물 리스트 */}
           {sortedPropertiesWithIndex && sortedPropertiesWithIndex.length > 0 ? (
             <div style={{ marginBottom: '30px' }}>
-              {sortedPropertiesWithIndex.map(({ prop }, idx) => (
+              {sortedPropertiesWithIndex.map(({ prop, originalIndex }, idx) => (
                 <div key={idx} style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #ddd' }}>
                   {/* 매물 번호와 호실 */}
                   <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: 'bold', color: '#2196F3' }}>
