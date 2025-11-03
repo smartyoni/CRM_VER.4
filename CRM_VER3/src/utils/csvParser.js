@@ -172,8 +172,8 @@ export const parseBuildingCSV = (csvContent) => {
     'floors': ['층수', 'floors'],
     'parking': ['주차', 'parking', '주차대수', 'parking_count'],
     'units': ['세대수', 'units', '유닛수', 'unit_count'],
-    'entrance': ['공동현관', 'entrance', '공동현관비번', 'entrance_code'],
-    'office': ['관리실', 'office', '관리실번호', 'office_number'],
+    'entrance': ['공동현관비번', '공동현관', 'entrance', 'entrance_code', '공동현관비밀번호'],
+    'office': ['관리실번호', '관리실', 'office', 'office_number'],
     'location': ['위치', 'location'],
     'type': ['유형', 'type', '건물유형', 'building_type'],
     'memo': ['메모', 'memo', '비고']
