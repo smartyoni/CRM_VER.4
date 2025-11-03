@@ -275,12 +275,19 @@ export const getBuildings = async () => {
 
 export const saveBuildings = async (buildings) => {
   try {
-    const promises = buildings.map(building =>
+    // 먼저 기존 건물 데이터를 모두 삭제
+    const snapshot = await getDocs(collection(db, BUILDINGS_COLLECTION));
+    const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(deletePromises);
+
+    // 새로운 건물 데이터 저장
+    const savePromises = buildings.map(building =>
       setDoc(doc(db, BUILDINGS_COLLECTION, building.id), building)
     );
-    await Promise.all(promises);
+    await Promise.all(savePromises);
   } catch (error) {
     console.error('Error saving buildings:', error);
+    throw error;
   }
 };
 
@@ -308,4 +315,57 @@ export const subscribeToBuildings = (callback) => {
   }, (error) => {
     console.error('Error in buildings subscription:', error);
   });
+};
+
+// ========== Utility Functions ==========
+
+/**
+ * 중복된 건물 데이터 제거 (건물명 + 지번 기준)
+ * @returns {Promise<{removed: number, kept: number}>} 제거된 건물 수와 유지된 건물 수
+ */
+export const removeDuplicateBuildings = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, BUILDINGS_COLLECTION));
+    const buildings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // 건물명 + 지번을 키로 사용하여 중복 검사
+    const uniqueMap = new Map();
+    const duplicates = [];
+
+    buildings.forEach(building => {
+      const key = `${building.name}_${building.address}`.toLowerCase();
+
+      if (uniqueMap.has(key)) {
+        // 중복 발견: 더 오래된 것(먼저 추가된 것)을 삭제 대상으로
+        const existing = uniqueMap.get(key);
+        const existingTime = new Date(existing.createdAt || 0).getTime();
+        const currentTime = new Date(building.createdAt || 0).getTime();
+
+        if (currentTime > existingTime) {
+          // 현재 건물이 더 최신이면 기존 건물 삭제
+          duplicates.push(existing.id);
+          uniqueMap.set(key, building);
+        } else {
+          // 기존 건물이 더 최신이면 현재 건물 삭제
+          duplicates.push(building.id);
+        }
+      } else {
+        uniqueMap.set(key, building);
+      }
+    });
+
+    // 중복 건물 삭제
+    const deletePromises = duplicates.map(id =>
+      deleteDoc(doc(db, BUILDINGS_COLLECTION, id))
+    );
+    await Promise.all(deletePromises);
+
+    return {
+      removed: duplicates.length,
+      kept: uniqueMap.size
+    };
+  } catch (error) {
+    console.error('Error removing duplicate buildings:', error);
+    throw error;
+  }
 };

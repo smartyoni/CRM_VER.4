@@ -46,6 +46,7 @@ export const parsePropertyCSV = (csvContent) => {
 
   // 데이터 행 파싱
   const properties = [];
+  let counter = 0; // 카운터 추가
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue; // 빈 줄 스킵
@@ -65,7 +66,7 @@ export const parsePropertyCSV = (csvContent) => {
       }
 
       const property = {
-        id: generateId(),
+        id: generateId(counter++), // 카운터 전달
         createdAt: createdAt,
         buildingName: getValue(values, columnIndices['buildingName'], ''),
         roomNumber: getValue(values, columnIndices['roomNumber'], ''),
@@ -197,6 +198,7 @@ export const parseBuildingCSV = (csvContent) => {
 
   // 데이터 행 파싱
   const buildings = [];
+  let counter = 0; // 카운터 추가
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue; // 빈 줄 스킵
@@ -216,7 +218,7 @@ export const parseBuildingCSV = (csvContent) => {
       }
 
       const building = {
-        id: generateId(),
+        id: generateId(counter++), // 카운터 전달
         createdAt: createdAt,
         name: getValue(values, columnIndices['name'], ''),
         address: getValue(values, columnIndices['address'], ''),
@@ -248,9 +250,10 @@ export const parseBuildingCSV = (csvContent) => {
 };
 
 /**
- * ID 생성 (storage.js의 generateId와 동일)
+ * ID 생성 (카운터 추가로 중복 방지)
+ * @param {number} counter - 순차적 카운터
  * @returns {string} 고유 ID
  */
-const generateId = () => {
-  return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+const generateId = (counter = 0) => {
+  return `${Date.now()}_${counter}_${Math.random().toString(36).substr(2, 9)}`;
 };

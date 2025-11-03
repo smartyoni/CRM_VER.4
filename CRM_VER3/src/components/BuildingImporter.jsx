@@ -17,13 +17,34 @@ const BuildingImporter = ({ onImport, onClose }) => {
 
     try {
       const text = await file.text();
-      const buildings = parseBuildingCSV(text);
+      let buildings = parseBuildingCSV(text);
+
+      // CSV 내 중복 검사 (건물명 + 지번)
+      const uniqueMap = new Map();
+      const duplicates = [];
+      const uniqueBuildings = [];
+
+      buildings.forEach(building => {
+        const key = `${building.name}_${building.address}`.toLowerCase();
+        if (uniqueMap.has(key)) {
+          duplicates.push(building);
+        } else {
+          uniqueMap.set(key, true);
+          uniqueBuildings.push(building);
+        }
+      });
+
+      // 중복이 발견되면 경고
+      if (duplicates.length > 0) {
+        setError(`⚠️ CSV 파일 내에 ${duplicates.length}개의 중복된 건물이 발견되어 제외되었습니다.`);
+      }
 
       // 미리보기: 처음 3개 항목만 표시
       setPreviewData({
-        total: buildings.length,
-        preview: buildings.slice(0, 3),
-        all: buildings
+        total: uniqueBuildings.length,
+        preview: uniqueBuildings.slice(0, 3),
+        all: uniqueBuildings,
+        duplicatesRemoved: duplicates.length
       });
     } catch (err) {
       setError(`파일 파싱 오류: ${err.message}`);
@@ -56,6 +77,11 @@ const BuildingImporter = ({ onImport, onClose }) => {
         </div>
 
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          {/* 경고 메시지 */}
+          <div style={{ backgroundColor: '#fff3e0', padding: '12px', borderRadius: '4px', fontSize: '13px', color: '#e65100', border: '1px solid #ffb74d' }}>
+            <strong>⚠️ 주의:</strong> CSV 임포트 시 <strong>기존의 모든 건물 데이터가 삭제</strong>되고 새로운 데이터로 대체됩니다.
+          </div>
+
           {/* 안내 텍스트 */}
           <div style={{ backgroundColor: '#e3f2fd', padding: '12px', borderRadius: '4px', fontSize: '13px', color: '#1565c0' }}>
             <strong>CSV 파일 형식:</strong><br/>
@@ -102,6 +128,11 @@ const BuildingImporter = ({ onImport, onClose }) => {
             <div style={{ backgroundColor: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
               <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2196F3' }}>
                 ✅ {previewData.total}개의 건물을 임포트할 준비가 되었습니다
+                {previewData.duplicatesRemoved > 0 && (
+                  <span style={{ color: '#ff9800', fontSize: '12px', marginLeft: '8px' }}>
+                    ({previewData.duplicatesRemoved}개 중복 제외됨)
+                  </span>
+                )}
               </div>
 
               <div style={{ fontSize: '12px', color: '#666', marginBottom: '12px', maxHeight: '200px', overflowY: 'auto' }}>

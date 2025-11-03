@@ -31,7 +31,8 @@ import {
   saveProperties,
   saveBuilding,
   deleteBuilding,
-  saveBuildings
+  saveBuildings,
+  removeDuplicateBuildings
 } from './utils/storage';
 
 // Mock data for initial setup
@@ -71,6 +72,7 @@ function App() {
   const [editingBuilding, setEditingBuilding] = useState(null);
   const [activeCustomerFilter, setActiveCustomerFilter] = useState('전체');
   const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
+  const [activeBuildingFilter, setActiveBuildingFilter] = useState('전체');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록', '매물장', '건물정보'
@@ -140,8 +142,10 @@ function App() {
     if (activeTab === '고객목록') {
       setActiveCustomerFilter(filter);
       setActiveProgressFilter(null); // 상태 변경 시 진행상황 필터 초기화
-    } else {
+    } else if (activeTab === '매물장') {
       setActivePropertyFilter(filter);
+    } else if (activeTab === '건물정보') {
+      setActiveBuildingFilter(filter);
     }
   };
 
@@ -312,6 +316,20 @@ function App() {
     } catch (error) {
       console.error('Error importing buildings:', error);
       throw error;
+    }
+  };
+
+  const handleRemoveDuplicateBuildings = async () => {
+    if (!confirm('중복된 건물 데이터를 정리하시겠습니까?\n(건물명 + 지번이 동일한 데이터 중 더 오래된 것이 삭제됩니다)')) {
+      return;
+    }
+
+    try {
+      const result = await removeDuplicateBuildings();
+      alert(`중복 제거 완료!\n제거됨: ${result.removed}개\n유지됨: ${result.kept}개`);
+    } catch (error) {
+      console.error('Error removing duplicates:', error);
+      alert(`중복 제거 실패: ${error.message}`);
     }
   };
 
@@ -579,6 +597,15 @@ function App() {
     return properties.filter(p => p.category === activePropertyFilter);
   })();
 
+  // 건물 필터링 (유형별)
+  const filteredBuildings = (() => {
+    if (activeBuildingFilter === '전체') {
+      return buildings;
+    }
+    // 유형으로 필터링
+    return buildings.filter(b => b.type === activeBuildingFilter);
+  })();
+
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
 
@@ -593,12 +620,17 @@ function App() {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <FilterSidebar
           activeTab={activeTab}
-          activeFilter={activeTab === '고객목록' ? activeCustomerFilter : activePropertyFilter}
+          activeFilter={
+            activeTab === '고객목록' ? activeCustomerFilter :
+            activeTab === '매물장' ? activePropertyFilter :
+            activeBuildingFilter
+          }
           onFilterChange={handleFilterChange}
           customers={customers}
           meetings={meetings}
           activities={activities}
           properties={properties}
+          buildings={buildings}
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
@@ -638,6 +670,7 @@ function App() {
                 <>
                   <button onClick={() => handleOpenBuildingModal()} className="btn-primary">+ 건물 추가</button>
                   <button onClick={() => setIsBuildingImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
+                  <button onClick={handleRemoveDuplicateBuildings} className="btn-secondary">중복 제거</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
@@ -671,7 +704,7 @@ function App() {
               />
             ) : (
               <BuildingTable
-                buildings={buildings}
+                buildings={filteredBuildings}
                 onSelectBuilding={handleSelectBuilding}
                 onEdit={handleOpenBuildingModal}
                 onDelete={handleDeleteBuilding}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { STATUSES } from '../constants';
+import { STATUSES, BUILDING_TYPES } from '../constants';
 
-const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, isMobileOpen, onMobileClose }) => {
+const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, buildings, isMobileOpen, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const getLastActivityDate = (customerId) => {
@@ -66,11 +66,16 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       }
 
       return customers.filter(c => c.status === status).length;
-    } else {
+    } else if (activeTab === '매물장') {
       // 매물장 필터 (구분별)
       if (status === '전체') return properties.length;
       // 해당 구분의 매물 개수
       return properties.filter(p => p.category === status).length;
+    } else if (activeTab === '건물정보') {
+      // 건물정보 필터 (유형별)
+      if (status === '전체') return buildings.length;
+      // 유형으로 필터링
+      return buildings.filter(b => b.type === status).length;
     }
   };
 
@@ -80,10 +85,17 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     return ['전체', ...Array.from(categories).sort()];
   };
 
+  // 건물정보 필터 목록 (유형별)
+  const getBuildingFilters = () => {
+    return ['전체', ...BUILDING_TYPES];
+  };
+
   // activeTab에 따라 다른 필터 목록 표시
   const allStatuses = activeTab === '고객목록'
     ? ['전체', '보류', '신규', '진행중', '집중고객', '오늘미팅', '미팅일확정', '답장대기']
-    : getPropertyCategories(); // 매물장 필터 (구분별 동적 생성)
+    : activeTab === '매물장'
+    ? getPropertyCategories() // 매물장 필터 (구분별 동적 생성)
+    : getBuildingFilters(); // 건물정보 필터 (위치 + 유형)
 
   const handleFilterClick = (status) => {
     onFilterChange(status);

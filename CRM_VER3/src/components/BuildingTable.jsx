@@ -4,7 +4,7 @@ import { BUILDING_LOCATIONS, BUILDING_TYPES } from '../constants';
 const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selectedBuildingId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedBuilding: null });
-  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
 
   const filteredBuildings = useMemo(() => {
     let filtered = buildings.filter(building =>
@@ -106,19 +106,15 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
       />
 
       <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
             <tr style={{ backgroundColor: '#f5f5f5' }}>
               <TableHeader label="건물명" sortKey="name" />
               <TableHeader label="지번" sortKey="address" />
-              <TableHeader label="사용승인일" sortKey="approvalDate" />
+              <TableHeader label="공동현관비번" sortKey="entrance" />
               <TableHeader label="층수" sortKey="floors" />
               <TableHeader label="주차" sortKey="parking" />
-              <TableHeader label="세대수" sortKey="units" />
-              <TableHeader label="위치" sortKey="location" />
-              <TableHeader label="유형" sortKey="type" />
-              <TableHeader label="메모" sortKey="memo" />
-              <th style={{ padding: '12px 8px', backgroundColor: '#f5f5f5', fontWeight: '600', width: '80px' }}>작업</th>
+              <TableHeader label="관리실번호" sortKey="office" />
             </tr>
           </thead>
           <tbody>
@@ -128,21 +124,21 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                 onClick={() => onSelectBuilding(building)}
                 onContextMenu={(e) => handleContextMenu(e, building)}
                 style={{
-                  backgroundColor: selectedBuildingId === building.id ? '#e3f2fd' : index % 2 === 0 ? '#fff' : '#fafafa',
+                  backgroundColor: selectedBuildingId === building.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f0fdf4',
                   cursor: 'pointer',
                   borderBottom: '1px solid #e0e0e0',
                   transition: 'background-color 0.2s'
                 }}
                 onMouseEnter={(e) => {
                   if (selectedBuildingId !== building.id) {
-                    e.currentTarget.style.backgroundColor = '#f0f0f0';
+                    e.currentTarget.style.backgroundColor = '#dcfce7';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (selectedBuildingId === building.id) {
                     e.currentTarget.style.backgroundColor = '#e3f2fd';
                   } else {
-                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#fff' : '#fafafa';
+                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f0fdf4';
                   }
                 }}
               >
@@ -152,63 +148,17 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                 <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
                   {building.address || '-'}
                 </td>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', fontSize: '12px', color: '#666' }}>
-                  {building.approvalDate || '-'}
+                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  {building.entrance || '-'}
                 </td>
-                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {building.floors || '-'}
                 </td>
-                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {building.parking || '-'}
                 </td>
-                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                  {building.units || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', fontSize: '12px', color: '#666' }}>
-                  {building.location || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', fontSize: '12px', color: '#666' }}>
-                  {building.type || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', fontSize: '12px', color: '#666', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {building.memo || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(building);
-                    }}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '12px',
-                      backgroundColor: '#2196F3',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '3px',
-                      cursor: 'pointer',
-                      marginRight: '4px'
-                    }}
-                  >
-                    수정
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(building);
-                    }}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '12px',
-                      backgroundColor: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '3px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    삭제
-                  </button>
+                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  {building.office || '-'}
                 </td>
               </tr>
             ))}
