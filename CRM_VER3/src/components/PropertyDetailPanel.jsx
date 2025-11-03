@@ -25,7 +25,7 @@ const PropertyDetailPanel = ({
       right: 0,
       top: 0,
       height: '100vh',
-      width: '400px',
+      width: '800px',
       backgroundColor: '#fff',
       borderLeft: '1px solid #e0e0e0',
       boxShadow: '-2px 0 8px rgba(0,0,0,0.1)',
