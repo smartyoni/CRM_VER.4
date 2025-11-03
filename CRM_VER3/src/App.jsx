@@ -602,25 +602,27 @@ function App() {
       {/* 하단 탭바 */}
       <div className="tab-bar" style={{
         display: 'flex',
-        borderTop: '1px solid #e0e0e0',
-        backgroundColor: '#fff',
-        height: '60px',
+        borderTop: '2px solid #e0e0e0',
+        backgroundColor: '#f8f8f8',
+        height: '70px',
         justifyContent: 'center',
-        gap: '40px',
+        gap: '60px',
         alignItems: 'center'
       }}>
         <button
           onClick={() => setActiveTab('고객목록')}
           style={{
-            padding: '8px 16px',
-            fontSize: '16px',
-            fontWeight: activeTab === '고객목록' ? 'bold' : 'normal',
-            color: activeTab === '고객목록' ? '#2196F3' : '#999',
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: activeTab === '고객목록' ? '#000' : '#888',
             border: 'none',
-            backgroundColor: 'transparent',
-            borderBottom: activeTab === '고객목록' ? '3px solid #2196F3' : '3px solid transparent',
+            backgroundColor: activeTab === '고객목록' ? '#fff' : 'transparent',
+            borderBottom: activeTab === '고객목록' ? '4px solid #FF6B9D' : '4px solid transparent',
+            borderRadius: activeTab === '고객목록' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            boxShadow: activeTab === '고객목록' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
           }}
         >
           📋 고객목록
@@ -628,15 +630,17 @@ function App() {
         <button
           onClick={() => setActiveTab('매물장')}
           style={{
-            padding: '8px 16px',
-            fontSize: '16px',
-            fontWeight: activeTab === '매물장' ? 'bold' : 'normal',
-            color: activeTab === '매물장' ? '#2196F3' : '#999',
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: activeTab === '매물장' ? '#000' : '#888',
             border: 'none',
-            backgroundColor: 'transparent',
-            borderBottom: activeTab === '매물장' ? '3px solid #2196F3' : '3px solid transparent',
+            backgroundColor: activeTab === '매물장' ? '#fff' : 'transparent',
+            borderBottom: activeTab === '매물장' ? '4px solid #FF6B9D' : '4px solid transparent',
+            borderRadius: activeTab === '매물장' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            boxShadow: activeTab === '매물장' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
           }}
         >
           🏠 매물장
