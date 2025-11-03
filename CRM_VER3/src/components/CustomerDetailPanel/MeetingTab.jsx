@@ -445,14 +445,8 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [editingResponseIndex, setEditingResponseIndex] = useState(null);
     const [editingResponseValue, setEditingResponseValue] = useState('');
     const [photoSourcePropertyIndex, setPhotoSourcePropertyIndex] = useState(null);
-    const fileInputRefs = React.useRef({});
-
-    // 파일 입력 ref 저장 (안정적인 방식)
-    const setFileInputRef = (key, el) => {
-      if (el) {
-        fileInputRefs.current[key] = el;
-      }
-    };
+    const cameraInputRef = React.useRef(null);
+    const fileInputRef = React.useRef(null);
 
     // 방문시간 순으로 정렬 (원본 인덱스 보존)
     // photos 필드 초기화
@@ -589,16 +583,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const handlePhotoSourceSelect = (source) => {
       if (photoSourcePropertyIndex === null) return;
 
-      const property = meeting.properties[photoSourcePropertyIndex];
-      const photos = property?.photos || ['', ''];
-      const emptyPhotoIndex = photos.findIndex(p => !p);
-
       if (source === 'camera') {
-        const key = `photo-camera-${photoSourcePropertyIndex}-${emptyPhotoIndex}`;
-        fileInputRefs.current[key]?.click();
+        cameraInputRef.current?.click();
       } else if (source === 'file') {
-        const key = `photo-file-${photoSourcePropertyIndex}-${emptyPhotoIndex}`;
-        fileInputRefs.current[key]?.click();
+        fileInputRef.current?.click();
       }
 
       setPhotoSourcePropertyIndex(null);
@@ -1030,25 +1018,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                     >
                       📸 사진
                     </button>
-                    {prop.photos && prop.photos.map((photo, idx) => (
-                      <React.Fragment key={`photo-inputs-${originalIndex}-${idx}`}>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          capture="environment"
-                          ref={(el) => setFileInputRef(`photo-camera-${originalIndex}-${idx}`, el)}
-                          onChange={(e) => handlePhotoUpload(e, originalIndex, idx)}
-                          style={{ display: 'none' }}
-                        />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          ref={(el) => setFileInputRef(`photo-file-${originalIndex}-${idx}`, el)}
-                          onChange={(e) => handlePhotoUpload(e, originalIndex, idx)}
-                          style={{ display: 'none' }}
-                        />
-                      </React.Fragment>
-                    ))}
                     <button onClick={() => handlePropertyEdit(originalIndex)} className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>수정</button>
                     <button onClick={() => handlePropertyDelete(originalIndex)} className="btn-secondary" style={{ fontSize: '12px', padding: '6px 12px' }}>삭제</button>
                   </div>
@@ -1139,6 +1108,41 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               </div>
             </div>
           )}
+
+          {/* 숨겨진 파일 입력 요소 */}
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            ref={cameraInputRef}
+            onChange={(e) => {
+              if (photoSourcePropertyIndex !== null) {
+                const property = meeting.properties[photoSourcePropertyIndex];
+                const photos = property?.photos || ['', ''];
+                const emptyPhotoIndex = photos.findIndex(p => !p);
+                if (emptyPhotoIndex !== -1) {
+                  handlePhotoUpload(e, photoSourcePropertyIndex, emptyPhotoIndex);
+                }
+              }
+            }}
+            style={{ display: 'none' }}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={(e) => {
+              if (photoSourcePropertyIndex !== null) {
+                const property = meeting.properties[photoSourcePropertyIndex];
+                const photos = property?.photos || ['', ''];
+                const emptyPhotoIndex = photos.findIndex(p => !p);
+                if (emptyPhotoIndex !== -1) {
+                  handlePhotoUpload(e, photoSourcePropertyIndex, emptyPhotoIndex);
+                }
+              }
+            }}
+            style={{ display: 'none' }}
+          />
         </div>
       </div>
     );
