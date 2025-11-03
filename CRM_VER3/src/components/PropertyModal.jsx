@@ -72,11 +72,19 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
     try {
       const lines = parseText.split('\n').map(l => l.trim()).filter(l => l);
 
-      // Key-Value 추출 헬퍼 함수
+      // 컬럼명 목록 (파싱 대상 제외)
+      const columnNames = ['매물명', '금액', '입주일(만기일)', '입주일자', '임대인이름', '임대인번호', '임차인번호', '비밀번호', '매물정보'];
+
+      // Key-Value 추출 헬퍼 함수 (컬럼명 직후의 값 추출)
       const getValueAfterKey = (key) => {
-        const index = lines.findIndex(line => line.includes(key));
+        const index = lines.findIndex(line => line === key); // 정확히 일치하는 컬럼명만
         if (index !== -1 && index + 1 < lines.length) {
-          return lines[index + 1];
+          const nextLine = lines[index + 1];
+          // 다음 줄이 컬럼명이면 공백 반환
+          if (columnNames.includes(nextLine)) {
+            return '';
+          }
+          return nextLine;
         }
         return '';
       };
@@ -84,7 +92,7 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
       const parsed = {};
 
       // 1. 매물명 파싱 (건물명 + 호실명 분리)
-      const propertyName = getValueAfterKey('매물명') || getValueAfterKey('건물호실명');
+      const propertyName = getValueAfterKey('매물명');
       const nameMatch = propertyName.match(/^(.+?)\s+(\d+호)/);
       if (nameMatch) {
         parsed.buildingName = nameMatch[1].trim();
@@ -99,7 +107,7 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
       parsed.price = priceText.replace(/[^0-9]/g, '') || '';
 
       // 3. 입주일 파싱 (MM/DD/YYYY → YYYY-MM-DD)
-      const moveInText = getValueAfterKey('입주일(만기일)') || getValueAfterKey('입주일자');
+      const moveInText = getValueAfterKey('입주일(만기일)');
       const dateMatch = moveInText.match(/(\d{2})\/(\d{2})\/(\d{4})/);
       if (dateMatch) {
         // MM/DD/YYYY → YYYY-MM-DD
@@ -107,14 +115,15 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
       }
 
       // 4. 임대인(소유자) 정보
-      parsed.ownerName = getValueAfterKey('임대인이름');
+      const ownerNameValue = getValueAfterKey('임대인이름');
+      parsed.ownerName = ownerNameValue; // 임대인이름 그대로 사용
       parsed.ownerPhone = getValueAfterKey('임대인번호');
 
       // 5. 임차인(점주) 번호
       parsed.tenantPhone = getValueAfterKey('임차인번호');
 
       // 6. 메모 (매물정보 이후 모든 내용)
-      const memoStartIndex = lines.findIndex(line => line.includes('매물정보'));
+      const memoStartIndex = lines.findIndex(line => line === '매물정보');
       if (memoStartIndex !== -1) {
         parsed.memo = lines.slice(memoStartIndex + 1).join('\n').trim();
       }
