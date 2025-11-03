@@ -159,7 +159,23 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
                     color: isToday(latestActivity.date) ? '#d32f2f' : '#333',
                     fontWeight: isToday(latestActivity.date) ? 'bold' : 'normal',
                     whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word'
+                    wordBreak: 'break-word',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '3px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTabChange && onTabChange('활동 내역');
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.transform = 'scale(1)';
                   }}>
                     {latestActivity.content}
                   </p>
@@ -300,13 +316,26 @@ const BasicInfo = ({ customer, onUpdateCustomer, activities = [], meetings = [],
                   const isTodayMeeting = isToday(meeting.date);
                   return (
                     <div key={idx} style={{
-                      padding: '6px 0',
+                      padding: '6px 8px',
                       borderTop: idx > 0 ? '1px solid #f0f0f0' : 'none',
                       color: isTodayMeeting ? '#d32f2f' : '#555',
                       fontWeight: isTodayMeeting ? 'bold' : 'normal',
                       backgroundColor: isTodayMeeting ? 'rgba(211, 47, 47, 0.05)' : 'transparent',
-                      paddingLeft: isTodayMeeting ? '8px' : '0px',
-                      borderRadius: isTodayMeeting ? '4px' : '0px'
+                      borderRadius: isTodayMeeting ? '4px' : '0px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTabChange && onTabChange('미팅 내역');
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isTodayMeeting ? 'rgba(211, 47, 47, 0.15)' : 'rgba(33, 150, 243, 0.1)';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = isTodayMeeting ? 'rgba(211, 47, 47, 0.05)' : 'transparent';
+                      e.currentTarget.style.transform = 'translateX(0)';
                     }}>
                       <span style={{ color: isTodayMeeting ? '#d32f2f' : '#999', marginRight: '4px' }}>{meeting.date.slice(0, 10)}</span>
                       <span style={{ color: isTodayMeeting ? '#d32f2f' : '#2196F3', fontWeight: 'bold' }}>
