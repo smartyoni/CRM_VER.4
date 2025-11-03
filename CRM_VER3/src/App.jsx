@@ -6,6 +6,7 @@ import CustomerModal from './components/CustomerModal';
 import PropertyModal from './components/PropertyModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
 import PropertyDetailPanel from './components/PropertyDetailPanel';
+import PropertyImporter from './components/PropertyImporter';
 import {
   subscribeToCustomers,
   subscribeToActivities,
@@ -21,7 +22,8 @@ import {
   savePropertySelection,
   deletePropertySelection,
   saveProperty,
-  deleteProperty
+  deleteProperty,
+  saveProperties
 } from './utils/storage';
 
 // Mock data for initial setup
@@ -60,6 +62,7 @@ function App() {
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록' 또는 '매물장'
+  const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const restoreInputRef = useRef(null);
 
   useEffect(() => {
@@ -236,6 +239,16 @@ function App() {
       if (selectedPropertyId === property.id) {
         setSelectedPropertyId(null);
       }
+    }
+  };
+
+  const handleImportProperties = async (importedProperties) => {
+    try {
+      await saveProperties(importedProperties);
+      // Firestore 실시간 구독이 자동으로 state 업데이트
+    } catch (error) {
+      console.error('Error importing properties:', error);
+      throw error;
     }
   };
 
@@ -541,6 +554,7 @@ function App() {
               ) : (
                 <>
                   <button onClick={() => handleOpenPropertyModal()} className="btn-primary">+ 매물 추가</button>
+                  <button onClick={() => setIsPropertyImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
@@ -667,6 +681,14 @@ function App() {
             onSave={handleSaveProperty}
             editData={editingProperty}
           />
+
+          {/* PropertyImporter */}
+          {isPropertyImporterOpen && (
+            <PropertyImporter
+              onImport={handleImportProperties}
+              onClose={() => setIsPropertyImporterOpen(false)}
+            />
+          )}
         </>
       )}
     </div>
