@@ -22,6 +22,7 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
   });
 
   const [formData, setFormData] = useState(getInitialState());
+  const [parseText, setParseText] = useState('');
 
   useEffect(() => {
     setFormData(getInitialState());
@@ -66,6 +67,74 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 파싱 함수
+  const handleParse = () => {
+    try {
+      const lines = parseText.split('\n').map(l => l.trim()).filter(l => l);
+
+      // Key-Value 추출 헬퍼 함수
+      const getValueAfterKey = (key) => {
+        const index = lines.findIndex(line => line.includes(key));
+        if (index !== -1 && index + 1 < lines.length) {
+          return lines[index + 1];
+        }
+        return '';
+      };
+
+      const parsed = {};
+
+      // 1. 매물명 파싱 (건물명 + 호실명 분리)
+      const propertyName = getValueAfterKey('매물명') || getValueAfterKey('건물호실명');
+      const nameMatch = propertyName.match(/^(.+?)\s+(\d+호)/);
+      if (nameMatch) {
+        parsed.buildingName = nameMatch[1].trim();
+        parsed.roomNumber = nameMatch[2].trim();
+      } else {
+        parsed.buildingName = propertyName;
+        parsed.roomNumber = '';
+      }
+
+      // 2. 금액 파싱 (숫자만 추출)
+      const priceText = getValueAfterKey('금액');
+      parsed.price = priceText.replace(/[^0-9]/g, '') || '';
+
+      // 3. 입주일 파싱 (MM/DD/YYYY → YYYY-MM-DD)
+      const moveInText = getValueAfterKey('입주일(만기일)') || getValueAfterKey('입주일자');
+      const dateMatch = moveInText.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (dateMatch) {
+        // MM/DD/YYYY → YYYY-MM-DD
+        parsed.moveInDate = `${dateMatch[3]}-${dateMatch[1]}-${dateMatch[2]}`;
+      }
+
+      // 4. 임대인(소유자) 정보
+      parsed.ownerName = getValueAfterKey('임대인이름');
+      parsed.ownerPhone = getValueAfterKey('임대인번호');
+
+      // 5. 임차인(점주) 번호
+      parsed.tenantPhone = getValueAfterKey('임차인번호');
+
+      // 6. 메모 (매물정보 이후 모든 내용)
+      const memoStartIndex = lines.findIndex(line => line.includes('매물정보'));
+      if (memoStartIndex !== -1) {
+        parsed.memo = lines.slice(memoStartIndex + 1).join('\n').trim();
+      }
+
+      // 7. 폼 데이터 업데이트
+      setFormData(prev => ({
+        ...prev,
+        ...parsed,
+        createdAt: new Date().toISOString() // 접수일은 자동
+      }));
+
+      // 8. 파싱 완료 알림 및 텍스트 초기화
+      alert('파싱이 완료되었습니다!');
+      setParseText('');
+
+    } catch (error) {
+      alert('파싱 중 오류가 발생했습니다: ' + error.message);
+    }
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -84,15 +153,36 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
           </div>
         </div>
 
-        {/* 접수일 */}
+        {/* 빠른 입력 - 텍스트 파싱 */}
         <div className="form-group">
-          <label>접수일</label>
-          <input
-            type="date"
-            name="createdAt"
-            value={formData.createdAt ? formData.createdAt.slice(0, 10) : ''}
-            onChange={handleDateChange}
+          <label>🚀 빠른 입력 (앱시트 데이터 붙여넣기)</label>
+          <textarea
+            placeholder="앱시트에서 복사한 내용을 붙여넣으세요..."
+            value={parseText}
+            onChange={(e) => setParseText(e.target.value)}
+            rows="8"
+            style={{
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              resize: 'vertical'
+            }}
           />
+          <button
+            type="button"
+            onClick={handleParse}
+            className="btn-primary"
+            style={{
+              marginTop: '8px',
+              width: '100%',
+              backgroundColor: '#FF6B9D',
+              padding: '10px'
+            }}
+          >
+            📋 파싱하여 자동 입력
+          </button>
         </div>
 
         {/* 건물명과 호실명 */}
