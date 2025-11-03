@@ -446,6 +446,8 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [showPropertyEditModal, setShowPropertyEditModal] = useState(false);
     const [editingInfoIndex, setEditingInfoIndex] = useState(null);
     const [editingInfoValue, setEditingInfoValue] = useState('');
+    const [editingResponseIndex, setEditingResponseIndex] = useState(null);
+    const [editingResponseValue, setEditingResponseValue] = useState('');
 
     // 방문시간 순으로 정렬 (원본 인덱스 보존)
     const sortedProperties = meeting.properties ? meeting.properties.map((prop, originalIndex) => ({ prop, originalIndex }))
@@ -500,6 +502,36 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         handleInfoSave(originalIndex);
       } else if (e.key === 'Escape') {
         handleInfoCancel();
+      }
+    };
+
+    const handleResponseDoubleClick = (originalIndex) => {
+      setEditingResponseIndex(originalIndex);
+      setEditingResponseValue(meeting.properties[originalIndex].customerResponse || '');
+    };
+
+    const handleResponseSave = (originalIndex) => {
+      if (editingResponseIndex === originalIndex) {
+        const newProperties = [...meeting.properties];
+        newProperties[originalIndex] = { ...newProperties[originalIndex], customerResponse: editingResponseValue };
+        const updatedMeeting = { ...meeting, properties: newProperties };
+        onSaveMeeting(updatedMeeting);
+        setViewingMeeting(updatedMeeting);
+        setEditingResponseIndex(null);
+        setEditingResponseValue('');
+      }
+    };
+
+    const handleResponseCancel = () => {
+      setEditingResponseIndex(null);
+      setEditingResponseValue('');
+    };
+
+    const handleResponseKeyDown = (e, originalIndex) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        handleResponseSave(originalIndex);
+      } else if (e.key === 'Escape') {
+        handleResponseCancel();
       }
     };
 
@@ -768,12 +800,87 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       </div>
                     )}
                   </div>
-                  {prop.customerResponse && (
-                    <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
-                      <div style={{ fontSize: '13px', color: '#333', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{prop.customerResponse}</div>
-                    </div>
-                  )}
+                  <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
+                    {editingResponseIndex === originalIndex ? (
+                      <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
+                        <textarea
+                          value={editingResponseValue}
+                          onChange={(e) => setEditingResponseValue(e.target.value)}
+                          onKeyDown={(e) => handleResponseKeyDown(e, originalIndex)}
+                          onBlur={() => handleResponseSave(originalIndex)}
+                          autoFocus
+                          style={{
+                            width: '100%',
+                            minHeight: '100px',
+                            padding: '8px',
+                            border: '1px solid #FF6B9D',
+                            borderRadius: '4px',
+                            fontSize: '13px',
+                            fontFamily: 'inherit',
+                            resize: 'vertical'
+                          }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleResponseSave(originalIndex)}
+                            style={{
+                              padding: '4px 12px',
+                              backgroundColor: '#4CAF50',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            ✓ 저장
+                          </button>
+                          <button
+                            onClick={handleResponseCancel}
+                            style={{
+                              padding: '4px 12px',
+                              backgroundColor: '#999',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            ✕ 취소
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        onDoubleClick={() => handleResponseDoubleClick(originalIndex)}
+                        style={{
+                          padding: '8px',
+                          backgroundColor: '#f9f9f9',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          border: '1px solid transparent',
+                          transition: 'all 0.2s ease',
+                          minHeight: '20px',
+                          fontSize: '13px',
+                          color: '#333',
+                          lineHeight: '1.5',
+                          whiteSpace: 'pre-wrap'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f0f0f0';
+                          e.currentTarget.style.border = '1px solid #e0e0e0';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f9f9f9';
+                          e.currentTarget.style.border = '1px solid transparent';
+                        }}
+                      >
+                        {prop.customerResponse || '(클릭하여 고객반응 추가)'}
+                      </div>
+                    )}
+                  </div>
                   <div className="property-card-footer">
                     <span className="property-detail">🏢 {prop.agency}</span>
                     <span className="property-detail">
