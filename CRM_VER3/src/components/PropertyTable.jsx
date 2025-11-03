@@ -87,6 +87,40 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
     return `${Number(price).toLocaleString()}`;
   };
 
+  // 접수일에 따른 배경색 결정
+  const getBackgroundColor = (createdAt, isSelected) => {
+    // 선택된 행은 기존 색상 유지
+    if (isSelected) return '#e3f2fd';
+
+    if (!createdAt) return 'transparent';
+
+    const createdDate = new Date(createdAt);
+    const today = new Date();
+
+    // 연월 비교
+    const createdYear = createdDate.getFullYear();
+    const createdMonth = createdDate.getMonth();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    // 월의 차이 계산
+    const monthDiff = (currentYear - createdYear) * 12 + (currentMonth - createdMonth);
+
+    if (monthDiff === 0) {
+      // 당월: 핑크색
+      return '#ffebee';
+    } else if (monthDiff === 1) {
+      // 전월: 파란색
+      return '#e3f2fd';
+    } else if (monthDiff >= 2 && monthDiff <= 4) {
+      // 2~4개월 전: 노란색
+      return '#fff9c4';
+    } else {
+      // 나머지 (5개월 이상): 기본색
+      return 'transparent';
+    }
+  };
+
   const SortHeader = ({ column, label }) => (
     <th
       onClick={() => handleSort(column)}
@@ -159,7 +193,7 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
                   onContextMenu={(e) => handleContextMenu(e, property)}
                   style={{
                     cursor: 'pointer',
-                    backgroundColor: selectedPropertyId === property.id ? '#e3f2fd' : 'transparent',
+                    backgroundColor: getBackgroundColor(property.createdAt, selectedPropertyId === property.id),
                     fontWeight: selectedPropertyId === property.id ? 'bold' : 'normal'
                   }}
                 >
