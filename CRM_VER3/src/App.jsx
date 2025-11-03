@@ -10,6 +10,7 @@ import CustomerDetailPanel from './components/CustomerDetailPanel';
 import PropertyDetailPanel from './components/PropertyDetailPanel';
 import BuildingDetailPanel from './components/BuildingDetailPanel';
 import PropertyImporter from './components/PropertyImporter';
+import BuildingImporter from './components/BuildingImporter';
 import {
   subscribeToCustomers,
   subscribeToActivities,
@@ -74,6 +75,7 @@ function App() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록', '매물장', '건물정보'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
+  const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
   const restoreInputRef = useRef(null);
 
   useEffect(() => {
@@ -299,6 +301,16 @@ function App() {
       // Firestore 실시간 구독이 자동으로 state 업데이트
     } catch (error) {
       console.error('Error importing properties:', error);
+      throw error;
+    }
+  };
+
+  const handleImportBuildings = async (importedBuildings) => {
+    try {
+      await saveBuildings(importedBuildings);
+      // Firestore 실시간 구독이 자동으로 state 업데이트
+    } catch (error) {
+      console.error('Error importing buildings:', error);
       throw error;
     }
   };
@@ -625,6 +637,7 @@ function App() {
               ) : (
                 <>
                   <button onClick={() => handleOpenBuildingModal()} className="btn-primary">+ 건물 추가</button>
+                  <button onClick={() => setIsBuildingImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
@@ -788,6 +801,18 @@ function App() {
             <PropertyImporter
               onImport={handleImportProperties}
               onClose={() => setIsPropertyImporterOpen(false)}
+            />
+          )}
+        </>
+      )}
+
+      {activeTab === '건물정보' && (
+        <>
+          {/* BuildingImporter */}
+          {isBuildingImporterOpen && (
+            <BuildingImporter
+              onImport={handleImportBuildings}
+              onClose={() => setIsBuildingImporterOpen(false)}
             />
           )}
         </>

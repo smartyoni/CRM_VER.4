@@ -150,6 +150,104 @@ const getValue = (values, index, defaultValue) => {
 };
 
 /**
+ * CSV 파일을 건물 데이터로 변환
+ * @param {string} csvContent - CSV 파일의 텍스트 내용
+ * @returns {Array} 건물 데이터 배열
+ */
+export const parseBuildingCSV = (csvContent) => {
+  const lines = csvContent.trim().split('\n');
+  if (lines.length < 2) {
+    throw new Error('CSV 파일이 비어있거나 헤더가 없습니다.');
+  }
+
+  // 헤더 파싱
+  const headers = parseCSVLine(lines[0]);
+
+  // 필드 매핑 (유연한 헤더 지원)
+  const fieldMapping = {
+    'createdAt': ['접수일', 'created_at', 'createdAt', '등록일'],
+    'name': ['건물명', 'building_name', 'name', '이름'],
+    'address': ['지번', 'address', '주소'],
+    'approvalDate': ['사용승인일', 'approval_date', 'approvalDate'],
+    'floors': ['층수', 'floors'],
+    'parking': ['주차', 'parking', '주차대수', 'parking_count'],
+    'units': ['세대수', 'units', '유닛수', 'unit_count'],
+    'entrance': ['공동현관', 'entrance', '공동현관비번', 'entrance_code'],
+    'office': ['관리실', 'office', '관리실번호', 'office_number'],
+    'location': ['위치', 'location'],
+    'type': ['유형', 'type', '건물유형', 'building_type'],
+    'memo': ['메모', 'memo', '비고']
+  };
+
+  // 헤더에서 필드 인덱스 찾기
+  const columnIndices = {};
+  Object.entries(fieldMapping).forEach(([field, aliases]) => {
+    const index = headers.findIndex(h =>
+      aliases.includes(h.trim())
+    );
+    if (index !== -1) {
+      columnIndices[field] = index;
+    }
+  });
+
+  // 필수 필드 확인
+  if (columnIndices['name'] === undefined || columnIndices['address'] === undefined) {
+    throw new Error('필수 필드 "건물명"과 "지번"을 찾을 수 없습니다.');
+  }
+
+  // 데이터 행 파싱
+  const buildings = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue; // 빈 줄 스킵
+
+    try {
+      const values = parseCSVLine(line);
+
+      // 접수일 처리: CSV에 있으면 그 값 사용, 없으면 현재 시간
+      let createdAtValue = getValue(values, columnIndices['createdAt'], '');
+      let createdAt;
+      if (createdAtValue.trim()) {
+        // YYYY-MM-DD 형식을 ISO 형식으로 변환
+        const date = new Date(createdAtValue.trim());
+        createdAt = date.toString() === 'Invalid Date' ? new Date().toISOString() : date.toISOString();
+      } else {
+        createdAt = new Date().toISOString();
+      }
+
+      const building = {
+        id: generateId(),
+        createdAt: createdAt,
+        name: getValue(values, columnIndices['name'], ''),
+        address: getValue(values, columnIndices['address'], ''),
+        approvalDate: getValue(values, columnIndices['approvalDate'], ''),
+        floors: getValue(values, columnIndices['floors'], ''),
+        parking: getValue(values, columnIndices['parking'], ''),
+        units: getValue(values, columnIndices['units'], ''),
+        entrance: getValue(values, columnIndices['entrance'], ''),
+        office: getValue(values, columnIndices['office'], ''),
+        location: getValue(values, columnIndices['location'], ''),
+        type: getValue(values, columnIndices['type'], ''),
+        memo: getValue(values, columnIndices['memo'], '')
+      };
+
+      // 건물명과 지번이 있으면 추가
+      if (building.name.trim() && building.address.trim()) {
+        buildings.push(building);
+      }
+    } catch (error) {
+      console.warn(`CSV 행 ${i + 1} 파싱 오류:`, error.message);
+    }
+  }
+
+  if (buildings.length === 0) {
+    throw new Error('유효한 건물 데이터를 찾을 수 없습니다.');
+  }
+
+  return buildings;
+};
+
+/**
  * ID 생성 (storage.js의 generateId와 동일)
  * @returns {string} 고유 ID
  */
