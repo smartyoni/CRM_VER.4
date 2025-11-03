@@ -1522,7 +1522,7 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
                     </div>
                     <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #4CAF50' }}>
                       <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        📑 임대차정보
+                        ⭐ 특이사항
                         <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, [`lease_${originalIndex}`]: !editingFields[`lease_${originalIndex}`] })}>
                           {editingFields[`lease_${originalIndex}`] ? '✓' : '✎'}
                         </span>
@@ -1532,7 +1532,7 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
                           value={prop.leaseInfo || ''}
                           onChange={(e) => handlePropertyFieldEdit(originalIndex, 'leaseInfo', e.target.value)}
                           style={{ width: '100%', minHeight: '80px', padding: '6px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'inherit', fontSize: '12px' }}
-                          placeholder="임대차정보를 입력하세요"
+                          placeholder="특이사항을 입력하세요"
                         />
                       ) : (
                         <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4', minHeight: '20px' }}>
