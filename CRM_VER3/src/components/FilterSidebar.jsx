@@ -67,17 +67,23 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
 
       return customers.filter(c => c.status === status).length;
     } else {
-      // 매물장 필터
+      // 매물장 필터 (구분별)
       if (status === '전체') return properties.length;
-      // 추가 매물 필터는 사용자 요청에 따라 추가 예정
-      return 0;
+      // 해당 구분의 매물 개수
+      return properties.filter(p => p.category === status).length;
     }
+  };
+
+  // 매물 구분 목록 추출 (중복 제거, 정렬)
+  const getPropertyCategories = () => {
+    const categories = new Set(properties.map(p => p.category).filter(Boolean));
+    return ['전체', ...Array.from(categories).sort()];
   };
 
   // activeTab에 따라 다른 필터 목록 표시
   const allStatuses = activeTab === '고객목록'
     ? ['전체', '보류', '신규', '진행중', '집중고객', '오늘미팅', '미팅일확정', '답장대기']
-    : ['전체']; // 매물장 필터 (사용자가 나중에 추가 예정)
+    : getPropertyCategories(); // 매물장 필터 (구분별 동적 생성)
 
   const handleFilterClick = (status) => {
     onFilterChange(status);

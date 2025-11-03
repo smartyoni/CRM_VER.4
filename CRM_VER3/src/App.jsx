@@ -506,6 +506,14 @@ function App() {
     return filtered;
   })();
 
+  // 매물 필터링 (구분별)
+  const filteredProperties = (() => {
+    if (activePropertyFilter === '전체') {
+      return properties;
+    }
+    return properties.filter(p => p.category === activePropertyFilter);
+  })();
+
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
 
@@ -580,7 +588,7 @@ function App() {
               />
             ) : (
               <PropertyTable
-                properties={properties}
+                properties={filteredProperties}
                 onSelectProperty={handleSelectProperty}
                 onEdit={handleOpenPropertyModal}
                 onDelete={handleDeleteProperty}
