@@ -66,7 +66,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     }
 
     const addProperty = () => {
-        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] };
+        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', status: PROPERTY_STATUSES[0] };
         setFormData({...formData, properties: [...formData.properties, newProperty]});
     }
 
@@ -92,7 +92,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyModal = ({ onClose, propertyToEdit, editIndex }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', status: PROPERTY_STATUSES[0] }
       );
       const [source, setSource] = useState('TEN');
 
@@ -229,6 +229,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>부동산</label>
                 <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>고객반응</label>
+                <textarea rows="3" value={propertyData.customerResponse} onChange={(e) => setPropertyData({...propertyData, customerResponse: e.target.value})} placeholder="고객 반응을 기록하세요"></textarea>
               </div>
             </div>
             <div className="modal-footer">
@@ -520,7 +524,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyEditModal = ({ propertyToEdit, editIndex, onClose }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', status: PROPERTY_STATUSES[0] }
       );
       const [source, setSource] = useState('TEN');
 
@@ -645,6 +649,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <label>부동산</label>
                 <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
               </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>고객반응</label>
+                <textarea rows="3" value={propertyData.customerResponse} onChange={(e) => setPropertyData({...propertyData, customerResponse: e.target.value})} placeholder="고객 반응을 기록하세요"></textarea>
+              </div>
             </div>
             <div className="modal-footer">
               <button onClick={onClose} className="btn-secondary">취소</button>
@@ -760,6 +768,12 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       </div>
                     )}
                   </div>
+                  {prop.customerResponse && (
+                    <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
+                      <div style={{ fontSize: '13px', color: '#333', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{prop.customerResponse}</div>
+                    </div>
+                  )}
                   <div className="property-card-footer">
                     <span className="property-detail">🏢 {prop.agency}</span>
                     <span className="property-detail">
