@@ -1448,11 +1448,39 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
                     매물 {idx + 1}. {prop.roomName || '미지정'}
                   </h3>
 
+                  {/* 매물 상세 정보 */}
+                  <div style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
+                    {prop.info && (
+                      <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #2196F3' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>📋 매물정보</div>
+                        <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4' }}>{prop.info}</div>
+                      </div>
+                    )}
+                    {prop.status && (
+                      <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #FF9800' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>📌 준비상태</div>
+                        <div style={{ color: '#FF9800', fontWeight: 'bold' }}>{prop.status}</div>
+                      </div>
+                    )}
+                    {prop.visitTime && (
+                      <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #9C27B0' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>🕐 방문시간</div>
+                        <div style={{ color: '#333' }}>{prop.visitTime}</div>
+                      </div>
+                    )}
+                    {prop.leaseInfo && (
+                      <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #4CAF50' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px' }}>📑 임대차정보</div>
+                        <div style={{ color: '#333' }}>{prop.leaseInfo}</div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* 고객반응 */}
                   {prop.customerResponse && (
                     <div style={{ marginBottom: '15px' }}>
                       <div style={{ fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '5px' }}>💬 고객반응</div>
-                      <div style={{ padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', minHeight: '40px' }}>
+                      <div style={{ padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', minHeight: '40px', borderLeft: '4px solid #FF6B9D' }}>
                         {prop.customerResponse}
                       </div>
                     </div>
@@ -1469,7 +1497,7 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
                               key={photoIdx}
                               src={photo}
                               alt={`사진 ${photoIdx + 1}`}
-                              style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
+                              style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
                             />
                           )
                         ))}
