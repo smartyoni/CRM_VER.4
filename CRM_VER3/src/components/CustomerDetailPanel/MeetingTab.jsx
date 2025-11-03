@@ -695,7 +695,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                           autoFocus
                           style={{
                             width: '100%',
-                            minHeight: '80px',
+                            minHeight: '200px',
                             padding: '8px',
                             border: '1px solid #FF6B9D',
                             borderRadius: '4px',
