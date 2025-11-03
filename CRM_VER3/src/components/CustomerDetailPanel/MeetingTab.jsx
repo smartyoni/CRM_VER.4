@@ -66,7 +66,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     }
 
     const addProperty = () => {
-        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', status: PROPERTY_STATUSES[0] };
+        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] };
         setFormData({...formData, properties: [...formData.properties, newProperty]});
     }
 
@@ -92,7 +92,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyModal = ({ onClose, propertyToEdit, editIndex }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] }
       );
       const [source, setSource] = useState('TEN');
 
@@ -233,6 +233,63 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>고객반응</label>
                 <textarea rows="3" value={propertyData.customerResponse} onChange={(e) => setPropertyData({...propertyData, customerResponse: e.target.value})} placeholder="고객 반응을 기록하세요"></textarea>
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>사진 (최대 2장)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {[0, 1].map((idx) => (
+                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: '12px', color: '#666', fontWeight: '600' }}>사진 {idx + 1}</div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const newPhotos = [...(propertyData.photos || ['', ''])];
+                              newPhotos[idx] = event.target.result;
+                              setPropertyData({...propertyData, photos: newPhotos});
+                            };
+                            reader.readAsDataURL(e.target.files[0]);
+                          }
+                        }}
+                        style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px' }}
+                      />
+                      {propertyData.photos && propertyData.photos[idx] && (
+                        <div style={{ position: 'relative' }}>
+                          <img src={propertyData.photos[idx]} alt={`사진 ${idx + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }} />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newPhotos = [...propertyData.photos];
+                              newPhotos[idx] = '';
+                              setPropertyData({...propertyData, photos: newPhotos});
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: '4px',
+                              right: '4px',
+                              backgroundColor: 'rgba(0,0,0,0.5)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '28px',
+                              height: '28px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="modal-footer">
@@ -556,7 +613,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyEditModal = ({ propertyToEdit, editIndex, onClose }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] }
       );
       const [source, setSource] = useState('TEN');
 
@@ -684,6 +741,63 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>고객반응</label>
                 <textarea rows="3" value={propertyData.customerResponse} onChange={(e) => setPropertyData({...propertyData, customerResponse: e.target.value})} placeholder="고객 반응을 기록하세요"></textarea>
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>사진 (최대 2장)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {[0, 1].map((idx) => (
+                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: '12px', color: '#666', fontWeight: '600' }}>사진 {idx + 1}</div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const newPhotos = [...(propertyData.photos || ['', ''])];
+                              newPhotos[idx] = event.target.result;
+                              setPropertyData({...propertyData, photos: newPhotos});
+                            };
+                            reader.readAsDataURL(e.target.files[0]);
+                          }
+                        }}
+                        style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px' }}
+                      />
+                      {propertyData.photos && propertyData.photos[idx] && (
+                        <div style={{ position: 'relative' }}>
+                          <img src={propertyData.photos[idx]} alt={`사진 ${idx + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }} />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newPhotos = [...propertyData.photos];
+                              newPhotos[idx] = '';
+                              setPropertyData({...propertyData, photos: newPhotos});
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: '4px',
+                              right: '4px',
+                              backgroundColor: 'rgba(0,0,0,0.5)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '28px',
+                              height: '28px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="modal-footer">
@@ -881,6 +995,18 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       </div>
                     )}
                   </div>
+                  {prop.photos && prop.photos.some(photo => photo) && (
+                    <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px', fontWeight: '600' }}>📷 사진</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        {prop.photos.map((photo, idx) => (
+                          photo && (
+                            <img key={idx} src={photo} alt={`사진 ${idx + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }} />
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="property-card-footer">
                     <span className="property-detail">🏢 {prop.agency}</span>
                     <span className="property-detail">
