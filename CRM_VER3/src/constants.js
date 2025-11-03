@@ -5,3 +5,7 @@ export const STATUSES = ['신규', '진행중', '장기관리고객', '보류'];
 export const PROGRESS_STATUSES = ['매물제안예정', '매물제안중', '미팅예정', '접수후대기중'];
 export const ACTIVITY_TYPES = ['전화상담', '문자/카톡', '매물제안', '워킹상담', '현장안내', '미팅진행', '기타'];
 export const PROPERTY_STATUSES = ['확인전', '확인중', '볼수있음', '오늘못봄', '계약됨'];
+
+// 건물정보 관련 상수
+export const BUILDING_LOCATIONS = ['향교', '나루', '발산', '마곡', '신방화', '가양', '등촌', '공항', '화곡', '기타'];
+export const BUILDING_TYPES = ['오피스텔', '상업용', '아파트', '지산', '기타'];

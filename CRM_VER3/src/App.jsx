@@ -2,10 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import FilterSidebar from './components/FilterSidebar';
 import CustomerTable from './components/CustomerTable';
 import PropertyTable from './components/PropertyTable';
+import BuildingTable from './components/BuildingTable';
 import CustomerModal from './components/CustomerModal';
 import PropertyModal from './components/PropertyModal';
+import BuildingModal from './components/BuildingModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
 import PropertyDetailPanel from './components/PropertyDetailPanel';
+import BuildingDetailPanel from './components/BuildingDetailPanel';
 import PropertyImporter from './components/PropertyImporter';
 import {
   subscribeToCustomers,
@@ -13,6 +16,7 @@ import {
   subscribeToMeetings,
   subscribeToPropertySelections,
   subscribeToProperties,
+  subscribeToBuildings,
   saveCustomer,
   deleteCustomer,
   saveActivity,
@@ -23,7 +27,10 @@ import {
   deletePropertySelection,
   saveProperty,
   deleteProperty,
-  saveProperties
+  saveProperties,
+  saveBuilding,
+  deleteBuilding,
+  saveBuildings
 } from './utils/storage';
 
 // Mock data for initial setup
@@ -51,17 +58,21 @@ function App() {
   const [meetings, setMeetings] = useState([]);
   const [propertySelections, setPropertySelections] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [buildings, setBuildings] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
+  const [selectedBuildingId, setSelectedBuildingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
+  const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [editingProperty, setEditingProperty] = useState(null);
+  const [editingBuilding, setEditingBuilding] = useState(null);
   const [activeCustomerFilter, setActiveCustomerFilter] = useState('전체');
   const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록' 또는 '매물장'
+  const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록', '매물장', '건물정보'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const restoreInputRef = useRef(null);
 
@@ -87,6 +98,10 @@ function App() {
       setProperties(properties);
     });
 
+    const unsubscribeBuildings = subscribeToBuildings((buildings) => {
+      setBuildings(buildings);
+    });
+
     // Cleanup subscriptions on unmount
     return () => {
       unsubscribeCustomers();
@@ -94,6 +109,7 @@ function App() {
       unsubscribeMeetings();
       unsubscribePropertySelections();
       unsubscribeProperties();
+      unsubscribeBuildings();
     };
   }, []);
 
@@ -242,6 +258,41 @@ function App() {
     }
   };
 
+  // Building handlers
+  const handleSelectBuilding = (building) => {
+    if (selectedBuildingId === building.id) {
+      setSelectedBuildingId(null);
+    } else {
+      setSelectedBuildingId(building.id);
+    }
+  };
+
+  const handleOpenBuildingModal = (building = null) => {
+    setEditingBuilding(building);
+    setIsBuildingModalOpen(true);
+    if (building && building.id === selectedBuildingId) {
+      setSelectedBuildingId(null);
+    }
+  };
+
+  const handleCloseBuildingModal = () => {
+    setIsBuildingModalOpen(false);
+    setEditingBuilding(null);
+  };
+
+  const handleSaveBuilding = async (buildingData) => {
+    await saveBuilding(buildingData);
+  };
+
+  const handleDeleteBuilding = async (building) => {
+    if (confirm(`"${building.name}" 건물을 정말 삭제하시겠습니까?`)) {
+      await deleteBuilding(building.id);
+      if (selectedBuildingId === building.id) {
+        setSelectedBuildingId(null);
+      }
+    }
+  };
+
   const handleImportProperties = async (importedProperties) => {
     try {
       await saveProperties(importedProperties);
@@ -259,6 +310,7 @@ function App() {
         meetings,
         propertySelections,
         properties,
+        buildings,
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -281,12 +333,13 @@ function App() {
         const data = JSON.parse(e.target.result);
         if (data && Array.isArray(data.customers) && Array.isArray(data.activities)) {
           // Firestore에 각 문서 저장
-          const { saveCustomers, saveActivities, saveMeetings, savePropertySelections, saveProperties } = await import('./utils/storage');
+          const { saveCustomers, saveActivities, saveMeetings, savePropertySelections, saveProperties, saveBuildings } = await import('./utils/storage');
           await saveCustomers(data.customers || []);
           await saveActivities(data.activities || []);
           await saveMeetings(data.meetings || []);
           await savePropertySelections(data.propertySelections || []);
           await saveProperties(data.properties || []);
+          await saveBuildings(data.buildings || []);
           alert('데이터가 성공적으로 복원되었습니다.');
         } else {
           throw new Error('잘못된 파일 형식입니다.');
@@ -544,7 +597,9 @@ function App() {
               ☰
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <h1>{activeTab === '고객목록' ? '고객 목록' : '매물장'}</h1>
+              <h1>
+                {activeTab === '고객목록' ? '고객 목록' : activeTab === '매물장' ? '매물장' : '건물정보'}
+              </h1>
               {activeTab === '고객목록' && activeCustomerFilter !== '전체' && (
                 <span style={{ fontSize: '13px', color: '#7f8c8d' }}>
                   필터: {activeCustomerFilter} - {getFilterDescription(activeCustomerFilter)}
@@ -559,10 +614,17 @@ function App() {
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
                 </>
-              ) : (
+              ) : activeTab === '매물장' ? (
                 <>
                   <button onClick={() => handleOpenPropertyModal()} className="btn-primary">+ 매물 추가</button>
                   <button onClick={() => setIsPropertyImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
+                  <button onClick={handleBackup} className="btn-secondary">백업</button>
+                  <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
+                  <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => handleOpenBuildingModal()} className="btn-primary">+ 건물 추가</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
@@ -586,13 +648,21 @@ function App() {
                 activities={activities}
                 meetings={meetings}
               />
-            ) : (
+            ) : activeTab === '매물장' ? (
               <PropertyTable
                 properties={filteredProperties}
                 onSelectProperty={handleSelectProperty}
                 onEdit={handleOpenPropertyModal}
                 onDelete={handleDeleteProperty}
                 selectedPropertyId={selectedPropertyId}
+              />
+            ) : (
+              <BuildingTable
+                buildings={buildings}
+                onSelectBuilding={handleSelectBuilding}
+                onEdit={handleOpenBuildingModal}
+                onDelete={handleDeleteBuilding}
+                selectedBuildingId={selectedBuildingId}
               />
             )}
           </main>
@@ -645,6 +715,24 @@ function App() {
           }}
         >
           🏠 매물장
+        </button>
+        <button
+          onClick={() => setActiveTab('건물정보')}
+          style={{
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: activeTab === '건물정보' ? '#000' : '#888',
+            border: 'none',
+            backgroundColor: activeTab === '건물정보' ? '#fff' : 'transparent',
+            borderBottom: activeTab === '건물정보' ? '4px solid #FF9800' : '4px solid transparent',
+            borderRadius: activeTab === '건물정보' ? '8px 8px 0 0' : '0',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: activeTab === '건물정보' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
+          }}
+        >
+          🏢 건물정보
         </button>
       </div>
 
@@ -702,6 +790,26 @@ function App() {
               onClose={() => setIsPropertyImporterOpen(false)}
             />
           )}
+        </>
+      )}
+
+      {activeTab === '건물정보' && (
+        <>
+          {/* BuildingDetailPanel */}
+          <BuildingDetailPanel
+            selectedBuilding={buildings.find(b => b.id === selectedBuildingId)}
+            onClose={() => setSelectedBuildingId(null)}
+            onEdit={handleOpenBuildingModal}
+            onDelete={handleDeleteBuilding}
+          />
+
+          {/* BuildingModal */}
+          <BuildingModal
+            isOpen={isBuildingModalOpen}
+            onClose={handleCloseBuildingModal}
+            onSave={handleSaveBuilding}
+            building={editingBuilding}
+          />
         </>
       )}
     </div>

@@ -14,6 +14,7 @@ const ACTIVITIES_COLLECTION = 'activities';
 const MEETINGS_COLLECTION = 'meetings';
 const PROPERTY_SELECTIONS_COLLECTION = 'propertySelections';
 const PROPERTIES_COLLECTION = 'properties';
+const BUILDINGS_COLLECTION = 'buildings';
 
 // ========== Customer Functions ==========
 
@@ -257,5 +258,54 @@ export const subscribeToProperties = (callback) => {
     callback(properties);
   }, (error) => {
     console.error('Error in properties subscription:', error);
+  });
+};
+
+// ========== Building Functions ==========
+
+export const getBuildings = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, BUILDINGS_COLLECTION));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error fetching buildings:', error);
+    return [];
+  }
+};
+
+export const saveBuildings = async (buildings) => {
+  try {
+    const promises = buildings.map(building =>
+      setDoc(doc(db, BUILDINGS_COLLECTION, building.id), building)
+    );
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Error saving buildings:', error);
+  }
+};
+
+export const saveBuilding = async (building) => {
+  try {
+    await setDoc(doc(db, BUILDINGS_COLLECTION, building.id), building);
+  } catch (error) {
+    console.error('Error saving building:', error);
+  }
+};
+
+export const deleteBuilding = async (buildingId) => {
+  try {
+    await deleteDoc(doc(db, BUILDINGS_COLLECTION, buildingId));
+  } catch (error) {
+    console.error('Error deleting building:', error);
+  }
+};
+
+// Realtime subscription for buildings
+export const subscribeToBuildings = (callback) => {
+  return onSnapshot(collection(db, BUILDINGS_COLLECTION), (snapshot) => {
+    const buildings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(buildings);
+  }, (error) => {
+    console.error('Error in buildings subscription:', error);
   });
 };
