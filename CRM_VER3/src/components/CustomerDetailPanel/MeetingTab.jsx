@@ -1390,7 +1390,8 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        windowHeight: reportRef.current.scrollHeight
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -1463,7 +1464,7 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
           {sortedPropertiesWithIndex && sortedPropertiesWithIndex.length > 0 ? (
             <div style={{ marginBottom: '30px' }}>
               {sortedPropertiesWithIndex.map(({ prop, originalIndex }, idx) => (
-                <div key={idx} style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #ddd' }}>
+                <div key={idx} style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #ddd', pageBreakInside: 'avoid' }}>
                   {/* 매물 번호와 호실 */}
                   <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: 'bold', color: '#2196F3' }}>
                     매물 {idx + 1}. {prop.roomName || '미지정'}
