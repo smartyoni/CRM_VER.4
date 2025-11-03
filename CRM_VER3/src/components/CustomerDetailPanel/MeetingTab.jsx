@@ -589,7 +589,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         fileInputRef.current?.click();
       }
 
-      setPhotoSourcePropertyIndex(null);
+      // photoSourcePropertyIndex는 파일 선택 후 onChange에서 리셋됨
     };
 
     const handlePropertySave = (propertyData, editIndex) => {
@@ -1116,14 +1116,16 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             capture="environment"
             ref={cameraInputRef}
             onChange={(e) => {
-              if (photoSourcePropertyIndex !== null) {
-                const property = meeting.properties[photoSourcePropertyIndex];
+              const currentPropertyIndex = photoSourcePropertyIndex;
+              if (currentPropertyIndex !== null) {
+                const property = meeting.properties[currentPropertyIndex];
                 const photos = property?.photos || ['', ''];
                 const emptyPhotoIndex = photos.findIndex(p => !p);
                 if (emptyPhotoIndex !== -1) {
-                  handlePhotoUpload(e, photoSourcePropertyIndex, emptyPhotoIndex);
+                  handlePhotoUpload(e, currentPropertyIndex, emptyPhotoIndex);
                 }
               }
+              setPhotoSourcePropertyIndex(null);
             }}
             style={{ display: 'none' }}
           />
@@ -1132,14 +1134,16 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             accept="image/*"
             ref={fileInputRef}
             onChange={(e) => {
-              if (photoSourcePropertyIndex !== null) {
-                const property = meeting.properties[photoSourcePropertyIndex];
+              const currentPropertyIndex = photoSourcePropertyIndex;
+              if (currentPropertyIndex !== null) {
+                const property = meeting.properties[currentPropertyIndex];
                 const photos = property?.photos || ['', ''];
                 const emptyPhotoIndex = photos.findIndex(p => !p);
                 if (emptyPhotoIndex !== -1) {
-                  handlePhotoUpload(e, photoSourcePropertyIndex, emptyPhotoIndex);
+                  handlePhotoUpload(e, currentPropertyIndex, emptyPhotoIndex);
                 }
               }
+              setPhotoSourcePropertyIndex(null);
             }}
             style={{ display: 'none' }}
           />
