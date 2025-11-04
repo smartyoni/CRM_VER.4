@@ -768,14 +768,6 @@ button {
     font-size: 12px !important;
   }
 
-  /* 특정 컬럼 너비 축소 */
-  .building-narrow {
-    max-width: 60px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    word-break: break-word !important;
-  }
-
   /* 테이블뷰 양쪽 여백 제거 */
   .main-content {
     padding: 10px 0 !important;
