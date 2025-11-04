@@ -35,9 +35,15 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
       if (aValue == null) return 1;
       if (bValue == null) return -1;
 
-      // 날짜 비교
+      // 날짜 비교 (ISO 형식 또는 YYYY-MM-DD 문자열)
       if (sortConfig.key === 'createdAt' || sortConfig.key === 'contractDate' ||
           sortConfig.key === 'balanceDate' || sortConfig.key === 'expiryDate') {
+        // YYYY-MM-DD 형식 문자열인 경우 직접 비교 (사전식 정렬)
+        if (typeof aValue === 'string' && typeof bValue === 'string' &&
+            /^\d{4}-\d{2}-\d{2}$/.test(aValue) && /^\d{4}-\d{2}-\d{2}$/.test(bValue)) {
+          return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+        // 그 외의 경우 Date 객체로 변환
         const dateA = new Date(aValue);
         const dateB = new Date(bValue);
         return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
