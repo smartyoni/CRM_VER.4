@@ -677,7 +677,7 @@ function App() {
     if (activeContractFilter === '전체') {
       return contracts;
     }
-    return contracts.filter(c => c.contractStatus === activeContractFilter);
+    return contracts.filter(c => c.progressStatus === activeContractFilter);
   })();
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
