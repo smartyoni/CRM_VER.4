@@ -768,6 +768,15 @@ button {
     font-size: 12px !important;
   }
 
+  /* 건물명, 지번 10글자 고정 너비 */
+  .building-fixed-width {
+    width: 8em !important;
+    min-width: 8em !important;
+    max-width: 8em !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
   /* 테이블뷰 양쪽 여백 제거 */
   .main-content {
     padding: 10px 0 !important;
