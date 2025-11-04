@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { CONTRACT_STATUSES } from '../constants';
+import { CONTRACT_PROGRESS_STATUSES, CONTRACT_PROPERTY_MANAGEMENT, CONTRACT_EXPIRY_MANAGEMENT } from '../constants';
 
 const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
   const getInitialState = () => ({
     id: editData?.id || null,
     createdAt: editData?.createdAt || new Date().toISOString(),
     buildingName: editData?.buildingName || '',
-    roomNumber: editData?.roomNumber || '',
+    roomName: editData?.roomName || '',
+    progressStatus: editData?.progressStatus || '계약서작성',
+    propertyManagement: editData?.propertyManagement || '',
+    expiryManagement: editData?.expiryManagement || '',
     contractDate: editData?.contractDate || '',
-    contractorName: editData?.contractorName || '',
-    contractAmount: editData?.contractAmount || 0,
-    contractStatus: editData?.contractStatus || '진행중',
-    memo: editData?.memo || ''
+    balanceDate: editData?.balanceDate || '',
+    expiryDate: editData?.expiryDate || '',
+    landlordName: editData?.landlordName || '',
+    landlordPhone: editData?.landlordPhone || '',
+    tenantName: editData?.tenantName || '',
+    tenantPhone: editData?.tenantPhone || ''
   });
 
   const [formData, setFormData] = useState(getInitialState());
@@ -26,11 +31,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
     const newErrors = {};
 
     if (!formData.buildingName.trim()) newErrors.buildingName = '건물명은 필수입니다';
-    if (!formData.roomNumber.trim()) newErrors.roomNumber = '호실번호는 필수입니다';
-    if (!formData.contractDate.trim()) newErrors.contractDate = '계약일은 필수입니다';
-    if (!formData.contractorName.trim()) newErrors.contractorName = '계약자명은 필수입니다';
-    if (formData.contractAmount < 0) newErrors.contractAmount = '계약금액은 0 이상이어야 합니다';
-    if (!formData.contractStatus) newErrors.contractStatus = '계약상태는 필수입니다';
+    if (!formData.roomName.trim()) newErrors.roomName = '호실명은 필수입니다';
+    if (!formData.progressStatus) newErrors.progressStatus = '진행상황은 필수입니다';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -40,10 +42,10 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'contractAmount' ? (value === '' ? 0 : Number(value)) : value
+      [name]: value
     }));
 
-    // 오류 메시지 제거
+    // 에러 메시지 제거
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -66,9 +68,54 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
 
   if (!isOpen) return null;
 
+  const FormField = ({ label, name, type = 'text', value, placeholder = '', required = false, options = null }) => (
+    <div style={{ marginBottom: '16px' }}>
+      <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
+        {label} {required && <span style={{ color: '#f44336' }}>*</span>}
+      </label>
+      {options ? (
+        <select
+          name={name}
+          value={value}
+          onChange={handleChange}
+          style={{
+            width: '100%',
+            padding: '10px',
+            border: errors[name] ? '1px solid #f44336' : '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            boxSizing: 'border-box'
+          }}
+        >
+          <option value="">선택하세요</option>
+          {options.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={handleChange}
+          placeholder={placeholder}
+          style={{
+            width: '100%',
+            padding: '10px',
+            border: errors[name] ? '1px solid #f44336' : '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            boxSizing: 'border-box'
+          }}
+        />
+      )}
+      {errors[name] && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors[name]}</div>}
+    </div>
+  );
+
   return (
     <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-      <div className="modal-content" style={{ backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 2px 16px rgba(0,0,0,0.2)', maxWidth: '600px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+      <div className="modal-content" style={{ backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 2px 16px rgba(0,0,0,0.2)', maxWidth: '800px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
         {/* 헤더 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderBottom: '1px solid #eee' }}>
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
@@ -91,166 +138,71 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
 
         {/* 폼 */}
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* 건물명 */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-              건물명 <span style={{ color: '#f44336' }}>*</span>
-            </label>
-            <input
-              type="text"
-              name="buildingName"
-              value={formData.buildingName}
-              onChange={handleChange}
-              placeholder="건물명을 입력해주세요"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: errors.buildingName ? '1px solid #f44336' : '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
-            />
-            {errors.buildingName && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.buildingName}</div>}
+          {/* 기본 정보 섹션 */}
+          <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
+            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>기본정보</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="건물명" name="buildingName" placeholder="건물명을 입력해주세요" required />
+              <FormField label="호실명" name="roomName" placeholder="예: 101, 205-A" required />
+            </div>
           </div>
 
-          {/* 호실번호 */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-              호실번호 <span style={{ color: '#f44336' }}>*</span>
-            </label>
-            <input
-              type="text"
-              name="roomNumber"
-              value={formData.roomNumber}
-              onChange={handleChange}
-              placeholder="예: 101, 205"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: errors.roomNumber ? '1px solid #f44336' : '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
-            />
-            {errors.roomNumber && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.roomNumber}</div>}
+          {/* 진행상황 섹션 */}
+          <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
+            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>진행상황</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField
+                label="진행상황"
+                name="progressStatus"
+                value={formData.progressStatus}
+                required
+                options={CONTRACT_PROGRESS_STATUSES}
+              />
+              <FormField
+                label="매물관리"
+                name="propertyManagement"
+                value={formData.propertyManagement}
+                options={CONTRACT_PROPERTY_MANAGEMENT}
+              />
+            </div>
+            <div style={{ marginTop: '16px' }}>
+              <FormField
+                label="만기관리"
+                name="expiryManagement"
+                value={formData.expiryManagement}
+                options={CONTRACT_EXPIRY_MANAGEMENT}
+              />
+            </div>
           </div>
 
-          {/* 계약일 */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-              계약일 <span style={{ color: '#f44336' }}>*</span>
-            </label>
-            <input
-              type="date"
-              name="contractDate"
-              value={formData.contractDate}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: errors.contractDate ? '1px solid #f44336' : '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
-            />
-            {errors.contractDate && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.contractDate}</div>}
+          {/* 날짜 정보 섹션 */}
+          <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
+            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>날짜정보</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="계약서작성일" name="contractDate" type="date" />
+              <FormField label="잔금일" name="balanceDate" type="date" />
+            </div>
+            <div style={{ marginTop: '16px' }}>
+              <FormField label="만기일" name="expiryDate" type="date" />
+            </div>
           </div>
 
-          {/* 계약자명 */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-              계약자명 <span style={{ color: '#f44336' }}>*</span>
-            </label>
-            <input
-              type="text"
-              name="contractorName"
-              value={formData.contractorName}
-              onChange={handleChange}
-              placeholder="계약자 이름을 입력해주세요"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: errors.contractorName ? '1px solid #f44336' : '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
-            />
-            {errors.contractorName && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.contractorName}</div>}
+          {/* 임대인 정보 섹션 */}
+          <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
+            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임대인정보</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="임대인이름" name="landlordName" placeholder="임대인 이름을 입력해주세요" />
+              <FormField label="임대인번호" name="landlordPhone" placeholder="010-0000-0000" />
+            </div>
           </div>
 
-          {/* 계약금액 */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-              계약금액 (만원) <span style={{ color: '#f44336' }}>*</span>
-            </label>
-            <input
-              type="number"
-              name="contractAmount"
-              value={formData.contractAmount}
-              onChange={handleChange}
-              placeholder="계약금액을 입력해주세요"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: errors.contractAmount ? '1px solid #f44336' : '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
-            />
-            {errors.contractAmount && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.contractAmount}</div>}
-          </div>
-
-          {/* 계약상태 */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-              계약상태 <span style={{ color: '#f44336' }}>*</span>
-            </label>
-            <select
-              name="contractStatus"
-              value={formData.contractStatus}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: errors.contractStatus ? '1px solid #f44336' : '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
-            >
-              {CONTRACT_STATUSES.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-            {errors.contractStatus && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.contractStatus}</div>}
-          </div>
-
-          {/* 메모 */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-              메모
-            </label>
-            <textarea
-              name="memo"
-              value={formData.memo}
-              onChange={handleChange}
-              placeholder="추가 사항을 입력해주세요"
-              rows="3"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-                fontFamily: 'inherit'
-              }}
-            />
+          {/* 임차인 정보 섹션 */}
+          <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
+            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임차인정보</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="임차인이름" name="tenantName" placeholder="임차인 이름을 입력해주세요" />
+              <FormField label="임차인번호" name="tenantPhone" placeholder="010-0000-0000" />
+            </div>
           </div>
         </div>
 

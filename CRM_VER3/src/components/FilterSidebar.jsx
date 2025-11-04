@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { STATUSES, BUILDING_TYPES, CONTRACT_STATUSES } from '../constants';
+import { STATUSES, BUILDING_TYPES, CONTRACT_PROGRESS_STATUSES } from '../constants';
 
 const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, buildings, contracts, isMobileOpen, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -77,10 +77,10 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       // 유형으로 필터링
       return buildings.filter(b => b.type === status).length;
     } else if (activeTab === '계약호실') {
-      // 계약호실 필터 (상태별)
+      // 계약호실 필터 (진행상황별)
       if (status === '전체') return contracts?.length || 0;
-      // 해당 상태의 계약호실 개수
-      return contracts?.filter(c => c.contractStatus === status).length || 0;
+      // 해당 진행상황의 계약호실 개수
+      return contracts?.filter(c => c.progressStatus === status).length || 0;
     }
   };
 
@@ -103,7 +103,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '건물정보'
     ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
-    ? ['전체', ...CONTRACT_STATUSES] // 계약호실 필터 (상태별)
+    ? ['전체', ...CONTRACT_PROGRESS_STATUSES] // 계약호실 필터 (진행상황별)
     : [];
 
   const handleFilterClick = (status) => {

@@ -5,11 +5,24 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedContract: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
+  // 날짜를 "2025. 8. 13" 형식으로 변환
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    if (dateStr.includes('.')) return dateStr; // 이미 형식화된 경우
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}. ${month}. ${day}`;
+  };
+
   const filteredContracts = useMemo(() => {
     let filtered = contracts.filter(contract =>
       contract.buildingName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.roomNumber.includes(searchTerm) ||
-      contract.contractorName.toLowerCase().includes(searchTerm.toLowerCase())
+      contract.roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contract.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contract.landlordName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // 정렬 적용
@@ -22,15 +35,9 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
       if (aValue == null) return 1;
       if (bValue == null) return -1;
 
-      // 숫자 비교 (계약금액)
-      if (sortConfig.key === 'contractAmount') {
-        const numA = Number(aValue) || 0;
-        const numB = Number(bValue) || 0;
-        return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
-      }
-
-      // 날짜 비교 (접수일, 계약일)
-      if (sortConfig.key === 'createdAt' || sortConfig.key === 'contractDate') {
+      // 날짜 비교
+      if (sortConfig.key === 'createdAt' || sortConfig.key === 'contractDate' ||
+          sortConfig.key === 'balanceDate' || sortConfig.key === 'expiryDate') {
         const dateA = new Date(aValue);
         const dateB = new Date(bValue);
         return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
@@ -48,6 +55,13 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
     return sorted;
   }, [contracts, searchTerm, sortConfig]);
 
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
   const handleContextMenu = (e, contract) => {
     e.preventDefault();
     setContextMenu({
@@ -62,66 +76,52 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
     setContextMenu({ visible: false, x: 0, y: 0, selectedContract: null });
   };
 
-  const handleSort = (key) => {
-    setSortConfig(prevConfig => ({
-      key,
-      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
-    }));
-  };
-
-  // 계약상태별 배경색
-  const getStatusColor = (status) => {
-    switch(status) {
-      case '진행중': return '#e8f5e9';
-      case '만료': return '#fff9c4';
-      case '해지': return '#ffebee';
-      default: return 'transparent';
-    }
-  };
-
-  const TableHeader = ({ label, sortKey }) => (
+  const SortHeader = ({ column, label }) => (
     <th
-      onClick={() => handleSort(sortKey)}
+      onClick={() => handleSort(column)}
       style={{
         cursor: 'pointer',
-        userSelect: 'none'
+        userSelect: 'none',
+        whiteSpace: 'nowrap',
+        paddingRight: '24px'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        {label}
-        {sortConfig.key === sortKey && (
-          <span style={{ fontSize: '12px' }}>{sortConfig.direction === 'asc' ? '▲' : '▼'}</span>
-        )}
-      </div>
+      {label}
+      {sortConfig.key === column && (
+        <span style={{ marginLeft: '8px' }}>
+          {sortConfig.direction === 'asc' ? '▲' : '▼'}
+        </span>
+      )}
     </th>
   );
 
   return (
-    <div className="property-table-container" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '15px', padding: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* 검색 바 */}
-      <div style={{ display: 'flex', gap: '10px' }}>
+      <div style={{ marginBottom: '15px', display: 'flex', gap: '10px' }}>
         <input
           type="text"
-          placeholder="건물명, 호실번호, 계약자명으로 검색..."
+          placeholder="건물명, 호실명, 임차인이름, 임대인이름으로 검색..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
-            padding: '8px 12px',
+            flex: 1,
+            padding: '10px 12px',
             border: '1px solid #ddd',
             borderRadius: '4px',
-            fontSize: '14px',
-            flex: 1
+            fontSize: '14px'
           }}
         />
         {searchTerm && (
           <button
             onClick={() => setSearchTerm('')}
             style={{
-              padding: '8px 12px',
-              backgroundColor: '#f5f5f5',
+              padding: '10px 16px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              cursor: 'pointer'
+              backgroundColor: '#f5f5f5',
+              cursor: 'pointer',
+              fontSize: '14px'
             }}
           >
             초기화
@@ -130,18 +130,24 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
       </div>
 
       {/* 테이블 */}
-      <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
         {filteredContracts.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+          <table className="customer-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr>
-                <TableHeader label="접수일" sortKey="createdAt" />
-                <TableHeader label="건물명" sortKey="buildingName" />
-                <TableHeader label="호실번호" sortKey="roomNumber" />
-                <TableHeader label="계약일" sortKey="contractDate" />
-                <TableHeader label="계약자명" sortKey="contractorName" />
-                <TableHeader label="계약금액" sortKey="contractAmount" />
-                <TableHeader label="상태" sortKey="contractStatus" />
+              <tr style={{ backgroundColor: '#4CAF50', color: 'white' }}>
+                <SortHeader column="createdAt" label="등록일" />
+                <SortHeader column="buildingName" label="건물명" />
+                <SortHeader column="roomName" label="호실명" />
+                <SortHeader column="progressStatus" label="진행상황" />
+                <SortHeader column="propertyManagement" label="매물관리" />
+                <SortHeader column="expiryManagement" label="만기관리" />
+                <SortHeader column="contractDate" label="계약서작성일" />
+                <SortHeader column="balanceDate" label="잔금일" />
+                <SortHeader column="expiryDate" label="만기일" />
+                <SortHeader column="landlordName" label="임대인이름" />
+                <SortHeader column="landlordPhone" label="임대인번호" />
+                <SortHeader column="tenantName" label="임차인이름" />
+                <SortHeader column="tenantPhone" label="임차인번호" />
               </tr>
             </thead>
             <tbody>
@@ -151,9 +157,8 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                   onClick={() => onSelectContract(contract)}
                   onContextMenu={(e) => handleContextMenu(e, contract)}
                   style={{
-                    backgroundColor: getStatusColor(contract.contractStatus),
+                    backgroundColor: selectedContractId === contract.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5',
                     cursor: 'pointer',
-                    borderBottom: '1px solid #e0e0e0',
                     transition: 'background-color 0.2s'
                   }}
                   onMouseEnter={(e) => {
@@ -162,30 +167,22 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                     }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = getStatusColor(contract.contractStatus);
+                    e.currentTarget.style.backgroundColor = selectedContractId === contract.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                   }}
                 >
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {contract.createdAt ? contract.createdAt.split('T')[0] : '-'}
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {contract.buildingName || '-'}
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {contract.roomNumber || '-'}
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {contract.contractDate || '-'}
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {contract.contractorName || '-'}
-                  </td>
-                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {contract.contractAmount ? `${contract.contractAmount.toLocaleString()}만원` : '-'}
-                  </td>
-                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {contract.contractStatus || '-'}
-                  </td>
+                  <td style={{ padding: '12px' }}>{formatDate(contract.createdAt)}</td>
+                  <td style={{ padding: '12px' }}>{contract.buildingName || '-'}</td>
+                  <td style={{ padding: '12px' }}>{contract.roomName || '-'}</td>
+                  <td style={{ padding: '12px' }}>{contract.progressStatus || '-'}</td>
+                  <td style={{ padding: '12px', fontSize: '12px' }}>{contract.propertyManagement || '-'}</td>
+                  <td style={{ padding: '12px', fontSize: '12px' }}>{contract.expiryManagement || '-'}</td>
+                  <td style={{ padding: '12px' }}>{formatDate(contract.contractDate)}</td>
+                  <td style={{ padding: '12px' }}>{formatDate(contract.balanceDate)}</td>
+                  <td style={{ padding: '12px' }}>{formatDate(contract.expiryDate)}</td>
+                  <td style={{ padding: '12px' }}>{contract.landlordName || '-'}</td>
+                  <td style={{ padding: '12px' }}>{contract.landlordPhone || '-'}</td>
+                  <td style={{ padding: '12px' }}>{contract.tenantName || '-'}</td>
+                  <td style={{ padding: '12px' }}>{contract.tenantPhone || '-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -197,71 +194,75 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
         )}
       </div>
 
-      {/* Context Menu */}
+      {/* 컨텍스트 메뉴 */}
       {contextMenu.visible && (
-        <div
-          className="context-menu"
-          onClick={handleCloseContextMenu}
-          onContextMenu={(e) => e.preventDefault()}
-          style={{
-            position: 'fixed',
-            top: contextMenu.y,
-            left: contextMenu.x,
-            backgroundColor: '#fff',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            zIndex: 1000,
-            minWidth: '120px'
-          }}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(contextMenu.selectedContract);
-              handleCloseContextMenu();
-            }}
+        <>
+          <div
             style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              cursor: 'pointer',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: '#333',
-              transition: 'background-color 0.2s'
+              position: 'fixed',
+              inset: 0,
+              zIndex: 998
             }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-          >
-            수정
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(contextMenu.selectedContract);
-              handleCloseContextMenu();
-            }}
+            onClick={handleCloseContextMenu}
+          />
+          <div
             style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              cursor: 'pointer',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: '#f44336',
-              transition: 'background-color 0.2s'
+              position: 'fixed',
+              left: `${contextMenu.x}px`,
+              top: `${contextMenu.y}px`,
+              backgroundColor: '#fff',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              zIndex: 999,
+              minWidth: '120px'
             }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
           >
-            삭제
-          </button>
-        </div>
+            <button
+              onClick={() => {
+                onEdit(contextMenu.selectedContract);
+                handleCloseContextMenu();
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '14px',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              수정
+            </button>
+            <button
+              onClick={() => {
+                onDelete(contextMenu.selectedContract);
+                handleCloseContextMenu();
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '14px',
+                color: '#f44336',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffebee'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              삭제
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

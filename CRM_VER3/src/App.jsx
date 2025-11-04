@@ -14,6 +14,7 @@ import BuildingDetailPanel from './components/BuildingDetailPanel';
 import ContractDetailPanel from './components/ContractDetailPanel';
 import PropertyImporter from './components/PropertyImporter';
 import BuildingImporter from './components/BuildingImporter';
+import ContractImporter from './components/ContractImporter';
 import {
   subscribeToCustomers,
   subscribeToActivities,
@@ -37,6 +38,7 @@ import {
   deleteBuilding,
   saveBuildings,
   saveContract,
+  saveContracts,
   deleteContract,
   removeDuplicateBuildings
 } from './utils/storage';
@@ -89,6 +91,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록', '매물장', '건물정보', '계약호실'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
+  const [isContractImporterOpen, setIsContractImporterOpen] = useState(false);
   const restoreInputRef = useRef(null);
 
   useEffect(() => {
@@ -368,6 +371,16 @@ function App() {
       // Firestore 실시간 구독이 자동으로 state 업데이트
     } catch (error) {
       console.error('Error importing buildings:', error);
+      throw error;
+    }
+  };
+
+  const handleImportContracts = async (importedContracts) => {
+    try {
+      await saveContracts(importedContracts);
+      // Firestore 실시간 구독이 자동으로 state 업데이트
+    } catch (error) {
+      console.error('Error importing contracts:', error);
       throw error;
     }
   };
@@ -743,6 +756,7 @@ function App() {
               ) : (
                 <>
                   <button onClick={() => handleOpenContractModal()} className="btn-primary">+ 계약호실 추가</button>
+                  <button onClick={() => setIsContractImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
@@ -944,6 +958,18 @@ function App() {
             <BuildingImporter
               onImport={handleImportBuildings}
               onClose={() => setIsBuildingImporterOpen(false)}
+            />
+          )}
+        </>
+      )}
+
+      {activeTab === '계약호실' && (
+        <>
+          {/* ContractImporter */}
+          {isContractImporterOpen && (
+            <ContractImporter
+              onImport={handleImportContracts}
+              onClose={() => setIsContractImporterOpen(false)}
             />
           )}
         </>
