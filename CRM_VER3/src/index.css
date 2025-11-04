@@ -777,6 +777,15 @@ button {
     text-overflow: ellipsis !important;
   }
 
+  /* 공동현관비번 15글자 고정 너비 */
+  .building-entrance-width {
+    width: 12em !important;
+    min-width: 12em !important;
+    max-width: 12em !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
   /* 테이블뷰 양쪽 여백 제거 */
   .main-content {
     padding: 10px 0 !important;
