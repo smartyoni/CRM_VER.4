@@ -4,6 +4,9 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedContract: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  const [dateField, setDateField] = useState('contractDate');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // 날짜를 "2025. 8. 13" 형식으로 변환
   const formatDate = (dateStr) => {
@@ -18,12 +21,40 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
   };
 
   const filteredContracts = useMemo(() => {
-    let filtered = contracts.filter(contract =>
-      contract.buildingName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.landlordName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = contracts.filter(contract => {
+      // 텍스트 검색 필터
+      const matchesText = searchTerm === '' ||
+        contract.buildingName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contract.roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contract.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contract.landlordName.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // 날짜 범위 검색 필터
+      let matchesDateRange = true;
+      if (startDate || endDate) {
+        const contractDateValue = contract[dateField];
+        if (contractDateValue) {
+          const contractDate = new Date(contractDateValue);
+          contractDate.setHours(0, 0, 0, 0);
+
+          if (startDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            if (contractDate < start) matchesDateRange = false;
+          }
+
+          if (endDate && matchesDateRange) {
+            const end = new Date(endDate);
+            end.setHours(0, 0, 0, 0);
+            if (contractDate > end) matchesDateRange = false;
+          }
+        } else {
+          matchesDateRange = false;
+        }
+      }
+
+      return matchesText && matchesDateRange;
+    });
 
     // 정렬 적용
     const sorted = [...filtered].sort((a, b) => {
@@ -59,7 +90,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
     });
 
     return sorted;
-  }, [contracts, searchTerm, sortConfig]);
+  }, [contracts, searchTerm, sortConfig, dateField, startDate, endDate]);
 
   const handleSort = (key) => {
     setSortConfig(prev => ({
@@ -139,35 +170,102 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* 검색 바 */}
-      <div style={{ marginBottom: '15px', display: 'flex', gap: '10px' }}>
-        <input
-          type="text"
-          placeholder="건물명, 호실명, 임차인이름, 임대인이름으로 검색..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            flex: 1,
-            padding: '10px 12px',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            fontSize: '14px'
-          }}
-        />
-        {searchTerm && (
-          <button
-            onClick={() => setSearchTerm('')}
+      <div style={{ marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* 텍스트 검색 */}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="text"
+            placeholder="건물명, 호실명, 임차인이름, 임대인이름으로 검색..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              padding: '10px 16px',
+              flex: 1,
+              padding: '10px 12px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              backgroundColor: '#f5f5f5',
-              cursor: 'pointer',
               fontSize: '14px'
             }}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              style={{
+                padding: '10px 16px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                backgroundColor: '#f5f5f5',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              초기화
+            </button>
+          )}
+        </div>
+
+        {/* 날짜 범위 검색 */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <select
+            value={dateField}
+            onChange={(e) => setDateField(e.target.value)}
+            style={{
+              padding: '10px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: '#fff'
+            }}
           >
-            초기화
-          </button>
-        )}
+            <option value="contractDate">계약서작성일</option>
+            <option value="balanceDate">잔금일</option>
+            <option value="expiryDate">만기일</option>
+          </select>
+
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              padding: '10px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>~</span>
+
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{
+              padding: '10px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+
+          {(startDate || endDate) && (
+            <button
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+              }}
+              style={{
+                padding: '10px 16px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                backgroundColor: '#f5f5f5',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              초기화
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 테이블 */}
@@ -220,7 +318,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
           </table>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-            {searchTerm ? '검색 결과가 없습니다' : '등록된 계약호실이 없습니다'}
+            {searchTerm || startDate || endDate ? '검색 결과가 없습니다' : '등록된 계약호실이 없습니다'}
           </div>
         )}
       </div>
