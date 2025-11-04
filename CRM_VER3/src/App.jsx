@@ -3,12 +3,15 @@ import FilterSidebar from './components/FilterSidebar';
 import CustomerTable from './components/CustomerTable';
 import PropertyTable from './components/PropertyTable';
 import BuildingTable from './components/BuildingTable';
+import ContractTable from './components/ContractTable';
 import CustomerModal from './components/CustomerModal';
 import PropertyModal from './components/PropertyModal';
 import BuildingModal from './components/BuildingModal';
+import ContractModal from './components/ContractModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
 import PropertyDetailPanel from './components/PropertyDetailPanel';
 import BuildingDetailPanel from './components/BuildingDetailPanel';
+import ContractDetailPanel from './components/ContractDetailPanel';
 import PropertyImporter from './components/PropertyImporter';
 import BuildingImporter from './components/BuildingImporter';
 import {
@@ -18,6 +21,7 @@ import {
   subscribeToPropertySelections,
   subscribeToProperties,
   subscribeToBuildings,
+  subscribeToContracts,
   saveCustomer,
   deleteCustomer,
   saveActivity,
@@ -32,6 +36,8 @@ import {
   saveBuilding,
   deleteBuilding,
   saveBuildings,
+  saveContract,
+  deleteContract,
   removeDuplicateBuildings
 } from './utils/storage';
 
@@ -61,21 +67,26 @@ function App() {
   const [propertySelections, setPropertySelections] = useState([]);
   const [properties, setProperties] = useState([]);
   const [buildings, setBuildings] = useState([]);
+  const [contracts, setContracts] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState(null);
+  const [selectedContractId, setSelectedContractId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [editingProperty, setEditingProperty] = useState(null);
   const [editingBuilding, setEditingBuilding] = useState(null);
+  const [editingContract, setEditingContract] = useState(null);
   const [activeCustomerFilter, setActiveCustomerFilter] = useState('전체');
   const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
   const [activeBuildingFilter, setActiveBuildingFilter] = useState('전체');
+  const [activeContractFilter, setActiveContractFilter] = useState('전체');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록', '매물장', '건물정보'
+  const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록', '매물장', '건물정보', '계약호실'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
   const restoreInputRef = useRef(null);
@@ -106,6 +117,10 @@ function App() {
       setBuildings(buildings);
     });
 
+    const unsubscribeContracts = subscribeToContracts((contracts) => {
+      setContracts(contracts);
+    });
+
     // Cleanup subscriptions on unmount
     return () => {
       unsubscribeCustomers();
@@ -114,6 +129,7 @@ function App() {
       unsubscribePropertySelections();
       unsubscribeProperties();
       unsubscribeBuildings();
+      unsubscribeContracts();
     };
   }, []);
 
@@ -146,6 +162,8 @@ function App() {
       setActivePropertyFilter(filter);
     } else if (activeTab === '건물정보') {
       setActiveBuildingFilter(filter);
+    } else if (activeTab === '계약호실') {
+      setActiveContractFilter(filter);
     }
   };
 
@@ -295,6 +313,41 @@ function App() {
       await deleteBuilding(building.id);
       if (selectedBuildingId === building.id) {
         setSelectedBuildingId(null);
+      }
+    }
+  };
+
+  // Contract handlers
+  const handleSelectContract = (contract) => {
+    if (selectedContractId === contract.id) {
+      setSelectedContractId(null);
+    } else {
+      setSelectedContractId(contract.id);
+    }
+  };
+
+  const handleOpenContractModal = (contract = null) => {
+    setEditingContract(contract);
+    setIsContractModalOpen(true);
+    if (contract && contract.id === selectedContractId) {
+      setSelectedContractId(null);
+    }
+  };
+
+  const handleCloseContractModal = () => {
+    setIsContractModalOpen(false);
+    setEditingContract(null);
+  };
+
+  const handleSaveContract = async (contractData) => {
+    await saveContract(contractData);
+  };
+
+  const handleDeleteContract = async (contract) => {
+    if (confirm(`"${contract.buildingName} ${contract.roomNumber}" 계약호실을 정말 삭제하시겠습니까?`)) {
+      await deleteContract(contract.id);
+      if (selectedContractId === contract.id) {
+        setSelectedContractId(null);
       }
     }
   };
@@ -606,8 +659,18 @@ function App() {
     return buildings.filter(b => b.type === activeBuildingFilter);
   })();
 
+  // 계약호실 필터링 (상태별)
+  const filteredContracts = (() => {
+    if (activeContractFilter === '전체') {
+      return contracts;
+    }
+    return contracts.filter(c => c.contractStatus === activeContractFilter);
+  })();
+
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+  const selectedContract = contracts.find(c => c.id === selectedContractId);
+  const selectedBuilding = buildings.find(b => b.id === selectedBuildingId);
 
   return (
     <div className="app-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
@@ -623,7 +686,8 @@ function App() {
           activeFilter={
             activeTab === '고객목록' ? activeCustomerFilter :
             activeTab === '매물장' ? activePropertyFilter :
-            activeBuildingFilter
+            activeTab === '건물정보' ? activeBuildingFilter :
+            activeContractFilter
           }
           onFilterChange={handleFilterChange}
           customers={customers}
@@ -631,6 +695,7 @@ function App() {
           activities={activities}
           properties={properties}
           buildings={buildings}
+          contracts={contracts}
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
@@ -642,7 +707,7 @@ function App() {
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <h1>
-                {activeTab === '고객목록' ? '고객 목록' : activeTab === '매물장' ? '매물장' : '건물정보'}
+                {activeTab === '고객목록' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
               </h1>
               {activeTab === '고객목록' && activeCustomerFilter !== '전체' && (
                 <span style={{ fontSize: '13px', color: '#7f8c8d' }}>
@@ -666,11 +731,18 @@ function App() {
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
                 </>
-              ) : (
+              ) : activeTab === '건물정보' ? (
                 <>
                   <button onClick={() => handleOpenBuildingModal()} className="btn-primary">+ 건물 추가</button>
                   <button onClick={() => setIsBuildingImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
                   <button onClick={handleRemoveDuplicateBuildings} className="btn-secondary">중복 제거</button>
+                  <button onClick={handleBackup} className="btn-secondary">백업</button>
+                  <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
+                  <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => handleOpenContractModal()} className="btn-primary">+ 계약호실 추가</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
@@ -702,13 +774,21 @@ function App() {
                 onDelete={handleDeleteProperty}
                 selectedPropertyId={selectedPropertyId}
               />
-            ) : (
+            ) : activeTab === '건물정보' ? (
               <BuildingTable
                 buildings={filteredBuildings}
                 onSelectBuilding={handleSelectBuilding}
                 onEdit={handleOpenBuildingModal}
                 onDelete={handleDeleteBuilding}
                 selectedBuildingId={selectedBuildingId}
+              />
+            ) : (
+              <ContractTable
+                contracts={filteredContracts}
+                onSelectContract={handleSelectContract}
+                onEdit={handleOpenContractModal}
+                onDelete={handleDeleteContract}
+                selectedContractId={selectedContractId}
               />
             )}
           </main>
@@ -779,6 +859,24 @@ function App() {
           }}
         >
           🏢 건물정보
+        </button>
+        <button
+          onClick={() => setActiveTab('계약호실')}
+          style={{
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: activeTab === '계약호실' ? '#000' : '#888',
+            border: 'none',
+            backgroundColor: activeTab === '계약호실' ? '#fff' : 'transparent',
+            borderBottom: activeTab === '계약호실' ? '4px solid #9C27B0' : '4px solid transparent',
+            borderRadius: activeTab === '계약호실' ? '8px 8px 0 0' : '0',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
+          }}
+        >
+          📄 계약호실
         </button>
       </div>
 
@@ -867,6 +965,27 @@ function App() {
             onClose={handleCloseBuildingModal}
             onSave={handleSaveBuilding}
             building={editingBuilding}
+          />
+        </>
+      )}
+
+      {activeTab === '계약호실' && (
+        <>
+          {/* ContractDetailPanel */}
+          <ContractDetailPanel
+            selectedContract={selectedContract}
+            isOpen={!!selectedContractId}
+            onClose={() => setSelectedContractId(null)}
+            onEdit={handleOpenContractModal}
+            onDelete={handleDeleteContract}
+          />
+
+          {/* ContractModal */}
+          <ContractModal
+            isOpen={isContractModalOpen}
+            onClose={handleCloseContractModal}
+            onSave={handleSaveContract}
+            editData={editingContract}
           />
         </>
       )}

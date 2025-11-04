@@ -9,3 +9,6 @@ export const PROPERTY_STATUSES = ['확인전', '확인중', '볼수있음', '오
 // 건물정보 관련 상수
 export const BUILDING_LOCATIONS = ['향교', '나루', '발산', '마곡', '신방화', '가양', '등촌', '공항', '화곡', '기타'];
 export const BUILDING_TYPES = ['오피스텔', '상업용', '아파트', '지산', '기타'];
+
+// 계약호실 관련 상수
+export const CONTRACT_STATUSES = ['진행중', '만료', '해지'];

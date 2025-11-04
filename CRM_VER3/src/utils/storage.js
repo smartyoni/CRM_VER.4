@@ -15,6 +15,7 @@ const MEETINGS_COLLECTION = 'meetings';
 const PROPERTY_SELECTIONS_COLLECTION = 'propertySelections';
 const PROPERTIES_COLLECTION = 'properties';
 const BUILDINGS_COLLECTION = 'buildings';
+const CONTRACTS_COLLECTION = 'contracts';
 
 // ========== Customer Functions ==========
 
@@ -368,4 +369,53 @@ export const removeDuplicateBuildings = async () => {
     console.error('Error removing duplicate buildings:', error);
     throw error;
   }
+};
+
+// ========== Contract Functions ==========
+
+export const getContracts = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, CONTRACTS_COLLECTION));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error fetching contracts:', error);
+    return [];
+  }
+};
+
+export const saveContracts = async (contracts) => {
+  try {
+    const promises = contracts.map(contract =>
+      setDoc(doc(db, CONTRACTS_COLLECTION, contract.id), contract)
+    );
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Error saving contracts:', error);
+  }
+};
+
+export const saveContract = async (contract) => {
+  try {
+    await setDoc(doc(db, CONTRACTS_COLLECTION, contract.id), contract);
+  } catch (error) {
+    console.error('Error saving contract:', error);
+  }
+};
+
+export const deleteContract = async (contractId) => {
+  try {
+    await deleteDoc(doc(db, CONTRACTS_COLLECTION, contractId));
+  } catch (error) {
+    console.error('Error deleting contract:', error);
+  }
+};
+
+// Realtime subscription for contracts
+export const subscribeToContracts = (callback) => {
+  return onSnapshot(collection(db, CONTRACTS_COLLECTION), (snapshot) => {
+    const contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(contracts);
+  }, (error) => {
+    console.error('Error in contracts subscription:', error);
+  });
 };
