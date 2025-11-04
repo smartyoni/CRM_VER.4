@@ -161,13 +161,13 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                     }
                   }}
                 >
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td className="building-narrow" style={{ padding: '12px', whiteSpace: 'nowrap' }}>
                     {building.name || '-'}
                   </td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td className="building-narrow" style={{ padding: '12px', whiteSpace: 'nowrap' }}>
                     {building.address || '-'}
                   </td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td className="building-narrow" style={{ padding: '12px', whiteSpace: 'nowrap' }}>
                     {building.entrance || '-'}
                   </td>
                   <td style={{ padding: '12px', textAlign: 'center', whiteSpace: 'nowrap' }}>

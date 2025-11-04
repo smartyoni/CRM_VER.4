@@ -767,4 +767,12 @@ button {
   .building-table th {
     font-size: 12px !important;
   }
+
+  /* 특정 컬럼 너비 축소 */
+  .building-narrow {
+    max-width: 60px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: break-word !important;
+  }
 }
