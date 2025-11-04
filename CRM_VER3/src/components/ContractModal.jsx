@@ -32,7 +32,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
 
     if (!formData.buildingName.trim()) newErrors.buildingName = '건물명은 필수입니다';
     if (!formData.roomName.trim()) newErrors.roomName = '호실명은 필수입니다';
-    if (!formData.progressStatus) newErrors.progressStatus = '진행상황은 필수입니다';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -155,7 +154,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
                 label="진행상황"
                 name="progressStatus"
                 value={formData.progressStatus}
-                required
                 options={CONTRACT_PROGRESS_STATUSES}
               />
               <FormField
