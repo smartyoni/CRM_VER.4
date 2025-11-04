@@ -191,7 +191,7 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
   const SortHeader = ({ column, label }) => (
     <th
       onClick={() => handleSort(column)}
-      style={{ cursor: 'pointer', userSelect: 'none' }}
+      style={{ cursor: 'pointer', userSelect: 'none', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}
     >
       {label}
       {sortConfig.key === column && (
@@ -236,9 +236,9 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
       </div>
 
 {/* 테이블 */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, overflowX: 'auto', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredProperties.length > 0 ? (
-          <table className="customer-table" onClick={handleCloseContextMenu} style={{ fontSize: 'inherit' }}>
+          <table className="customer-table" onClick={handleCloseContextMenu} style={{ fontSize: 'inherit', tableLayout: 'auto', minWidth: '1000px' }}>
             <thead>
               <tr>
                 <SortHeader column="createdAt" label="접수일" />
@@ -270,23 +270,25 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
                     <td
                       rowSpan={rowSpan}
                       style={{
+                        padding: '12px',
                         verticalAlign: 'middle',
                         textAlign: 'center',
                         fontWeight: '500',
-                        fontSize: '13px'
+                        fontSize: '13px',
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       {formatCreatedDate(property.createdAt)}({getPropertyCountByDate(property.createdAt)}건)
                     </td>
                   )}
-                  <td>{property.propertyType || '-'}</td>
-                  <td>{property.category || '-'}</td>
-                  <td style={{ fontWeight: 'bold' }}>{getPropertyName(property)}</td>
-                  <td style={{ textAlign: 'right' }}>{formatPrice(property.price)}</td>
-                  <td>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
-                  <td>{property.ownerName || '-'}</td>
-                  <td>{property.ownerPhone || '-'}</td>
-                  <td>{property.tenantPhone || '-'}</td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.propertyType || '-'}</td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.category || '-'}</td>
+                  <td style={{ padding: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{getPropertyName(property)}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>{formatPrice(property.price)}</td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.ownerName || '-'}</td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.ownerPhone || '-'}</td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.tenantPhone || '-'}</td>
                 </tr>
               );
               })}
