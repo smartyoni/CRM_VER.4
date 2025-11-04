@@ -77,6 +77,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
   };
 
   const columnConfigs = {
+    buildingName: { width: '200px' },
     contractDate: { width: '120px' },
     balanceDate: { width: '120px' },
     expiryDate: { width: '120px' },
@@ -89,6 +90,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
   const cellStyle = (column) => ({
     padding: '12px',
     width: columnConfigs[column]?.width,
+    minWidth: columnConfigs[column]?.width,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
@@ -101,9 +103,9 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
         cursor: 'pointer',
         userSelect: 'none',
         whiteSpace: 'nowrap',
-        paddingRight: '12px',
         padding: '12px',
         width: columnConfigs[column]?.width,
+        minWidth: columnConfigs[column]?.width,
         overflow: 'hidden',
         textOverflow: 'ellipsis'
       }}
@@ -154,7 +156,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
       {/* 테이블 */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {filteredContracts.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="customer-table" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ backgroundColor: '#4CAF50', color: 'white' }}>
                 <SortHeader column="buildingName" label="계약호실명" />
@@ -187,7 +189,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                     e.currentTarget.style.backgroundColor = selectedContractId === contract.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                   }}
                 >
-                  <td style={{ padding: '12px' }}>{contract.buildingName && contract.roomName ? `${contract.buildingName} ${contract.roomName}` : '-'}</td>
+                  <td style={cellStyle('buildingName')}>{contract.buildingName && contract.roomName ? `${contract.buildingName} ${contract.roomName}` : '-'}</td>
                   <td style={cellStyle('contractDate')}>{formatDate(contract.contractDate)}</td>
                   <td style={cellStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
                   <td style={cellStyle('expiryDate')}>{formatDate(contract.expiryDate)}</td>
