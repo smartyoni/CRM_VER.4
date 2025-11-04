@@ -435,16 +435,16 @@ function App() {
     event.target.value = null;
   };
 
+  const getDaysDiff = (date1, date2) => {
+    const diff = Math.abs(date1 - date2);
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  };
+
   const getLastActivityDate = (customerId) => {
     const customerActivities = activities.filter(a => a.customerId === customerId);
     if (customerActivities.length === 0) return null;
     const sorted = customerActivities.sort((a, b) => new Date(b.date) - new Date(a.date));
     return new Date(sorted[0].date);
-  };
-
-  const getDaysDiff = (date1, date2) => {
-    const diff = Math.abs(date1 - date2);
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
   // 필터 설명 함수
