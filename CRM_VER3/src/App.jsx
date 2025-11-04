@@ -847,7 +847,12 @@ function App() {
         justifyContent: 'flex-start',
         paddingLeft: '40px',
         gap: '60px',
-        alignItems: 'center'
+        alignItems: 'center',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000
       }}>
         <button
           onClick={() => setActiveTab('고객목록')}
