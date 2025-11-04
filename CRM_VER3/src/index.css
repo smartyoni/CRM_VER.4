@@ -768,11 +768,11 @@ button {
     font-size: 12px !important;
   }
 
-  /* 건물명, 지번 10글자 고정 너비 */
+  /* 건물명, 지번 13글자 고정 너비 */
   .building-fixed-width {
-    width: 8em !important;
-    min-width: 8em !important;
-    max-width: 8em !important;
+    width: 10.4em !important;
+    min-width: 10.4em !important;
+    max-width: 10.4em !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
