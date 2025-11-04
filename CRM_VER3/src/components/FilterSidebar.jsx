@@ -77,8 +77,25 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       // 유형으로 필터링
       return buildings.filter(b => b.type === status).length;
     } else if (activeTab === '계약호실') {
-      // 계약호실 필터 (진행상황별)
+      // 계약호실 필터
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       if (status === '전체') return contracts?.length || 0;
+
+      // "계약서작성" 필터: 진행상황이 '계약서작성'이고 계약서작성일이 오늘 이후
+      if (status === '계약서작성') {
+        return contracts?.filter(c => {
+          if (c.progressStatus !== '계약서작성') return false;
+          if (!c.contractDate) return false;
+
+          const contractDate = new Date(c.contractDate);
+          contractDate.setHours(0, 0, 0, 0);
+
+          return contractDate >= today;
+        }).length || 0;
+      }
+
       // 해당 진행상황의 계약호실 개수
       return contracts?.filter(c => c.progressStatus === status).length || 0;
     }
@@ -103,7 +120,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '건물정보'
     ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
-    ? ['전체', ...CONTRACT_PROGRESS_STATUSES] // 계약호실 필터 (진행상황별)
+    ? ['전체', '계약서작성'] // 계약호실 필터 (계약서작성만)
     : [];
 
   const handleFilterClick = (status) => {

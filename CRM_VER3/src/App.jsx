@@ -672,11 +672,28 @@ function App() {
     return buildings.filter(b => b.type === activeBuildingFilter);
   })();
 
-  // 계약호실 필터링 (상태별)
+  // 계약호실 필터링
   const filteredContracts = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     if (activeContractFilter === '전체') {
       return contracts;
     }
+
+    // "계약서작성" 필터: 진행상황이 '계약서작성'이고 계약서작성일이 오늘 이후
+    if (activeContractFilter === '계약서작성') {
+      return contracts.filter(c => {
+        if (c.progressStatus !== '계약서작성') return false;
+        if (!c.contractDate) return false;
+
+        const contractDate = new Date(c.contractDate);
+        contractDate.setHours(0, 0, 0, 0);
+
+        return contractDate >= today;
+      });
+    }
+
     return contracts.filter(c => c.progressStatus === activeContractFilter);
   })();
 
