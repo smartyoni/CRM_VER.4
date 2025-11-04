@@ -78,9 +78,9 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
 
   const columnConfigs = {
     buildingName: { width: '200px' },
-    contractDate: { width: '120px' },
-    balanceDate: { width: '120px' },
-    expiryDate: { width: '120px' },
+    contractDate: { width: '95px' },
+    balanceDate: { width: '95px' },
+    expiryDate: { width: '95px' },
     landlordName: { width: '100px' },
     landlordPhone: { width: '120px' },
     tenantName: { width: '100px' },
