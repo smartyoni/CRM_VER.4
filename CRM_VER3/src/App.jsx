@@ -862,8 +862,11 @@ function App() {
             borderRadius: activeTab === '고객목록' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
-            boxShadow: activeTab === '고객목록' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
+            boxShadow: activeTab === '고객목록' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            WebkitAppearance: 'none',
+            appearance: 'none'
           }}
+          className="tab-button"
         >
           📋 고객목록
         </button>
@@ -880,8 +883,11 @@ function App() {
             borderRadius: activeTab === '매물장' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
-            boxShadow: activeTab === '매물장' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
+            boxShadow: activeTab === '매물장' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            WebkitAppearance: 'none',
+            appearance: 'none'
           }}
+          className="tab-button"
         >
           🏠 매물장
         </button>
@@ -898,8 +904,11 @@ function App() {
             borderRadius: activeTab === '건물정보' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
-            boxShadow: activeTab === '건물정보' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
+            boxShadow: activeTab === '건물정보' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            WebkitAppearance: 'none',
+            appearance: 'none'
           }}
+          className="tab-button"
         >
           🏢 건물정보
         </button>
@@ -916,8 +925,11 @@ function App() {
             borderRadius: activeTab === '계약호실' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
-            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none'
+            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            WebkitAppearance: 'none',
+            appearance: 'none'
           }}
+          className="tab-button"
         >
           📄 계약호실
         </button>

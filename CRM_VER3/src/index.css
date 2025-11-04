@@ -710,3 +710,43 @@ button {
 .context-menu-item.delete:hover {
   background-color: rgba(231, 76, 60, 0.1);
 }
+
+/* --- 모바일 탭바 반응형 --- */
+@media (max-width: 992px) {
+  .tab-bar {
+    height: auto !important;
+    flex-wrap: wrap !important;
+    justify-content: space-around !important;
+    gap: 0 !important;
+    padding-left: 0 !important;
+    padding: 5px 0 !important;
+  }
+
+  .tab-bar > button {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    flex: 1 1 50% !important;
+    max-width: 50% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .tab-bar > button:nth-child(1) {
+    border-bottom: 3px solid #FF6B9D !important;
+  }
+
+  .tab-bar > button:nth-child(2) {
+    border-bottom: 3px solid #2196F3 !important;
+  }
+
+  .tab-bar > button:nth-child(3) {
+    border-bottom: 3px solid #FF9800 !important;
+  }
+
+  .tab-bar > button:nth-child(4) {
+    border-bottom: 3px solid #9C27B0 !important;
+  }
+}
