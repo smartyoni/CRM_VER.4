@@ -139,7 +139,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                   onClick={() => onSelectBuilding(building)}
                   onContextMenu={(e) => handleContextMenu(e, building)}
                   style={{
-                    backgroundColor: selectedBuildingId === building.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f0fdf4',
+                    backgroundColor: selectedBuildingId === building.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5',
                     cursor: 'pointer',
                     borderBottom: '1px solid #e0e0e0',
                     transition: 'background-color 0.2s'
@@ -153,7 +153,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                     if (selectedBuildingId === building.id) {
                       e.currentTarget.style.backgroundColor = '#e3f2fd';
                     } else {
-                      e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f0fdf4';
+                      e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                     }
                   }}
                 >
