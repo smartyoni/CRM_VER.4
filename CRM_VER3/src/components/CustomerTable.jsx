@@ -375,48 +375,7 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
             />
         </div>
 
-        {/* 색상 범례 */}
-        <div style={{ display: 'flex', gap: '30px', marginBottom: '15px', fontSize: '13px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* 접수일 범례 */}
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <span style={{ fontWeight: 'bold', color: '#555' }}>접수일:</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(156, 39, 176, 0.12)', border: '1px solid rgba(156, 39, 176, 0.3)', borderRadius: '3px' }}></div>
-              <span>오늘</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(229, 57, 53, 0.12)', border: '1px solid rgba(229, 57, 53, 0.3)', borderRadius: '3px' }}></div>
-              <span>과거 (홀수)</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(67, 160, 71, 0.12)', border: '1px solid rgba(67, 160, 71, 0.3)', borderRadius: '3px' }}></div>
-              <span>과거 (짝수)</span>
-            </div>
-          </div>
-
-          {/* 활동일 범례 */}
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <span style={{ fontWeight: 'bold', color: '#555' }}>활동일:</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: '#ff0000', borderRadius: '3px' }}></div>
-              <span>오늘</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: '#0000ff', borderRadius: '3px' }}></div>
-              <span>1~3일</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: '#ff9800', borderRadius: '3px' }}></div>
-              <span>4~7일</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '20px', height: '20px', backgroundColor: '#999999', borderRadius: '3px' }}></div>
-              <span>8일 이상</span>
-            </div>
-          </div>
-        </div>
-
-        {showProgressTabs && (
+{showProgressTabs && (
           <div className="progress-tabs" style={{ marginBottom: '15px' }}>
             <button
               className={`progress-tab ${!activeProgressFilter ? 'active' : ''}`}

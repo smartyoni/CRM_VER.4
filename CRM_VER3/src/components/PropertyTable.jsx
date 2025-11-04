@@ -235,26 +235,7 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
         )}
       </div>
 
-      {/* 색상 범례 */}
-      <div style={{ display: 'flex', gap: '30px', marginBottom: '15px', fontSize: '13px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 'bold', color: '#555' }}>접수일:</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(255, 193, 7, 0.12)', border: '1px solid rgba(255, 193, 7, 0.3)', borderRadius: '3px' }}></div>
-            <span>당월</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(33, 150, 243, 0.12)', border: '1px solid rgba(33, 150, 243, 0.3)', borderRadius: '3px' }}></div>
-            <span>전월</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(156, 39, 176, 0.12)', border: '1px solid rgba(156, 39, 176, 0.3)', borderRadius: '3px' }}></div>
-            <span>2~4개월</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 테이블 */}
+{/* 테이블 */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {filteredProperties.length > 0 ? (
           <table className="customer-table" onClick={handleCloseContextMenu}>

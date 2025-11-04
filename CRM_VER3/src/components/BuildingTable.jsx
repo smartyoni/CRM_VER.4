@@ -119,26 +119,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
         )}
       </div>
 
-      {/* 색상 범례 */}
-      <div style={{ display: 'flex', gap: '30px', fontSize: '13px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 'bold', color: '#555' }}>상태:</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: '#e3f2fd', border: '1px solid #2196F3', borderRadius: '3px' }}></div>
-            <span>선택됨</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: '#f0fdf4', border: '1px solid #4ade80', borderRadius: '3px' }}></div>
-            <span>기본(짝수)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: '#ffffff', border: '1px solid #ddd', borderRadius: '3px' }}></div>
-            <span>기본(홀수)</span>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
+<div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredBuildings.length > 0 ? (
           <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
