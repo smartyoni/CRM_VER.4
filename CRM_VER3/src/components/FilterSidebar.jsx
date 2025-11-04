@@ -96,6 +96,19 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
         }).length || 0;
       }
 
+      // "잔금" 필터: 진행상황이 '잔금'이고 잔금일이 오늘 이후
+      if (status === '잔금') {
+        return contracts?.filter(c => {
+          if (c.progressStatus !== '잔금') return false;
+          if (!c.balanceDate) return false;
+
+          const balanceDate = new Date(c.balanceDate);
+          balanceDate.setHours(0, 0, 0, 0);
+
+          return balanceDate >= today;
+        }).length || 0;
+      }
+
       // 해당 진행상황의 계약호실 개수
       return contracts?.filter(c => c.progressStatus === status).length || 0;
     }
@@ -120,7 +133,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '건물정보'
     ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
-    ? ['전체', '계약서작성'] // 계약호실 필터 (계약서작성만)
+    ? ['전체', '계약서작성', '잔금'] // 계약호실 필터 (계약서작성, 잔금)
     : [];
 
   const handleFilterClick = (status) => {

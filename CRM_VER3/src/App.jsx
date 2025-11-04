@@ -694,6 +694,18 @@ function App() {
       });
     }
 
+    if (activeContractFilter === '잔금') {
+      return contracts.filter(c => {
+        if (c.progressStatus !== '잔금') return false;
+        if (!c.balanceDate) return false;
+
+        const balanceDate = new Date(c.balanceDate);
+        balanceDate.setHours(0, 0, 0, 0);
+
+        return balanceDate >= today;
+      });
+    }
+
     return contracts.filter(c => c.progressStatus === activeContractFilter);
   })();
 
