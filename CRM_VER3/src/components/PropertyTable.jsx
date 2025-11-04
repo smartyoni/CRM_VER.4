@@ -238,7 +238,7 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
 {/* 테이블 */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {filteredProperties.length > 0 ? (
-          <table className="customer-table" onClick={handleCloseContextMenu}>
+          <table className="customer-table" onClick={handleCloseContextMenu} style={{ fontSize: 'inherit' }}>
             <thead>
               <tr>
                 <SortHeader column="createdAt" label="접수일" />
@@ -279,14 +279,14 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
                       {formatCreatedDate(property.createdAt)}({getPropertyCountByDate(property.createdAt)}건)
                     </td>
                   )}
-                  <td style={{ fontSize: '13px' }}>{property.propertyType || '-'}</td>
-                  <td style={{ fontSize: '13px' }}>{property.category || '-'}</td>
-                  <td style={{ fontSize: '13px', fontWeight: 'bold' }}>{getPropertyName(property)}</td>
-                  <td style={{ fontSize: '13px', textAlign: 'right' }}>{formatPrice(property.price)}</td>
-                  <td style={{ fontSize: '13px' }}>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
-                  <td style={{ fontSize: '13px' }}>{property.ownerName || '-'}</td>
-                  <td style={{ fontSize: '13px' }}>{property.ownerPhone || '-'}</td>
-                  <td style={{ fontSize: '13px' }}>{property.tenantPhone || '-'}</td>
+                  <td>{property.propertyType || '-'}</td>
+                  <td>{property.category || '-'}</td>
+                  <td style={{ fontWeight: 'bold' }}>{getPropertyName(property)}</td>
+                  <td style={{ textAlign: 'right' }}>{formatPrice(property.price)}</td>
+                  <td>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
+                  <td>{property.ownerName || '-'}</td>
+                  <td>{property.ownerPhone || '-'}</td>
+                  <td>{property.tenantPhone || '-'}</td>
                 </tr>
               );
               })}

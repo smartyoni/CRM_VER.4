@@ -121,7 +121,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
 <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredBuildings.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 <TableHeader label="건물명" sortKey="name" />
@@ -160,10 +160,10 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                   <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.name || '-'}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.address || '-'}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.entrance || '-'}
                   </td>
                   <td style={{ textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -172,7 +172,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                   <td style={{ textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.parking || '-'}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.office || '-'}
                   </td>
                 </tr>
