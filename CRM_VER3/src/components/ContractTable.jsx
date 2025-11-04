@@ -76,6 +76,24 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
     setContextMenu({ visible: false, x: 0, y: 0, selectedContract: null });
   };
 
+  const columnConfigs = {
+    contractDate: { width: '120px' },
+    balanceDate: { width: '120px' },
+    expiryDate: { width: '120px' },
+    landlordName: { width: '100px' },
+    landlordPhone: { width: '120px' },
+    tenantName: { width: '100px' },
+    tenantPhone: { width: '120px' }
+  };
+
+  const cellStyle = (column) => ({
+    padding: '12px',
+    width: columnConfigs[column]?.width,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  });
+
   const SortHeader = ({ column, label }) => (
     <th
       onClick={() => handleSort(column)}
@@ -83,7 +101,11 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
         cursor: 'pointer',
         userSelect: 'none',
         whiteSpace: 'nowrap',
-        paddingRight: '24px'
+        paddingRight: '12px',
+        padding: '12px',
+        width: columnConfigs[column]?.width,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
       }}
     >
       {label}
@@ -166,13 +188,13 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                   }}
                 >
                   <td style={{ padding: '12px' }}>{contract.buildingName && contract.roomName ? `${contract.buildingName} ${contract.roomName}` : '-'}</td>
-                  <td style={{ padding: '12px' }}>{formatDate(contract.contractDate)}</td>
-                  <td style={{ padding: '12px' }}>{formatDate(contract.balanceDate)}</td>
-                  <td style={{ padding: '12px' }}>{formatDate(contract.expiryDate)}</td>
-                  <td style={{ padding: '12px' }}>{contract.landlordName || '-'}</td>
-                  <td style={{ padding: '12px' }}>{contract.landlordPhone || '-'}</td>
-                  <td style={{ padding: '12px' }}>{contract.tenantName || '-'}</td>
-                  <td style={{ padding: '12px' }}>{contract.tenantPhone || '-'}</td>
+                  <td style={cellStyle('contractDate')}>{formatDate(contract.contractDate)}</td>
+                  <td style={cellStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
+                  <td style={cellStyle('expiryDate')}>{formatDate(contract.expiryDate)}</td>
+                  <td style={cellStyle('landlordName')}>{contract.landlordName || '-'}</td>
+                  <td style={cellStyle('landlordPhone')}>{contract.landlordPhone || '-'}</td>
+                  <td style={cellStyle('tenantName')}>{contract.tenantName || '-'}</td>
+                  <td style={cellStyle('tenantPhone')}>{contract.tenantPhone || '-'}</td>
                 </tr>
               ))}
             </tbody>
