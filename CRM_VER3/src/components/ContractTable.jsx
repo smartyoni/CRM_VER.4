@@ -135,12 +135,8 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
           <table className="customer-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#4CAF50', color: 'white' }}>
-                <SortHeader column="createdAt" label="등록일" />
                 <SortHeader column="buildingName" label="건물명" />
                 <SortHeader column="roomName" label="호실명" />
-                <SortHeader column="progressStatus" label="진행상황" />
-                <SortHeader column="propertyManagement" label="매물관리" />
-                <SortHeader column="expiryManagement" label="만기관리" />
                 <SortHeader column="contractDate" label="계약서작성일" />
                 <SortHeader column="balanceDate" label="잔금일" />
                 <SortHeader column="expiryDate" label="만기일" />
@@ -170,12 +166,8 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                     e.currentTarget.style.backgroundColor = selectedContractId === contract.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                   }}
                 >
-                  <td style={{ padding: '12px' }}>{formatDate(contract.createdAt)}</td>
                   <td style={{ padding: '12px' }}>{contract.buildingName || '-'}</td>
                   <td style={{ padding: '12px' }}>{contract.roomName || '-'}</td>
-                  <td style={{ padding: '12px' }}>{contract.progressStatus || '-'}</td>
-                  <td style={{ padding: '12px', fontSize: '12px' }}>{contract.propertyManagement || '-'}</td>
-                  <td style={{ padding: '12px', fontSize: '12px' }}>{contract.expiryManagement || '-'}</td>
                   <td style={{ padding: '12px' }}>{formatDate(contract.contractDate)}</td>
                   <td style={{ padding: '12px' }}>{formatDate(contract.balanceDate)}</td>
                   <td style={{ padding: '12px' }}>{formatDate(contract.expiryDate)}</td>
