@@ -96,7 +96,17 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
     whiteSpace: 'nowrap'
   });
 
-  const SortHeader = ({ column, label }) => (
+  const dateColumnStyle = (column) => ({
+    padding: '12px',
+    width: columnConfigs[column]?.width,
+    minWidth: columnConfigs[column]?.width,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    textAlign: 'center'
+  });
+
+  const SortHeader = ({ column, label, isDateColumn = false }) => (
     <th
       onClick={() => handleSort(column)}
       style={{
@@ -107,7 +117,8 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
         width: columnConfigs[column]?.width,
         minWidth: columnConfigs[column]?.width,
         overflow: 'hidden',
-        textOverflow: 'ellipsis'
+        textOverflow: 'ellipsis',
+        textAlign: isDateColumn ? 'center' : 'left'
       }}
     >
       {label}
@@ -160,9 +171,9 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
             <thead>
               <tr style={{ backgroundColor: '#4CAF50', color: 'white' }}>
                 <SortHeader column="buildingName" label="계약호실명" />
-                <SortHeader column="contractDate" label="계약서작성일" />
-                <SortHeader column="balanceDate" label="잔금일" />
-                <SortHeader column="expiryDate" label="만기일" />
+                <SortHeader column="contractDate" label="계약서작성일" isDateColumn={true} />
+                <SortHeader column="balanceDate" label="잔금일" isDateColumn={true} />
+                <SortHeader column="expiryDate" label="만기일" isDateColumn={true} />
                 <SortHeader column="landlordName" label="임대인이름" />
                 <SortHeader column="landlordPhone" label="임대인번호" />
                 <SortHeader column="tenantName" label="임차인이름" />
@@ -190,9 +201,9 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                   }}
                 >
                   <td style={cellStyle('buildingName')}>{contract.buildingName && contract.roomName ? `${contract.buildingName} ${contract.roomName}` : '-'}</td>
-                  <td style={cellStyle('contractDate')}>{formatDate(contract.contractDate)}</td>
-                  <td style={cellStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
-                  <td style={cellStyle('expiryDate')}>{formatDate(contract.expiryDate)}</td>
+                  <td style={dateColumnStyle('contractDate')}>{formatDate(contract.contractDate)}</td>
+                  <td style={dateColumnStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
+                  <td style={dateColumnStyle('expiryDate')}>{formatDate(contract.expiryDate)}</td>
                   <td style={cellStyle('landlordName')}>{contract.landlordName || '-'}</td>
                   <td style={cellStyle('landlordPhone')}>{contract.landlordPhone || '-'}</td>
                   <td style={cellStyle('tenantName')}>{contract.tenantName || '-'}</td>
