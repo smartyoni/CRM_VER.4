@@ -752,4 +752,19 @@ button {
   .tab-bar > button:nth-child(4) {
     border-bottom: 3px solid #9C27B0 !important;
   }
+
+  /* 건물정보 테이블 모바일 스타일 */
+  .building-table {
+    min-width: 466px !important; /* 700px * 2/3 */
+  }
+
+  .building-table th,
+  .building-table td {
+    padding: 8px 6px !important;
+    font-size: 13px !important;
+  }
+
+  .building-table th {
+    font-size: 12px !important;
+  }
 }

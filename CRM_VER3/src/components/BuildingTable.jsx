@@ -125,7 +125,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
 <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredBuildings.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%', tableLayout: 'auto', borderCollapse: 'collapse', minWidth: '700px' }}>
+          <table className="customer-table building-table" style={{ width: '100%', tableLayout: 'auto', borderCollapse: 'collapse', minWidth: '700px' }}>
             <thead>
               <tr>
                 <TableHeader label="건물명" sortKey="name" />
