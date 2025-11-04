@@ -92,78 +92,121 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
   return (
     <div className="property-table-container" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '15px', padding: '20px' }}>
-      <input
-        type="text"
-        placeholder="건물명이나 지번으로 검색..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{
-          padding: '8px 12px',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          fontSize: '14px'
-        }}
-      />
+      {/* 검색 바 */}
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <input
+          type="text"
+          placeholder="건물명이나 지번으로 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            flex: 1
+          }}
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm('')}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#f5f5f5',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            초기화
+          </button>
+        )}
+      </div>
+
+      {/* 색상 범례 */}
+      <div style={{ display: 'flex', gap: '30px', fontSize: '13px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <span style={{ fontWeight: 'bold', color: '#555' }}>상태:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div style={{ width: '20px', height: '20px', backgroundColor: '#e3f2fd', border: '1px solid #2196F3', borderRadius: '3px' }}></div>
+            <span>선택됨</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div style={{ width: '20px', height: '20px', backgroundColor: '#f0fdf4', border: '1px solid #4ade80', borderRadius: '3px' }}></div>
+            <span>기본(짝수)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div style={{ width: '20px', height: '20px', backgroundColor: '#ffffff', border: '1px solid #ddd', borderRadius: '3px' }}></div>
+            <span>기본(홀수)</span>
+          </div>
+        </div>
+      </div>
 
       <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
-        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f5f5f5' }}>
-              <TableHeader label="건물명" sortKey="name" />
-              <TableHeader label="지번" sortKey="address" />
-              <TableHeader label="공동현관비번" sortKey="entrance" />
-              <TableHeader label="층수" sortKey="floors" />
-              <TableHeader label="주차" sortKey="parking" />
-              <TableHeader label="관리실번호" sortKey="office" />
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBuildings.map((building, index) => (
-              <tr
-                key={building.id}
-                onClick={() => onSelectBuilding(building)}
-                onContextMenu={(e) => handleContextMenu(e, building)}
-                style={{
-                  backgroundColor: selectedBuildingId === building.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f0fdf4',
-                  cursor: 'pointer',
-                  borderBottom: '1px solid #e0e0e0',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  if (selectedBuildingId !== building.id) {
-                    e.currentTarget.style.backgroundColor = '#dcfce7';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedBuildingId === building.id) {
-                    e.currentTarget.style.backgroundColor = '#e3f2fd';
-                  } else {
-                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f0fdf4';
-                  }
-                }}
-              >
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {building.name || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
-                  {building.address || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
-                  {building.entrance || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {building.floors || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {building.parking || '-'}
-                </td>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
-                  {building.office || '-'}
-                </td>
+        {filteredBuildings.length > 0 ? (
+          <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5' }}>
+                <TableHeader label="건물명" sortKey="name" />
+                <TableHeader label="지번" sortKey="address" />
+                <TableHeader label="공동현관비번" sortKey="entrance" />
+                <TableHeader label="층수" sortKey="floors" />
+                <TableHeader label="주차" sortKey="parking" />
+                <TableHeader label="관리실번호" sortKey="office" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredBuildings.map((building, index) => (
+                <tr
+                  key={building.id}
+                  onClick={() => onSelectBuilding(building)}
+                  onContextMenu={(e) => handleContextMenu(e, building)}
+                  style={{
+                    backgroundColor: selectedBuildingId === building.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f0fdf4',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid #e0e0e0',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedBuildingId !== building.id) {
+                      e.currentTarget.style.backgroundColor = '#dcfce7';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedBuildingId === building.id) {
+                      e.currentTarget.style.backgroundColor = '#e3f2fd';
+                    } else {
+                      e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f0fdf4';
+                    }
+                  }}
+                >
+                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {building.name || '-'}
+                  </td>
+                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                    {building.address || '-'}
+                  </td>
+                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                    {building.entrance || '-'}
+                  </td>
+                  <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {building.floors || '-'}
+                  </td>
+                  <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {building.parking || '-'}
+                  </td>
+                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                    {building.office || '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+            {searchTerm ? '검색 결과가 없습니다' : '등록된 건물이 없습니다'}
+          </div>
+        )}
       </div>
 
       {/* Context Menu */}
@@ -230,12 +273,6 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
           >
             삭제
           </button>
-        </div>
-      )}
-
-      {filteredBuildings.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-          검색 결과가 없습니다
         </div>
       )}
     </div>

@@ -121,6 +121,73 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
     }
   };
 
+  // 즐겨찾기 토글 핸들러
+  const handleFavorite = () => {
+    if (contextMenu.selectedProperty) {
+      onEdit(contextMenu.selectedProperty); // 수정 모달에서 즐겨찾기 토글 가능하도록
+    }
+    handleCloseContextMenu();
+  };
+
+  // 접수일을 M월D일 형식으로 포맷
+  const formatCreatedDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}월${day}일`;
+  };
+
+  // 접수일 기준 배경색
+  const getDateBasedColor = (createdAt) => {
+    const today = new Date();
+    const createdDate = new Date(createdAt);
+
+    const createdYear = createdDate.getFullYear();
+    const createdMonth = createdDate.getMonth();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    const monthDiff = (currentYear - createdYear) * 12 + (currentMonth - createdMonth);
+
+    if (monthDiff === 0) {
+      return 'rgba(255, 193, 7, 0.12)'; // 당월: 노란색
+    } else if (monthDiff === 1) {
+      return 'rgba(33, 150, 243, 0.12)'; // 전월: 파란색
+    } else if (monthDiff >= 2 && monthDiff <= 4) {
+      return 'rgba(156, 39, 176, 0.12)'; // 2~4개월: 보라색
+    } else {
+      return 'transparent'; // 5개월 이상
+    }
+  };
+
+  // 날짜별로 rowSpan 계산
+  const getDateRowSpan = (property, index) => {
+    if (index > 0) {
+      const prevProperty = filteredProperties[index - 1];
+      if (formatCreatedDate(property.createdAt) === formatCreatedDate(prevProperty.createdAt)) {
+        return 0; // 같은 날짜면 렌더링 안 함
+      }
+    }
+
+    const currentDate = formatCreatedDate(property.createdAt);
+    let count = 1;
+    for (let i = index + 1; i < filteredProperties.length; i++) {
+      if (formatCreatedDate(filteredProperties[i].createdAt) === currentDate) {
+        count++;
+      } else {
+        break;
+      }
+    }
+    return count;
+  };
+
+  // 특정 날짜에 추가된 매물 수
+  const getPropertyCountByDate = (dateString) => {
+    const formattedDate = formatCreatedDate(dateString);
+    return filteredProperties.filter(p => formatCreatedDate(p.createdAt) === formattedDate).length;
+  };
+
   const SortHeader = ({ column, label }) => (
     <th
       onClick={() => handleSort(column)}
@@ -168,6 +235,25 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
         )}
       </div>
 
+      {/* 색상 범례 */}
+      <div style={{ display: 'flex', gap: '30px', marginBottom: '15px', fontSize: '13px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <span style={{ fontWeight: 'bold', color: '#555' }}>접수일:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(255, 193, 7, 0.12)', border: '1px solid rgba(255, 193, 7, 0.3)', borderRadius: '3px' }}></div>
+            <span>당월</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(33, 150, 243, 0.12)', border: '1px solid rgba(33, 150, 243, 0.3)', borderRadius: '3px' }}></div>
+            <span>전월</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div style={{ width: '20px', height: '20px', backgroundColor: 'rgba(156, 39, 176, 0.12)', border: '1px solid rgba(156, 39, 176, 0.3)', borderRadius: '3px' }}></div>
+            <span>2~4개월</span>
+          </div>
+        </div>
+      </div>
+
       {/* 테이블 */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {filteredProperties.length > 0 ? (
@@ -186,18 +272,32 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
               </tr>
             </thead>
             <tbody>
-              {filteredProperties.map(property => (
+              {filteredProperties.map((property, index) => {
+                const rowSpan = getDateRowSpan(property, index);
+                return (
                 <tr
                   key={property.id}
                   onClick={() => onSelectProperty(property)}
                   onContextMenu={(e) => handleContextMenu(e, property)}
                   style={{
                     cursor: 'pointer',
-                    backgroundColor: getBackgroundColor(property.createdAt, selectedPropertyId === property.id),
+                    backgroundColor: getDateBasedColor(property.createdAt),
                     fontWeight: selectedPropertyId === property.id ? 'bold' : 'normal'
                   }}
                 >
-                  <td style={{ fontSize: '13px' }}>{property.createdAt ? property.createdAt.slice(0, 10) : '-'}</td>
+                  {rowSpan > 0 && (
+                    <td
+                      rowSpan={rowSpan}
+                      style={{
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                        fontWeight: '500',
+                        fontSize: '13px'
+                      }}
+                    >
+                      {formatCreatedDate(property.createdAt)}({getPropertyCountByDate(property.createdAt)}건)
+                    </td>
+                  )}
                   <td style={{ fontSize: '13px' }}>{property.propertyType || '-'}</td>
                   <td style={{ fontSize: '13px' }}>{property.category || '-'}</td>
                   <td style={{ fontSize: '13px', fontWeight: 'bold' }}>{getPropertyName(property)}</td>
@@ -207,7 +307,8 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
                   <td style={{ fontSize: '13px' }}>{property.ownerPhone || '-'}</td>
                   <td style={{ fontSize: '13px' }}>{property.tenantPhone || '-'}</td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         ) : (
