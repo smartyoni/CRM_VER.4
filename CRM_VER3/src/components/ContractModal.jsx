@@ -2,29 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { CONTRACT_PROGRESS_STATUSES, CONTRACT_PROPERTY_MANAGEMENT, CONTRACT_EXPIRY_MANAGEMENT } from '../constants';
 
 const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
-  const getInitialState = () => ({
-    id: editData?.id || null,
-    createdAt: editData?.createdAt || new Date().toISOString(),
-    buildingName: editData?.buildingName || '',
-    roomName: editData?.roomName || '',
-    progressStatus: editData?.progressStatus || '계약서작성',
-    propertyManagement: editData?.propertyManagement || '',
-    expiryManagement: editData?.expiryManagement || '',
-    contractDate: editData?.contractDate || '',
-    balanceDate: editData?.balanceDate || '',
-    expiryDate: editData?.expiryDate || '',
-    landlordName: editData?.landlordName || '',
-    landlordPhone: editData?.landlordPhone || '',
-    tenantName: editData?.tenantName || '',
-    tenantPhone: editData?.tenantPhone || ''
+  const getInitialState = (data) => ({
+    id: data?.id || null,
+    createdAt: data?.createdAt || new Date().toISOString(),
+    buildingName: data?.buildingName || '',
+    roomName: data?.roomName || '',
+    progressStatus: data?.progressStatus || '계약서작성',
+    propertyManagement: data?.propertyManagement || '',
+    expiryManagement: data?.expiryManagement || '',
+    contractDate: data?.contractDate || '',
+    balanceDate: data?.balanceDate || '',
+    expiryDate: data?.expiryDate || '',
+    landlordName: data?.landlordName || '',
+    landlordPhone: data?.landlordPhone || '',
+    tenantName: data?.tenantName || '',
+    tenantPhone: data?.tenantPhone || ''
   });
 
-  const [formData, setFormData] = useState(getInitialState());
+  const [formData, setFormData] = useState(() => getInitialState(editData));
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setFormData(getInitialState());
-    setErrors({});
+    if (isOpen) {
+      setFormData(getInitialState(editData));
+      setErrors({});
+    }
   }, [editData, isOpen]);
 
   const validateForm = () => {
