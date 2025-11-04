@@ -189,6 +189,231 @@
   - [ ] 필터 상태 변수 분리 (다른 기능에 영향 안 줌)
   - [ ] 필터 레이아웃: 고객목록의 필터 구조 참고
 
+## CSV 임포트 기능
+
+### 개요
+- **목적**: CSV 파일을 통해 초기데이터 마이그레이션 및 대량 데이터 업로드
+- **동작**: 새로운 데이터 임포트 시 기존 데이터는 모두 삭제되고 새 데이터로 교체
+- **대상**: 고객, 매물, 건물 데이터
+
+### 구현 대상 엔티티
+- **PropertyImporter.jsx** (매물 임포트)
+- **BuildingImporter.jsx** (건물 임포트)
+- **CustomerImporter.jsx** (고객 임포트) - 필요 시 추가
+
+### CSV 파일 형식
+
+#### 매물(Property) CSV 예시
+```
+접수일,매물유형,구분,건물명,방번호,금액,입주일,소유자,소유자번호,점주번호
+2024-11-01,오피스텔,구분,더 현대 오피스텔,101,15000000,2025-01-15,김철수,010-1111-1111,010-2222-2222
+2024-11-02,주택,분양,강남 아파트,205,500000,2025-02-01,이영희,010-3333-3333,010-4444-4444
+```
+
+#### 건물(Building) CSV 예시
+```
+건물명,지번,공동현관비번,층수,주차,관리실번호
+더 현대 오피스텔,강남구 역삼동 123-45,1234,25,50,010-1111-1111
+강남 아파트,강남구 논현동 678-90,5678,15,20,010-2222-2222
+```
+
+#### 고객(Customer) CSV 예시
+```
+고객명,전화,출처,매물유형,선호지역,희망전세금,희망월세,입주예정일,메모,상태
+홍길동,010-1234-5678,블로그,월세,강남구 역삼동,1000,50,2024-12-01,빠른 입주 희망,신규
+김철수,010-9876-5432,네이버광고,전세,서초구 서초동,5000,0,2025-01-15,조용한 집 선호,상담중
+```
+
+### 구현 로직
+
+#### 1. 파일 읽기
+```javascript
+// CSV 파일을 읽고 배열로 변환
+const readCSV = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const lines = text.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const data = lines.slice(1)
+        .filter(line => line.trim())
+        .map(line => {
+          const values = line.split(',');
+          const obj = {};
+          headers.forEach((header, index) => {
+            obj[header] = values[index]?.trim();
+          });
+          return obj;
+        });
+      resolve(data);
+    };
+    reader.onerror = reject;
+  });
+};
+```
+
+#### 2. 데이터 변환 및 검증
+```javascript
+const parsePropertyData = (csvData) => {
+  return csvData.map((row, index) => ({
+    id: `prop_${Date.now()}_${index}`,
+    createdAt: row.접수일 || new Date().toISOString().split('T')[0],
+    propertyType: row.매물유형 || '',
+    category: row.구분 || '',
+    buildingName: row.건물명 || '',
+    roomNumber: row.방번호 || '',
+    price: row.금액 || 0,
+    moveInDate: row.입주일 || '',
+    ownerName: row.소유자 || '',
+    ownerPhone: row.소유자번호 || '',
+    tenantPhone: row.점주번호 || '',
+  }));
+};
+```
+
+#### 3. 기존 데이터 삭제 및 새 데이터 저장
+```javascript
+const handlePropertyImport = async (csvFile) => {
+  try {
+    // 1. CSV 파일 읽기
+    const csvData = await readCSV(csvFile);
+
+    // 2. 데이터 변환
+    const properties = parsePropertyData(csvData);
+
+    // 3. 기존 데이터 모두 삭제
+    const existingProperties = properties; // 현재 상태의 데이터
+    for (const prop of existingProperties) {
+      await deleteProperty(prop.id);
+    }
+
+    // 4. 새 데이터 저장
+    await saveProperties(properties);
+
+    // 5. UI 업데이트
+    setProperties(properties);
+    showSuccessMessage(`${properties.length}개의 매물이 임포트되었습니다.`);
+  } catch (error) {
+    showErrorMessage(`임포트 실패: ${error.message}`);
+  }
+};
+```
+
+### Importer 컴포넌트 구조
+
+#### PropertyImporter.jsx / BuildingImporter.jsx 공통 구조
+```javascript
+const PropertyImporter = ({ onComplete }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files[0]) {
+      handleImport(files[0]);
+    }
+  };
+
+  const handleImport = async (file) => {
+    if (!file.name.endsWith('.csv')) {
+      alert('CSV 파일만 선택할 수 있습니다.');
+      return;
+    }
+
+    // 임포트 로직 수행
+    try {
+      const data = await readCSV(file);
+      const parsed = parsePropertyData(data);
+
+      // 확인 다이얼로그
+      const confirmed = window.confirm(
+        `${parsed.length}개의 매물을 임포트합니다.\n기존 데이터는 모두 삭제됩니다.`
+      );
+
+      if (confirmed) {
+        await performImport(parsed);
+        onComplete();
+      }
+    } catch (error) {
+      alert(`임포트 실패: ${error.message}`);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        border: '2px dashed #ccc',
+        borderRadius: '8px',
+        padding: '40px',
+        textAlign: 'center',
+        backgroundColor: isDragging ? '#f0f0f0' : '#fff',
+        cursor: 'pointer'
+      }}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={() => fileInputRef.current?.click()}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        style={{ display: 'none' }}
+        onChange={(e) => e.target.files[0] && handleImport(e.target.files[0])}
+      />
+      <p>CSV 파일을 여기에 드래그하거나 클릭하여 선택</p>
+      <small style={{ color: '#999' }}>지원 형식: .csv</small>
+    </div>
+  );
+};
+```
+
+### App.jsx 연결
+```javascript
+// App.jsx에 상태 추가
+const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
+const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
+
+// 임포트 버튼 추가 (FilterSidebar 또는 주요 액션 바에)
+<button onClick={() => setIsPropertyImporterOpen(true)}>
+  CSV 임포트
+</button>
+
+// 임포트 모달 열기
+{isPropertyImporterOpen && (
+  <PropertyImporter
+    onComplete={() => {
+      setIsPropertyImporterOpen(false);
+      // 데이터 새로고침
+    }}
+  />
+)}
+```
+
+### 주의사항
+- **데이터 손실**: 임포트 시 기존 모든 데이터가 삭제되므로 반드시 확인 메시지 표시
+- **CSV 형식**: 헤더 행이 반드시 포함되어야 함
+- **인코딩**: UTF-8 인코딩 권장
+- **날짜 형식**: YYYY-MM-DD 형식 권장
+- **에러 처리**: 파싱 오류 시 상세 에러 메시지 제공
+
+### 테스트용 샘플 CSV 파일 경로
+- 프로젝트 폴더 내 `sample-data/` 디렉토리에 저장 권장
+- `sample-property.csv`, `sample-building.csv`, `sample-customer.csv` 제공
+
 ## 확인 날짜
 - 작성: 2025-10-20
-- 최종 업데이트: 2025-11-04 (새로운 기능 개발 UI/UX 원칙 추가)
+- 최종 업데이트: 2025-11-04 (새로운 기능 개발 UI/UX 원칙 추가, CSV 임포트 기능 추가)
