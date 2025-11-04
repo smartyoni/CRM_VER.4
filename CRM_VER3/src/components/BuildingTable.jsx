@@ -74,11 +74,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
       onClick={() => handleSort(sortKey)}
       style={{
         cursor: 'pointer',
-        userSelect: 'none',
-        padding: '12px 8px',
-        backgroundColor: '#f5f5f5',
-        fontWeight: '600',
-        whiteSpace: 'nowrap'
+        userSelect: 'none'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -144,9 +140,9 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
       <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredBuildings.length > 0 ? (
-          <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
-              <tr style={{ backgroundColor: '#f5f5f5' }}>
+              <tr>
                 <TableHeader label="건물명" sortKey="name" />
                 <TableHeader label="지번" sortKey="address" />
                 <TableHeader label="공동현관비번" sortKey="entrance" />
@@ -180,22 +176,22 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                     }
                   }}
                 >
-                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.name || '-'}
                   </td>
-                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
                     {building.address || '-'}
                   </td>
-                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
                     {building.entrance || '-'}
                   </td>
-                  <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.floors || '-'}
                   </td>
-                  <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {building.parking || '-'}
                   </td>
-                  <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
+                  <td style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', color: '#666' }}>
                     {building.office || '-'}
                   </td>
                 </tr>
