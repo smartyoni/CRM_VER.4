@@ -775,4 +775,14 @@ button {
     text-overflow: ellipsis !important;
     word-break: break-word !important;
   }
+
+  /* 테이블뷰 양쪽 여백 제거 */
+  .main-content {
+    padding: 10px 0 !important;
+  }
+
+  .property-table-container,
+  .property-table-wrapper {
+    padding: 10px 0 !important;
+  }
 }
