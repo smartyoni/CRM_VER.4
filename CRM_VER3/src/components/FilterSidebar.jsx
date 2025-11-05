@@ -25,7 +25,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       if (status === '전체') return customers.length;
 
       // 미팅 기반 필터
-      if (status === '집중고객') {
+      if (status === '즐겨찾기') {
         return customers.filter(c => c.isFavorite).length;
       }
 
@@ -61,6 +61,21 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
             const followUps = activity.followUps || [];
             // 이 활동에 "답장"이 없으면 true
             return !followUps.some(followUp => followUp.author === '답장');
+          });
+        }).length;
+      }
+
+      // 오늘 활동 기록이 있는 고객
+      if (status === '오늘활동') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return customers.filter(c => {
+          const customerActivities = activities.filter(a => a.customerId === c.id);
+          return customerActivities.some(activity => {
+            const activityDate = new Date(activity.date);
+            activityDate.setHours(0, 0, 0, 0);
+            return activityDate.getTime() === today.getTime();
           });
         }).length;
       }
@@ -127,7 +142,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
 
   // activeTab에 따라 다른 필터 목록 표시
   const allStatuses = activeTab === '고객목록'
-    ? ['전체', '보류', '신규', '진행중', '집중고객', '오늘미팅', '미팅일확정', '답장대기']
+    ? ['전체', '오늘활동', '오늘미팅', '미팅일확정', '즐겨찾기', '답장대기', '보류']
     : activeTab === '매물장'
     ? getPropertyCategories() // 매물장 필터 (구분별 동적 생성)
     : activeTab === '건물정보'

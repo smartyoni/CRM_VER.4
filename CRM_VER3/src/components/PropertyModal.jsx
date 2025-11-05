@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { generateId } from '../utils/helpers';
+import { PROPERTY_CATEGORIES, PROPERTY_TYPES } from '../constants';
 
 const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
-  const PROPERTY_TYPES = ['매매', '임대'];
-  const CATEGORIES = ['오피스텔', '오피스', '상가', '지산', '아파트'];
 
   const getInitialState = () => ({
     id: editData?.id || null,
     createdAt: editData?.createdAt || new Date().toISOString(),
     propertyType: editData?.propertyType || PROPERTY_TYPES[0],
-    category: editData?.category || CATEGORIES[0],
+    category: editData?.category || PROPERTY_CATEGORIES[0],
     buildingName: editData?.buildingName || '',
     roomNumber: editData?.roomNumber || '',
     price: editData?.price || '',
+    deposit: editData?.deposit || editData?.price || '',
+    monthlyRent: editData?.monthlyRent || '',
     moveInDate: editData?.moveInDate || '',
     ownerName: editData?.ownerName || '',
     ownerPhone: editData?.ownerPhone || '',
@@ -55,6 +56,8 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
       ...formData,
       id: formData.id || generateId(),
       price: parseInt(formData.price, 10) || 0,
+      deposit: parseInt(formData.deposit, 10) || 0,
+      monthlyRent: parseInt(formData.monthlyRent, 10) || 0,
       createdAt: formData.createdAt || new Date().toISOString(),
     };
 
@@ -73,7 +76,7 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
       const lines = parseText.split('\n').map(l => l.trim()).filter(l => l);
 
       // 컬럼명 목록 (파싱 대상 제외)
-      const columnNames = ['매물명', '금액', '입주일(만기일)', '입주일자', '임대인이름', '임대인번호', '임차인번호', '비밀번호', '매물정보'];
+      const columnNames = ['매물명', '보증금', '월세', '입주일(만기일)', '입주일자', '임대인이름', '임대인번호', '임차인번호', '비밀번호', '매물정보'];
 
       // Key-Value 추출 헬퍼 함수 (컬럼명 직후의 값 추출)
       const getValueAfterKey = (key) => {
@@ -102,11 +105,18 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
         parsed.roomNumber = '';
       }
 
-      // 2. 금액 파싱 (숫자만 추출)
-      const priceText = getValueAfterKey('금액');
-      parsed.price = priceText.replace(/[^0-9]/g, '') || '';
+      // 2. 보증금 파싱
+      const depositText = getValueAfterKey('보증금');
+      parsed.deposit = depositText.replace(/[^0-9]/g, '') || '';
 
-      // 3. 입주일 파싱 (MM/DD/YYYY → YYYY-MM-DD)
+      // 3. 월세 파싱
+      const monthlyRentText = getValueAfterKey('월세');
+      parsed.monthlyRent = monthlyRentText.replace(/[^0-9]/g, '') || '';
+
+      // 호환성: price 필드에 보증금 값 저장
+      parsed.price = parsed.deposit;
+
+      // 4. 입주일 파싱 (MM/DD/YYYY → YYYY-MM-DD)
       const moveInText = getValueAfterKey('입주일(만기일)');
       const dateMatch = moveInText.match(/(\d{2})\/(\d{2})\/(\d{4})/);
       if (dateMatch) {
@@ -114,15 +124,15 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
         parsed.moveInDate = `${dateMatch[3]}-${dateMatch[1]}-${dateMatch[2]}`;
       }
 
-      // 4. 임대인(소유자) 정보
+      // 5. 임대인(소유자) 정보
       const ownerNameValue = getValueAfterKey('임대인이름');
       parsed.ownerName = ownerNameValue; // 임대인이름 그대로 사용
       parsed.ownerPhone = getValueAfterKey('임대인번호');
 
-      // 5. 임차인(점주) 번호
+      // 6. 임차인(점주) 번호
       parsed.tenantPhone = getValueAfterKey('임차인번호');
 
-      // 6. 메모 (매물정보 이후 모든 내용)
+      // 7. 메모 (매물정보 이후 모든 내용)
       const memoStartIndex = lines.findIndex(line => line === '매물정보');
       if (memoStartIndex !== -1) {
         parsed.memo = lines.slice(memoStartIndex + 1).join('\n').trim();
@@ -150,13 +160,13 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
         <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', paddingBottom: '10px' }}>
           <h3>{editData ? '매물 수정' : '매물 추가'}</h3>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <label style={{ fontSize: '14px', marginBottom: 0 }}>매물유형</label>
-            <select name="propertyType" value={formData.propertyType} onChange={handleChange} style={{ fontSize: '14px' }}>
+            <label style={{ fontSize: '21px', marginBottom: 0 }}>매물유형</label>
+            <select name="propertyType" value={formData.propertyType} onChange={handleChange} style={{ fontSize: '21px', padding: '6px 8px' }}>
               {PROPERTY_TYPES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
-            <label style={{ fontSize: '14px', marginBottom: 0 }}>구분</label>
-            <select name="category" value={formData.category} onChange={handleChange} style={{ fontSize: '14px' }}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            <label style={{ fontSize: '21px', marginBottom: 0 }}>구분</label>
+            <select name="category" value={formData.category} onChange={handleChange} style={{ fontSize: '21px', padding: '6px 8px' }}>
+              {PROPERTY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <button onClick={onClose} className="btn-close">✕</button>
           </div>
@@ -206,12 +216,20 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
           </div>
         </div>
 
-        {/* 금액과 입주일 */}
+        {/* 보증금과 월세 */}
         <div className="form-grid">
           <div className="form-group">
-            <label>금액 (만원)</label>
-            <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="금액 입력" />
+            <label>보증금 (만원)</label>
+            <input type="number" name="deposit" value={formData.deposit} onChange={handleChange} placeholder="보증금 입력" />
           </div>
+          <div className="form-group">
+            <label>월세 (만원)</label>
+            <input type="number" name="monthlyRent" value={formData.monthlyRent} onChange={handleChange} placeholder="월세 입력" />
+          </div>
+        </div>
+
+        {/* 입주일 */}
+        <div className="form-grid">
           <div className="form-group">
             <label>입주일</label>
             <input type="date" name="moveInDate" value={formData.moveInDate} onChange={handleDateChange} />

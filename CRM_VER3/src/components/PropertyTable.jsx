@@ -22,8 +22,8 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
       if (aValue == null) return 1;
       if (bValue == null) return -1;
 
-      // 숫자 비교 (금액)
-      if (sortConfig.key === 'price') {
+      // 숫자 비교 (금액, 보증금, 월세)
+      if (sortConfig.key === 'price' || sortConfig.key === 'deposit' || sortConfig.key === 'monthlyRent') {
         const numA = Number(aValue) || 0;
         const numB = Number(bValue) || 0;
         return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
@@ -245,7 +245,8 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
                 <SortHeader column="propertyType" label="매물유형" />
                 <SortHeader column="category" label="구분" />
                 <th style={{ width: '200px' }}>매물명</th>
-                <SortHeader column="price" label="금액" />
+                <SortHeader column="deposit" label="보증금" />
+                <SortHeader column="monthlyRent" label="월세" />
                 <SortHeader column="moveInDate" label="입주일" />
                 <SortHeader column="ownerName" label="소유자" />
                 <SortHeader column="ownerPhone" label="소유자번호" />
@@ -284,7 +285,8 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.propertyType || '-'}</td>
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.category || '-'}</td>
                   <td style={{ padding: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{getPropertyName(property)}</td>
-                  <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>{formatPrice(property.price)}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>{formatPrice(property.deposit || property.price)}</td>
+                  <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>{formatPrice(property.monthlyRent)}</td>
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.ownerName || '-'}</td>
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.ownerPhone || '-'}</td>

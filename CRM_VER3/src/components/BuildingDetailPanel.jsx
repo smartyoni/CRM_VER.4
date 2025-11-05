@@ -1,33 +1,157 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { BUILDING_TYPES, BUILDING_LOCATIONS } from '../constants';
 
-const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete }) => {
+const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete, onUpdateBuilding }) => {
+  const [selectedType, setSelectedType] = useState(selectedBuilding?.type || '');
+  const [selectedLocation, setSelectedLocation] = useState(selectedBuilding?.location || '');
+
+  useEffect(() => {
+    setSelectedType(selectedBuilding?.type || '');
+    setSelectedLocation(selectedBuilding?.location || '');
+  }, [selectedBuilding]);
+
   if (!selectedBuilding) return null;
 
+  const handleTypeChange = (type) => {
+    setSelectedType(type);
+  };
+
+  const handleLocationChange = (location) => {
+    setSelectedLocation(location);
+  };
+
+  const handleSave = () => {
+    const updatedBuilding = {
+      ...selectedBuilding,
+      type: selectedType,
+      location: selectedLocation
+    };
+    onUpdateBuilding(updatedBuilding);
+  };
+
   return (
-    <aside className="detail-panel" style={{ width: '350px', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', overflowY: 'auto' }}>
+    <aside className="detail-panel" style={{ position: 'fixed', right: 0, top: 0, width: '800px', height: '100vh', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', overflow: 'hidden', zIndex: 50, boxShadow: '-2px 0 8px rgba(0,0,0,0.1)' }}>
       <div className="panel-header" style={{ padding: '20px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>건물 상세</h3>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            onClick={() => onEdit(selectedBuilding)}
+            className="btn-primary"
+            style={{
+              padding: '6px 12px',
+              fontSize: '13px',
+              backgroundColor: '#2196F3',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              borderRadius: '4px'
+            }}
+          >
+            수정
+          </button>
+          <button
+            onClick={onClose}
+            className="btn-close"
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              padding: 0,
+              width: '30px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      {/* 유형 선택 */}
+      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+          {BUILDING_TYPES.map(type => (
+            <button
+              key={type}
+              onClick={() => handleTypeChange(type)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: selectedType === type ? 'none' : '1px solid #ccc',
+                backgroundColor: selectedType === type ? '#2196F3' : '#fff',
+                color: selectedType === type ? '#fff' : '#333',
+                fontWeight: selectedType === type ? 'bold' : 'normal',
+                cursor: 'pointer',
+                fontSize: '13px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedType !== type) {
+                  e.target.style.borderColor = '#999';
+                  e.target.style.backgroundColor = '#f5f5f5';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedType !== type) {
+                  e.target.style.borderColor = '#ccc';
+                  e.target.style.backgroundColor = '#fff';
+                }
+              }}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 위치 선택 */}
+      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+          {BUILDING_LOCATIONS.map(location => (
+            <button
+              key={location}
+              onClick={() => handleLocationChange(location)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: selectedLocation === location ? 'none' : '1px solid #ccc',
+                backgroundColor: selectedLocation === location ? '#FF6B9D' : '#fff',
+                color: selectedLocation === location ? '#fff' : '#333',
+                fontWeight: selectedLocation === location ? 'bold' : 'normal',
+                cursor: 'pointer',
+                fontSize: '13px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedLocation !== location) {
+                  e.target.style.borderColor = '#999';
+                  e.target.style.backgroundColor = '#f5f5f5';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedLocation !== location) {
+                  e.target.style.borderColor = '#ccc';
+                  e.target.style.backgroundColor = '#fff';
+                }
+              }}
+            >
+              {location}
+            </button>
+          ))}
+        </div>
         <button
-          onClick={onClose}
-          className="btn-close"
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '24px',
-            cursor: 'pointer',
-            padding: 0,
-            width: '30px',
-            height: '30px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
+          onClick={handleSave}
+          className="btn-primary"
+          style={{ padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap' }}
         >
-          ×
+          저장
         </button>
       </div>
 
-      <div className="panel-content" style={{ flex: 1, overflow: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="panel-content" style={{ flex: 1, overflowY: 'auto', padding: '20px', paddingBottom: '130px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* 기본 정보 */}
         <section>
           <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #2196F3' }}>
@@ -109,11 +233,11 @@ const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete }) =>
       </div>
 
       {/* 버튼 영역 */}
-      <div className="panel-footer" style={{ padding: '15px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+      <div className="panel-footer" style={{ padding: '15px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', backgroundColor: '#fff' }}>
         <button
           onClick={() => onEdit(selectedBuilding)}
           className="btn-primary"
-          style={{ padding: '8px 16px', fontSize: '13px' }}
+          style={{ padding: '8px 16px', fontSize: '13px', backgroundColor: '#2196F3', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
         >
           수정
         </button>

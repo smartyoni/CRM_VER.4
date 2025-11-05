@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { PROPERTY_TYPES, PROPERTY_CATEGORIES } from '../constants';
 
 const PropertyDetailPanel = ({
   selectedProperty,
@@ -7,291 +8,260 @@ const PropertyDetailPanel = ({
   onUpdateProperty,
   onDeleteProperty
 }) => {
-  const [editingField, setEditingField] = useState(null);
-  const [editingValue, setEditingValue] = useState('');
-  const [editingData, setEditingData] = useState(null);
+  const [selectedPropertyType, setSelectedPropertyType] = useState(selectedProperty?.propertyType || '');
+  const [selectedCategory, setSelectedCategory] = useState(selectedProperty?.category || '');
 
   useEffect(() => {
-    if (selectedProperty) {
-      setEditingData(selectedProperty);
-    }
+    setSelectedPropertyType(selectedProperty?.propertyType || '');
+    setSelectedCategory(selectedProperty?.category || '');
   }, [selectedProperty]);
 
   if (!selectedProperty) return null;
-
-  const truncateText = (text, maxLength = 50) => {
-    if (!text) return '-';
-    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
-  };
 
   const formatPrice = (price) => {
     if (!price) return '-';
     return `${Number(price).toLocaleString()} 만원`;
   };
 
-  const handleFieldDoubleClick = (fieldName, value) => {
-    setEditingField(fieldName);
-    setEditingValue(value || '');
+  const handlePropertyTypeChange = (type) => {
+    setSelectedPropertyType(type);
   };
 
-  const handleSaveField = async () => {
-    if (editingField && editingData) {
-      const updatedData = { ...editingData, [editingField]: editingValue };
-      setEditingData(updatedData);
-      await onUpdateProperty(updatedData);
-      setEditingField(null);
-    }
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
   };
 
-  const handleCancel = () => {
-    setEditingField(null);
-    setEditingValue('');
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleSaveField();
-    } else if (e.key === 'Escape') {
-      handleCancel();
-    }
-  };
-
-  // 필드 렌더링 헬퍼 함수
-  const renderEditableField = (fieldName, displayName, value, type = 'text', options = {}) => {
-    const isEditing = editingField === fieldName;
-    const displayValue =
-      fieldName === 'price' ? formatPrice(value) :
-      (fieldName === 'createdAt' || fieldName === 'moveInDate') ?
-        (value ? value.slice(0, 10) : '-') :
-      (value || '-');
-
-    return (
-      <div
-        style={{
-          padding: '8px',
-          backgroundColor: isEditing ? '#fff8f0' : '#f9f9f9',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          border: isEditing ? '1px solid #ff1493' : '1px solid transparent',
-          transition: 'all 0.2s ease'
-        }}
-        onDoubleClick={() => handleFieldDoubleClick(fieldName, value)}
-      >
-        <span style={{ display: 'block', fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>
-          {displayName}
-        </span>
-        {isEditing ? (
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {type === 'textarea' ? (
-              <textarea
-                autoFocus
-                value={editingValue}
-                onChange={(e) => setEditingValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={handleSaveField}
-                style={{
-                  flex: 1,
-                  padding: '6px',
-                  border: '1px solid #ff1493',
-                  borderRadius: '3px',
-                  fontSize: '13px',
-                  fontFamily: 'inherit',
-                  minHeight: '60px',
-                  resize: 'vertical'
-                }}
-              />
-            ) : (
-              <input
-                autoFocus
-                type={type}
-                value={editingValue}
-                onChange={(e) => setEditingValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={handleSaveField}
-                style={{
-                  flex: 1,
-                  padding: '6px',
-                  border: '1px solid #ff1493',
-                  borderRadius: '3px',
-                  fontSize: '13px',
-                  fontFamily: 'inherit'
-                }}
-              />
-            )}
-            <button
-              onClick={handleSaveField}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px'
-              }}
-            >
-              ✓
-            </button>
-            <button
-              onClick={handleCancel}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#999',
-                color: 'white',
-                border: 'none',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px'
-              }}
-            >
-              ✕
-            </button>
-          </div>
-        ) : (
-          <p style={{ margin: 0, fontWeight: 'bold', fontSize: '13px', color: fieldName === 'price' ? '#2196F3' : '#333' }}>
-            {displayValue}
-          </p>
-        )}
-      </div>
-    );
+  const handleSave = () => {
+    const updatedProperty = {
+      ...selectedProperty,
+      propertyType: selectedPropertyType,
+      category: selectedCategory
+    };
+    onUpdateProperty(updatedProperty);
   };
 
   return (
-    <div className="customer-detail-panel" style={{
-      position: 'fixed',
-      right: 0,
-      top: 0,
-      height: '100vh',
-      width: '800px',
-      backgroundColor: '#fff',
-      borderLeft: '1px solid #e0e0e0',
-      boxShadow: '-2px 0 8px rgba(0,0,0,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 50,
-      overflowY: 'auto'
-    }}>
+    <aside className="detail-panel" style={{ position: 'fixed', right: 0, top: 0, width: '800px', height: '100vh', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', overflow: 'hidden', zIndex: 50, boxShadow: '-2px 0 8px rgba(0,0,0,0.1)' }}>
       {/* 헤더 */}
-      <div style={{
-        padding: '20px',
-        borderBottom: '1px solid #e0e0e0',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#f9f9f9'
-      }}>
-        <div style={{ flex: 1 }}>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold', color: '#2c3e50' }}>
-            {selectedProperty.buildingName}
-          </h3>
-          <p style={{ margin: 0, fontSize: '13px', color: '#7f8c8d' }}>
-            {selectedProperty.category} • {selectedProperty.propertyType}
-          </p>
+      <div className="panel-header" style={{ padding: '20px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>{selectedProperty.buildingName}</h3>
+          <p style={{ fontSize: '13px', color: '#999', margin: '4px 0 0 0' }}>{selectedProperty.roomNumber}</p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            onClick={() => onEditProperty(selectedProperty)}
+            className="btn-primary"
+            style={{
+              padding: '6px 12px',
+              fontSize: '13px',
+              backgroundColor: '#2196F3',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              borderRadius: '4px'
+            }}
+          >
+            수정
+          </button>
+          <button
+            onClick={onClose}
+            className="btn-close"
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              padding: 0,
+              width: '30px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      {/* 매물유형 선택 */}
+      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+          {PROPERTY_TYPES.map(type => (
+            <button
+              key={type}
+              onClick={() => handlePropertyTypeChange(type)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: selectedPropertyType === type ? 'none' : '1px solid #ccc',
+                backgroundColor: selectedPropertyType === type ? '#2196F3' : '#fff',
+                color: selectedPropertyType === type ? '#fff' : '#333',
+                fontWeight: selectedPropertyType === type ? 'bold' : 'normal',
+                cursor: 'pointer',
+                fontSize: '13px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedPropertyType !== type) {
+                  e.target.style.borderColor = '#999';
+                  e.target.style.backgroundColor = '#f5f5f5';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedPropertyType !== type) {
+                  e.target.style.borderColor = '#ccc';
+                  e.target.style.backgroundColor = '#fff';
+                }
+              }}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 구분 선택 */}
+      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+          {PROPERTY_CATEGORIES.map(category => (
+            <button
+              key={category}
+              onClick={() => handleCategoryChange(category)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: selectedCategory === category ? 'none' : '1px solid #ccc',
+                backgroundColor: selectedCategory === category ? '#FF6B9D' : '#fff',
+                color: selectedCategory === category ? '#fff' : '#333',
+                fontWeight: selectedCategory === category ? 'bold' : 'normal',
+                cursor: 'pointer',
+                fontSize: '13px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedCategory !== category) {
+                  e.target.style.borderColor = '#999';
+                  e.target.style.backgroundColor = '#f5f5f5';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedCategory !== category) {
+                  e.target.style.borderColor = '#ccc';
+                  e.target.style.backgroundColor = '#fff';
+                }
+              }}
+            >
+              {category}
+            </button>
+          ))}
         </div>
         <button
-          onClick={onClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '24px',
-            cursor: 'pointer',
-            color: '#999',
-            padding: '0 10px'
-          }}
+          onClick={handleSave}
+          className="btn-primary"
+          style={{ padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap' }}
         >
-          ✕
+          저장
         </button>
       </div>
 
       {/* 콘텐츠 */}
-      <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
-        <div style={{ fontSize: '12px', color: '#999', marginBottom: '15px', fontStyle: 'italic' }}>
-          💡 필드를 더블클릭하여 편집할 수 있습니다
-        </div>
-
-        {/* 기본 정보 섹션 */}
-        <div style={{ marginBottom: '25px' }}>
-          <h4 style={{ margin: '0 0 12px 0', color: '#ff1493', fontSize: '14px', fontWeight: 'bold' }}>
-            기본 정보
+      <div className="panel-content" style={{ flex: 1, overflowY: 'auto', padding: '20px', paddingBottom: '130px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* 기본 정보 */}
+        <section>
+          <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #FF6B9D' }}>
+            📋 기본 정보
           </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {renderEditableField('roomNumber', '호실명', editingData?.roomNumber)}
-            {renderEditableField('price', '금액', editingData?.price, 'number')}
-            {renderEditableField('createdAt', '접수일', editingData?.createdAt, 'date')}
-            {renderEditableField('moveInDate', '입주일', editingData?.moveInDate, 'date')}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>호실명:</span>
+              <span style={{ color: '#333' }}>{selectedProperty.roomNumber || '-'}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>보증금:</span>
+              <span style={{ color: '#2196F3', fontWeight: 'bold' }}>{formatPrice(selectedProperty.deposit || selectedProperty.price)}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>월세:</span>
+              <span style={{ color: '#FF6B9D', fontWeight: 'bold' }}>{formatPrice(selectedProperty.monthlyRent)}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>접수일:</span>
+              <span style={{ color: '#333' }}>{selectedProperty.createdAt ? selectedProperty.createdAt.slice(0, 10) : '-'}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>입주일:</span>
+              <span style={{ color: '#333' }}>{selectedProperty.moveInDate ? selectedProperty.moveInDate.slice(0, 10) : '-'}</span>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* 소유자 정보 섹션 */}
-        <div style={{ marginBottom: '25px' }}>
-          <h4 style={{ margin: '0 0 12px 0', color: '#ff1493', fontSize: '14px', fontWeight: 'bold' }}>
-            소유자 정보
+        {/* 소유자 정보 */}
+        <section>
+          <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #4CAF50' }}>
+            👤 소유자 정보
           </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {renderEditableField('ownerName', '소유자', editingData?.ownerName)}
-            {renderEditableField('ownerPhone', '소유자번호', editingData?.ownerPhone, 'tel')}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>소유자:</span>
+              <span style={{ color: '#333' }}>{selectedProperty.ownerName || '-'}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>번호:</span>
+              <span style={{ color: '#333' }}>{selectedProperty.ownerPhone || '-'}</span>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* 기타 정보 */}
-        <div style={{ marginBottom: '25px' }}>
-          <h4 style={{ margin: '0 0 12px 0', color: '#ff1493', fontSize: '14px', fontWeight: 'bold' }}>
-            기타 정보
+        <section>
+          <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #FF9800' }}>
+            📝 기타 정보
           </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            {renderEditableField('leaseInfo', '임대차정보', editingData?.leaseInfo)}
-            {renderEditableField('tenantPhone', '점주번호', editingData?.tenantPhone, 'tel')}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>점주번호:</span>
+              <span style={{ color: '#333' }}>{selectedProperty.tenantPhone || '-'}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>임대차:</span>
+              <span style={{ color: '#333' }}>{selectedProperty.leaseInfo || '-'}</span>
+            </div>
           </div>
-          <div style={{ marginBottom: '12px' }}>
-            {renderEditableField('memo', '메모', editingData?.memo, 'textarea')}
-          </div>
-        </div>
+        </section>
+
+        {/* 메모 */}
+        {selectedProperty.memo && (
+          <section>
+            <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #2196F3' }}>
+              💬 메모
+            </h4>
+            <div style={{ fontSize: '13px', color: '#333', padding: '10px', backgroundColor: '#f0f8ff', borderRadius: '4px', borderLeft: '3px solid #2196F3', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.5' }}>
+              {selectedProperty.memo}
+            </div>
+          </section>
+        )}
       </div>
 
-      {/* 푸터 (버튼) */}
-      <div style={{
-        padding: '15px 20px',
-        borderTop: '1px solid #e0e0e0',
-        backgroundColor: '#f9f9f9',
-        display: 'flex',
-        gap: '10px',
-        justifyContent: 'flex-end'
-      }}>
-        <button
-          onClick={onClose}
-          className="btn-secondary"
-          style={{ padding: '8px 16px', fontSize: '13px' }}
-        >
-          닫기
-        </button>
+      {/* 버튼 영역 */}
+      <div className="panel-footer" style={{ padding: '15px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', backgroundColor: '#fff' }}>
         <button
           onClick={() => onEditProperty(selectedProperty)}
           className="btn-primary"
-          style={{ padding: '8px 16px', fontSize: '13px' }}
+          style={{ padding: '8px 16px', fontSize: '13px', backgroundColor: '#2196F3', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
         >
-          모달 수정
+          수정
         </button>
         <button
-          onClick={() => {
-            if (confirm('이 매물을 삭제하시겠습니까?')) {
-              onDeleteProperty(selectedProperty);
-            }
-          }}
-          style={{
-            padding: '8px 16px',
-            fontSize: '13px',
-            backgroundColor: '#f44336',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: '500'
-          }}
+          onClick={() => onDeleteProperty(selectedProperty)}
+          className="btn-secondary"
+          style={{ padding: '8px 16px', fontSize: '13px', backgroundColor: '#f44336', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
         >
           삭제
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

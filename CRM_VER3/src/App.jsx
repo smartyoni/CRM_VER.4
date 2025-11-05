@@ -1029,6 +1029,7 @@ function App() {
             onClose={() => setSelectedBuildingId(null)}
             onEdit={handleOpenBuildingModal}
             onDelete={handleDeleteBuilding}
+            onUpdateBuilding={handleSaveBuilding}
           />
 
           {/* BuildingModal */}
