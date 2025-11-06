@@ -119,9 +119,35 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     setCalcFeeRate('');
   };
 
+  // 금액 포맷팅 (만원 → 억/만원)
+  const formatAmount = (amountInManwon) => {
+    if (!amountInManwon) return '0원';
+
+    const amount = Number(amountInManwon);
+    if (amount === 0) return '0원';
+
+    const eok = Math.floor(amount / 10000);
+    const manwon = amount % 10000;
+
+    if (eok > 0 && manwon > 0) {
+      return `${eok}억${manwon.toLocaleString()}만원`;
+    } else if (eok > 0) {
+      return `${eok}억원`;
+    } else {
+      return `${manwon.toLocaleString()}만원`;
+    }
+  };
+
   // 중개보수 안내문자 생성
   const generateBrokageMessage = () => {
     if (calculatedFee === null) return '';
+
+    const deposit = Number(calcDeposit) || 0;
+    const monthlyRent = Number(calcMonthlyRent) || 0;
+    const feeRate = Number(calcFeeRate) || 0;
+
+    // 환산보증금 계산
+    const convertedDeposit = deposit + (monthlyRent * 100);
 
     // 부가세(10%) 계산
     const vat = Math.round(calculatedFee / 10);
@@ -130,11 +156,21 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
 
     const message = `[중개보수 안내]
 
-중개수수료:   ${totalWithVat.toLocaleString()}원(부가세포함)
+지역                서울특별시
+물건유형            ${selectedPropertyType || '-'}
+거래유형            ${selectedTransactionType || '-'}
+보증금/월세          ${formatAmount(deposit)} / ${formatAmount(monthlyRent)}
+환산보증금          ${formatAmount(convertedDeposit)}
+상한요율            ${feeRate}%
+한도금액            없음
+
+중개보수            ${feeWithoutVat.toLocaleString()}원
+부가세(10%)         ${vat.toLocaleString()}원
+합계                ${totalWithVat.toLocaleString()}원
 
 110-355-630099 신한은행 스마트공인중개사사무소(최영현)
 
-현금영수증 필요없으시면    ${feeWithoutVat.toLocaleString()}원 입금해주시면 됩니다.`;
+현금영수증 필요없으시면 ${feeWithoutVat.toLocaleString()}원 입금해주시면 됩니다.`;
 
     return message;
   };
