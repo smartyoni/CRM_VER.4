@@ -169,7 +169,6 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
 합계                ${totalWithVat.toLocaleString()}만원
 
 중개수수료:   ${totalWithVat.toLocaleString()}만원(부가세포함)
-
 110-355-630099 신한은행 스마트공인중개사사무소(최영현)
 
 현금영수증 필요없으시면    ${feeWithoutVat.toLocaleString()}만원 입금해주시면 됩니다.`;
