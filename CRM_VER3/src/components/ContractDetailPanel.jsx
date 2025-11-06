@@ -600,7 +600,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   📊 중개보수 계산기
                 </div>
 
-                {/* 물건유형 및 거래유형 드롭다운 */}
+                {/* 물건유형 및 거래유형 */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>물건유형</label>
@@ -624,7 +624,6 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                       ))}
                     </select>
                   </div>
-
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>거래유형</label>
                     <select
@@ -649,13 +648,8 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   </div>
                 </div>
 
-                {/* 입력 필드 그룹 (한 줄) - 모바일에서 2/3 너비 */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr',
-                  gap: '10px'
-                }} className="input-fields-container">
-                  {/* 보증금 입력 */}
+                {/* 보증금 및 월세 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>보증금 (만원)</label>
                     <input
@@ -672,8 +666,6 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                       }}
                     />
                   </div>
-
-                  {/* 월세 입력 */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>월세 (만원)</label>
                     <input
@@ -690,25 +682,25 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                       }}
                     />
                   </div>
+                </div>
 
-                  {/* 중개요율 입력 */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>중개요율 (%)</label>
-                    <input
-                      type="number"
-                      value={calcFeeRate}
-                      onChange={(e) => setCalcFeeRate(e.target.value)}
-                      placeholder="예: 0.4"
-                      step="0.1"
-                      style={{
-                        padding: '8px 12px',
-                        border: '1px solid #FFB74D',
-                        borderRadius: '4px',
-                        fontSize: '13px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
+                {/* 중개요율 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>중개요율 (%)</label>
+                  <input
+                    type="number"
+                    value={calcFeeRate}
+                    onChange={(e) => setCalcFeeRate(e.target.value)}
+                    placeholder="예: 0.4"
+                    step="0.1"
+                    style={{
+                      padding: '8px 12px',
+                      border: '1px solid #FFB74D',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
                 </div>
 
                 {/* 계산 결과 */}
