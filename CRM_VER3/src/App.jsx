@@ -1051,6 +1051,7 @@ function App() {
             onClose={() => setSelectedContractId(null)}
             onEdit={handleOpenContractModal}
             onDelete={handleDeleteContract}
+            onUpdateContract={handleSaveContract}
           />
 
           {/* ContractModal */}

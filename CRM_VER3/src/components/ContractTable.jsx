@@ -309,9 +309,21 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                   <td style={dateColumnStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
                   <td style={dateColumnStyle('expiryDate')}>{formatDate(contract.expiryDate)}</td>
                   <td style={cellStyle('landlordName')}>{contract.landlordName || '-'}</td>
-                  <td style={cellStyle('landlordPhone')}>{contract.landlordPhone || '-'}</td>
+                  <td style={cellStyle('landlordPhone')}>
+                    {contract.landlordPhone ? (
+                      <a href={`sms:${contract.landlordPhone}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
+                        {contract.landlordPhone}
+                      </a>
+                    ) : '-'}
+                  </td>
                   <td style={cellStyle('tenantName')}>{contract.tenantName || '-'}</td>
-                  <td style={cellStyle('tenantPhone')}>{contract.tenantPhone || '-'}</td>
+                  <td style={cellStyle('tenantPhone')}>
+                    {contract.tenantPhone ? (
+                      <a href={`sms:${contract.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
+                        {contract.tenantPhone}
+                      </a>
+                    ) : '-'}
+                  </td>
                 </tr>
               ))}
             </tbody>

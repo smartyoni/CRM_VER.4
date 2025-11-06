@@ -30,7 +30,7 @@ const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete, onUp
   };
 
   return (
-    <aside className="detail-panel" style={{ position: 'fixed', right: 0, top: 0, width: '800px', height: '100vh', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', overflow: 'hidden', zIndex: 50, boxShadow: '-2px 0 8px rgba(0,0,0,0.1)' }}>
+    <aside className="detail-panel open" style={{ position: 'fixed', right: 0, top: 0, height: '100vh', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', overflow: 'hidden', zIndex: 50, boxShadow: '-2px 0 8px rgba(0,0,0,0.1)' }}>
       <div className="panel-header" style={{ padding: '20px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>건물 상세</h3>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -214,7 +214,13 @@ const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete, onUp
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>관리실번호:</span>
-              <span style={{ color: '#333' }}>{selectedBuilding.office || '-'}</span>
+              <span style={{ color: '#333' }}>
+                {selectedBuilding.office ? (
+                  <a href={`sms:${selectedBuilding.office}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
+                    {selectedBuilding.office}
+                  </a>
+                ) : '-'}
+              </span>
             </div>
           </div>
         </section>

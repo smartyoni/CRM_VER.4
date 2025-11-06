@@ -177,7 +177,11 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                     {building.parking || '-'}
                   </td>
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
-                    {building.office || '-'}
+                    {building.office ? (
+                      <a href={`sms:${building.office}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
+                        {building.office}
+                      </a>
+                    ) : '-'}
                   </td>
                 </tr>
               ))}

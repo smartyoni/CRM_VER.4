@@ -41,7 +41,7 @@ const PropertyDetailPanel = ({
   };
 
   return (
-    <aside className="detail-panel" style={{ position: 'fixed', right: 0, top: 0, width: '800px', height: '100vh', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', overflow: 'hidden', zIndex: 50, boxShadow: '-2px 0 8px rgba(0,0,0,0.1)' }}>
+    <aside className="detail-panel open" style={{ position: 'fixed', right: 0, top: 0, height: '100vh', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', overflow: 'hidden', zIndex: 50, boxShadow: '-2px 0 8px rgba(0,0,0,0.1)' }}>
       {/* 헤더 */}
       <div className="panel-header" style={{ padding: '20px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
@@ -209,7 +209,13 @@ const PropertyDetailPanel = ({
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>번호:</span>
-              <span style={{ color: '#333' }}>{selectedProperty.ownerPhone || '-'}</span>
+              <span style={{ color: '#333' }}>
+                {selectedProperty.ownerPhone ? (
+                  <a href={`sms:${selectedProperty.ownerPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
+                    {selectedProperty.ownerPhone}
+                  </a>
+                ) : '-'}
+              </span>
             </div>
           </div>
         </section>
@@ -222,7 +228,13 @@ const PropertyDetailPanel = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>점주번호:</span>
-              <span style={{ color: '#333' }}>{selectedProperty.tenantPhone || '-'}</span>
+              <span style={{ color: '#333' }}>
+                {selectedProperty.tenantPhone ? (
+                  <a href={`sms:${selectedProperty.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
+                    {selectedProperty.tenantPhone}
+                  </a>
+                ) : '-'}
+              </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>임대차:</span>

@@ -289,8 +289,20 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
                   <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>{formatPrice(property.monthlyRent)}</td>
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
                   <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.ownerName || '-'}</td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.ownerPhone || '-'}</td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.tenantPhone || '-'}</td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                    {property.ownerPhone ? (
+                      <a href={`sms:${property.ownerPhone}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
+                        {property.ownerPhone}
+                      </a>
+                    ) : '-'}
+                  </td>
+                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                    {property.tenantPhone ? (
+                      <a href={`sms:${property.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
+                        {property.tenantPhone}
+                      </a>
+                    ) : '-'}
+                  </td>
                 </tr>
               );
               })}

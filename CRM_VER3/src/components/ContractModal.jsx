@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { CONTRACT_PROGRESS_STATUSES, CONTRACT_PROPERTY_MANAGEMENT, CONTRACT_EXPIRY_MANAGEMENT } from '../constants';
 
 const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
+  // 날짜 형식 변환 헬퍼 함수
+  const formatDateForInput = (dateStr) => {
+    if (!dateStr) return '';
+    // 이미 YYYY-MM-DD 형식이면 그대로 반환
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    // ISO 형식(YYYY-MM-DDTHH:mm:ss)에서 날짜 부분만 추출
+    if (dateStr.includes('T')) return dateStr.split('T')[0];
+    return dateStr;
+  };
+
   const getInitialState = (data) => ({
     id: data?.id || null,
     createdAt: data?.createdAt || new Date().toISOString(),
     buildingName: data?.buildingName || '',
     roomName: data?.roomName || '',
-    progressStatus: data?.progressStatus || '계약서작성',
-    propertyManagement: data?.propertyManagement || '',
-    expiryManagement: data?.expiryManagement || '',
-    contractDate: data?.contractDate || '',
-    balanceDate: data?.balanceDate || '',
-    expiryDate: data?.expiryDate || '',
+    contractDate: formatDateForInput(data?.contractDate) || '',
+    balanceDate: formatDateForInput(data?.balanceDate) || '',
+    expiryDate: formatDateForInput(data?.expiryDate) || '',
     landlordName: data?.landlordName || '',
     landlordPhone: data?.landlordPhone || '',
     tenantName: data?.tenantName || '',
@@ -143,35 +149,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>기본정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="건물명" name="buildingName" placeholder="건물명을 입력해주세요" required />
-              <FormField label="호실명" name="roomName" placeholder="예: 101, 205-A" required />
-            </div>
-          </div>
-
-          {/* 진행상황 섹션 */}
-          <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>진행상황</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField
-                label="진행상황"
-                name="progressStatus"
-                value={formData.progressStatus}
-                options={CONTRACT_PROGRESS_STATUSES}
-              />
-              <FormField
-                label="매물관리"
-                name="propertyManagement"
-                value={formData.propertyManagement}
-                options={CONTRACT_PROPERTY_MANAGEMENT}
-              />
-            </div>
-            <div style={{ marginTop: '16px' }}>
-              <FormField
-                label="만기관리"
-                name="expiryManagement"
-                value={formData.expiryManagement}
-                options={CONTRACT_EXPIRY_MANAGEMENT}
-              />
+              <FormField label="건물명" name="buildingName" value={formData.buildingName} placeholder="건물명을 입력해주세요" required />
+              <FormField label="호실명" name="roomName" value={formData.roomName} placeholder="예: 101, 205-A" required />
             </div>
           </div>
 
@@ -179,11 +158,11 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>날짜정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="계약서작성일" name="contractDate" type="date" />
-              <FormField label="잔금일" name="balanceDate" type="date" />
+              <FormField label="계약서작성일" name="contractDate" type="date" value={formData.contractDate} />
+              <FormField label="잔금일" name="balanceDate" type="date" value={formData.balanceDate} />
             </div>
             <div style={{ marginTop: '16px' }}>
-              <FormField label="만기일" name="expiryDate" type="date" />
+              <FormField label="만기일" name="expiryDate" type="date" value={formData.expiryDate} />
             </div>
           </div>
 
@@ -191,8 +170,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임대인정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="임대인이름" name="landlordName" placeholder="임대인 이름을 입력해주세요" />
-              <FormField label="임대인번호" name="landlordPhone" placeholder="010-0000-0000" />
+              <FormField label="임대인이름" name="landlordName" value={formData.landlordName} placeholder="임대인 이름을 입력해주세요" />
+              <FormField label="임대인번호" name="landlordPhone" value={formData.landlordPhone} placeholder="010-0000-0000" />
             </div>
           </div>
 
@@ -200,8 +179,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임차인정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="임차인이름" name="tenantName" placeholder="임차인 이름을 입력해주세요" />
-              <FormField label="임차인번호" name="tenantPhone" placeholder="010-0000-0000" />
+              <FormField label="임차인이름" name="tenantName" value={formData.tenantName} placeholder="임차인 이름을 입력해주세요" />
+              <FormField label="임차인번호" name="tenantPhone" value={formData.tenantPhone} placeholder="010-0000-0000" />
             </div>
           </div>
         </div>
