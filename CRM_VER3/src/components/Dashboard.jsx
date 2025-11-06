@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 const Dashboard = ({
   customers = [],
@@ -9,6 +9,8 @@ const Dashboard = ({
   activeFilter = '오늘업무',
   onNavigate = () => {}
 }) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState(null);
   // 대시보드 통계 계산
   const stats = useMemo(() => {
     const today = new Date();
@@ -126,34 +128,184 @@ const Dashboard = ({
     };
   }, [customers, meetings, activities, properties, contracts]);
 
-  const StatCard = ({ icon, title, number, subtitle, onClick, color = '#4CAF50' }) => (
-    <div
-      onClick={onClick}
-      style={{
-        backgroundColor: '#FFFFFF',
-        borderRadius: '12px',
-        padding: '24px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        border: `2px solid ${color}20`,
-        minWidth: '280px'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-      }}
-    >
-      <div style={{ fontSize: '32px', marginBottom: '12px' }}>{icon}</div>
-      <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#666', margin: '0 0 8px 0' }}>{title}</h3>
-      <div style={{ fontSize: '32px', fontWeight: 'bold', color, margin: '8px 0' }}>{number}</div>
-      <p style={{ fontSize: '12px', color: '#999', margin: '8px 0 0 0' }}>{subtitle}</p>
-    </div>
-  );
+  // 날짜 포맷 함수
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }).replace(/\s/g, '').replace(/\./g, '-').substring(0, 5);
+  };
+
+  // 모달에서 항목 클릭 핸들러
+  const handleModalItemClick = (item) => {
+    if (modalData.type === 'contract' || modalData.type === 'balance') {
+      onNavigate('계약호실', '전체');
+      setModalOpen(false);
+    } else if (modalData.type === 'meeting') {
+      const customer = customers.find(c => c.id === item.customerId);
+      onNavigate('고객목록', '오늘미팅');
+      setModalOpen(false);
+    }
+  };
+
+  // 모달 팝업 열기
+  const openModal = (type, title, data) => {
+    setModalData({ type, title, data });
+    setModalOpen(true);
+  };
+
+  // 신규 StatCard 컴포넌트 (헤더 + 리스트 형식)
+  const StatCard = ({ title, number, items, onClick, color = '#4CAF50', type = 'contract' }) => {
+    const displayItems = items.slice(0, 5);
+    const remainingCount = items.length - 5;
+
+    return (
+      <div
+        onClick={onClick}
+        style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          border: `2px solid ${color}20`,
+          minWidth: '280px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+        }}
+      >
+        {/* 헤더 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${color}40`, paddingBottom: '8px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 'bold', color, margin: 0 }}>{title}</h3>
+          <span style={{ fontSize: '16px', fontWeight: 'bold', color, backgroundColor: `${color}15`, padding: '4px 10px', borderRadius: '4px' }}>{number}건</span>
+        </div>
+
+        {/* 항목 리스트 */}
+        {items.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
+            {displayItems.map((item, idx) => (
+              <div key={idx} style={{ color: '#555', padding: '6px 0' }}>
+                {type === 'contract' || type === 'balance' ? (
+                  <div>{item.roomNumber || item.buildingName} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
+                ) : (
+                  <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'} - {formatDate(item.date)}</div>
+                )}
+              </div>
+            ))}
+            {remainingCount > 0 && <div style={{ color: '#999', fontSize: '12px', marginTop: '4px' }}>외 {remainingCount}건</div>}
+          </div>
+        ) : (
+          <div style={{ color: '#999', fontSize: '13px', padding: '8px 0' }}>일정이 없습니다</div>
+        )}
+      </div>
+    );
+  };
+
+  // 모달 컴포넌트
+  const Modal = ({ isOpen, title, items, type, onClose, onItemClick }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}
+        onClick={onClose}
+      >
+        <div
+          style={{
+            backgroundColor: '#FFF',
+            borderRadius: '12px',
+            width: '90%',
+            maxWidth: '500px',
+            maxHeight: '70vh',
+            overflow: 'auto',
+            padding: '20px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* 모달 헤더 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e0e0e0', paddingBottom: '15px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{title}</h2>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                padding: 0,
+                color: '#666'
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* 항목 리스트 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {items.map((item, idx) => (
+              <div
+                key={idx}
+                onClick={() => onItemClick(item)}
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  border: '1px solid #e0e0e0'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#e8f4f8';
+                  e.currentTarget.style.borderColor = '#2196F3';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  e.currentTarget.style.borderColor = '#e0e0e0';
+                }}
+              >
+                {type === 'contract' || type === 'balance' ? (
+                  <div style={{ fontSize: '13px', fontWeight: '500' }}>
+                    <div>{item.roomNumber || item.buildingName}</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                      {type === 'contract' ? `계약일: ${formatDate(item.contractDate)}` : `잔금일: ${formatDate(item.balanceDate)}`}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '13px', fontWeight: '500' }}>
+                    <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'}</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                      미팅일: {formatDate(item.date)} | {item.location || '장소 미정'}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={{ padding: '20px', overflow: 'auto', height: '100%' }}>
@@ -178,44 +330,32 @@ const Dashboard = ({
         >
           {/* 오늘계약 */}
           <StatCard
-            icon="📄"
             title="오늘계약"
             number={stats.todayContracts.length}
-            subtitle={
-              stats.todayContracts.length > 0
-                ? `${stats.todayContracts.length}건 계약서작성`
-                : '오늘 계약 일정이 없습니다'
-            }
+            items={stats.todayContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate))}
             color="#2196F3"
-            onClick={() => onNavigate('계약호실', '전체')}
+            type="contract"
+            onClick={() => openModal('contract', '오늘계약', stats.todayContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate)))}
           />
 
           {/* 오늘잔금 */}
           <StatCard
-            icon="💰"
             title="오늘잔금"
             number={stats.todayBalance.length}
-            subtitle={
-              stats.todayBalance.length > 0
-                ? `${stats.todayBalance.length}건 잔금예정`
-                : '오늘 잔금 일정이 없습니다'
-            }
+            items={stats.todayBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate))}
             color="#FF9800"
-            onClick={() => onNavigate('계약호실', '전체')}
+            type="balance"
+            onClick={() => openModal('balance', '오늘잔금', stats.todayBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate)))}
           />
 
           {/* 오늘미팅 */}
           <StatCard
-            icon="📅"
             title="오늘미팅"
             number={stats.todayMeetings.length}
-            subtitle={
-              stats.todayMeetings.length > 0
-                ? `${stats.todayMeetings.length}명 미팅예정`
-                : '오늘 미팅 일정이 없습니다'
-            }
+            items={stats.todayMeetings.sort((a, b) => new Date(a.date) - new Date(b.date))}
             color="#FF6B9D"
-            onClick={() => onNavigate('고객목록', '오늘미팅')}
+            type="meeting"
+            onClick={() => openModal('meeting', '오늘미팅', stats.todayMeetings.sort((a, b) => new Date(a.date) - new Date(b.date)))}
           />
         </div>
       )}
@@ -233,44 +373,32 @@ const Dashboard = ({
         >
           {/* 계약예정 */}
           <StatCard
-            icon="📄"
             title="계약예정"
             number={stats.futureContracts.length}
-            subtitle={
-              stats.futureContracts.length > 0
-                ? `${stats.futureContracts.length}건 예정`
-                : '계약 일정이 없습니다'
-            }
+            items={stats.futureContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate))}
             color="#2196F3"
-            onClick={() => onNavigate('계약호실', '전체')}
+            type="contract"
+            onClick={() => openModal('contract', '계약예정', stats.futureContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate)))}
           />
 
           {/* 잔금예정 */}
           <StatCard
-            icon="💰"
             title="잔금예정"
             number={stats.futureBalance.length}
-            subtitle={
-              stats.futureBalance.length > 0
-                ? `${stats.futureBalance.length}건 예정`
-                : '잔금 일정이 없습니다'
-            }
+            items={stats.futureBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate))}
             color="#FF9800"
-            onClick={() => onNavigate('계약호실', '전체')}
+            type="balance"
+            onClick={() => openModal('balance', '잔금예정', stats.futureBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate)))}
           />
 
           {/* 미팅예정 */}
           <StatCard
-            icon="📅"
             title="미팅예정"
             number={stats.futureMeetings.length}
-            subtitle={
-              stats.futureMeetings.length > 0
-                ? `${stats.futureMeetings.length}명 예정`
-                : '미팅 일정이 없습니다'
-            }
+            items={stats.futureMeetings.sort((a, b) => new Date(a.date) - new Date(b.date))}
             color="#FF6B9D"
-            onClick={() => onNavigate('고객목록', '미팅일확정')}
+            type="meeting"
+            onClick={() => openModal('meeting', '미팅예정', stats.futureMeetings.sort((a, b) => new Date(a.date) - new Date(b.date)))}
           />
         </div>
       )}
@@ -397,6 +525,18 @@ const Dashboard = ({
           </p>
         </div>
       </div>
+
+      {/* 모달 렌더링 */}
+      {modalData && (
+        <Modal
+          isOpen={modalOpen}
+          title={modalData.title}
+          items={modalData.data}
+          type={modalData.type}
+          onClose={() => setModalOpen(false)}
+          onItemClick={handleModalItemClick}
+        />
+      )}
     </div>
   );
 };
