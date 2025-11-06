@@ -733,7 +733,7 @@ ${alignWithFixedGap('합계', totalWithVat.toLocaleString() + '만원')}
                       📱 안내문자 (복사)
                     </div>
                     <pre style={{
-                      fontSize: '13px',
+                      fontSize: '12px',
                       color: '#333',
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
