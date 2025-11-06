@@ -164,13 +164,15 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
 상한요율            ${feeRate}%
 한도금액            없음
 
-중개보수            ${feeWithoutVat.toLocaleString()}원
-부가세(10%)         ${vat.toLocaleString()}원
-합계                ${totalWithVat.toLocaleString()}원
+중개보수            ${feeWithoutVat.toLocaleString()}만원
+부가세(10%)         ${vat.toLocaleString()}만원
+합계                ${totalWithVat.toLocaleString()}만원
+
+중개수수료:   ${totalWithVat.toLocaleString()}만원(부가세포함)
 
 110-355-630099 신한은행 스마트공인중개사사무소(최영현)
 
-현금영수증 필요없으시면 ${feeWithoutVat.toLocaleString()}원 입금해주시면 됩니다.`;
+현금영수증 필요없으시면    ${feeWithoutVat.toLocaleString()}만원 입금해주시면 됩니다.`;
 
     return message;
   };
