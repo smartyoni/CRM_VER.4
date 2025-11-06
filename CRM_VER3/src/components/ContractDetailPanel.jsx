@@ -182,8 +182,8 @@ ${alignWithFixedGap('물건유형', '  ' + (selectedPropertyType || '-'))}
 ${alignWithFixedGap('거래유형', '  ' + (selectedTransactionType || '-'))}
 ${alignWithFixedGap('보증금/월세', formatAmount(deposit) + ' / ' + formatAmount(monthlyRent))}
 ${alignWithFixedGap('환산보증금', formatAmount(convertedDeposit))}
-${alignWithFixedGap('상한요율', feeRate + '%')}
-${alignWithFixedGap('한도금액', '없음')}
+${alignWithFixedGap('상한요율', '  ' + feeRate + '%')}
+${alignWithFixedGap('한도금액', ' 없음')}
 
 ${alignWithFixedGap('중개보수', feeWithoutVat.toLocaleString() + '만원')}
 ${alignWithFixedGap('부가세(10%)', vat.toLocaleString() + '만원')}
