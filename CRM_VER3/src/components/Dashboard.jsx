@@ -195,7 +195,7 @@ const Dashboard = ({
             {displayItems.map((item, idx) => (
               <div key={idx} style={{ color: '#555', padding: '6px 0' }}>
                 {type === 'contract' || type === 'balance' ? (
-                  <div>{item.roomNumber || item.buildingName} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
+                  <div>{[item.buildingName, item.roomNumber].filter(Boolean).join(' ')} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
                 ) : (
                   <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'} - {formatDate(item.date)}</div>
                 )}
@@ -286,7 +286,7 @@ const Dashboard = ({
               >
                 {type === 'contract' || type === 'balance' ? (
                   <div style={{ fontSize: '13px', fontWeight: '500' }}>
-                    <div>{item.roomNumber || item.buildingName}</div>
+                    <div>{[item.buildingName, item.roomNumber].filter(Boolean).join(' ')}</div>
                     <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
                       {type === 'contract' ? `계약일: ${formatDate(item.contractDate)}` : `잔금일: ${formatDate(item.balanceDate)}`}
                     </div>
