@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FilterSidebar from './components/FilterSidebar';
+import Dashboard from './components/Dashboard';
 import CustomerTable from './components/CustomerTable';
 import PropertyTable from './components/PropertyTable';
 import BuildingTable from './components/BuildingTable';
@@ -88,7 +89,7 @@ function App() {
   const [activeContractFilter, setActiveContractFilter] = useState('전체');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('계약호실'); // '고객목록', '매물장', '건물정보', '계약호실'
+  const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객목록', '매물장', '건물정보'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
   const [isContractImporterOpen, setIsContractImporterOpen] = useState(false);
@@ -749,7 +750,7 @@ function App() {
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <h1>
-                {activeTab === '고객목록' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
+                {activeTab === '대시보드' ? '대시보드' : activeTab === '고객목록' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
               </h1>
               {activeTab === '고객목록' && activeCustomerFilter !== '전체' && (
                 <span style={{ fontSize: '13px', color: '#7f8c8d' }}>
@@ -758,7 +759,9 @@ function App() {
               )}
             </div>
             <div className="header-actions">
-              {activeTab === '고객목록' ? (
+              {activeTab === '대시보드' ? (
+                <></>
+              ) : activeTab === '고객목록' ? (
                 <>
                   <button onClick={() => handleOpenModal()} className="btn-primary">+ 고객 추가</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
@@ -794,7 +797,19 @@ function App() {
             </div>
           </header>
           <main className="table-container" style={{ flex: 1, overflow: 'auto' }}>
-            {activeTab === '고객목록' ? (
+            {activeTab === '대시보드' ? (
+              <Dashboard
+                customers={customers}
+                meetings={meetings}
+                activities={activities}
+                properties={properties}
+                contracts={contracts}
+                onNavigate={(tab, filter) => {
+                  setActiveTab(tab);
+                  setActiveCustomerFilter(filter);
+                }}
+              />
+            ) : activeTab === '고객목록' ? (
               <CustomerTable
                 customers={filteredCustomers}
                 onSelectCustomer={handleSelectCustomer}
@@ -857,6 +872,27 @@ function App() {
         flexShrink: 0,
         width: '100%'
       }}>
+        <button
+          onClick={() => setActiveTab('대시보드')}
+          style={{
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: activeTab === '대시보드' ? '#000' : '#888',
+            border: 'none',
+            backgroundColor: activeTab === '대시보드' ? 'rgba(76, 175, 80, 0.12)' : 'transparent',
+            borderBottom: activeTab === '대시보드' ? '4px solid #4CAF50' : '4px solid transparent',
+            borderRadius: activeTab === '대시보드' ? '8px 8px 0 0' : '0',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: activeTab === '대시보드' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            WebkitAppearance: 'none',
+            appearance: 'none'
+          }}
+          className="tab-button"
+        >
+          📊 대시보드
+        </button>
         <button
           onClick={() => setActiveTab('계약호실')}
           style={{
