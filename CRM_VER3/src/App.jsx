@@ -855,6 +855,27 @@ function App() {
         zIndex: 1000
       }}>
         <button
+          onClick={() => setActiveTab('계약호실')}
+          style={{
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: activeTab === '계약호실' ? '#000' : '#888',
+            border: 'none',
+            backgroundColor: activeTab === '계약호실' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
+            borderBottom: activeTab === '계약호실' ? '4px solid #9C27B0' : '4px solid transparent',
+            borderRadius: activeTab === '계약호실' ? '8px 8px 0 0' : '0',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            WebkitAppearance: 'none',
+            appearance: 'none'
+          }}
+          className="tab-button"
+        >
+          📄 계약호실
+        </button>
+        <button
           onClick={() => setActiveTab('고객목록')}
           style={{
             padding: '12px 24px',
@@ -916,27 +937,6 @@ function App() {
           className="tab-button"
         >
           🏢 건물정보
-        </button>
-        <button
-          onClick={() => setActiveTab('계약호실')}
-          style={{
-            padding: '12px 24px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: activeTab === '계약호실' ? '#000' : '#888',
-            border: 'none',
-            backgroundColor: activeTab === '계약호실' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
-            borderBottom: activeTab === '계약호실' ? '4px solid #9C27B0' : '4px solid transparent',
-            borderRadius: activeTab === '계약호실' ? '8px 8px 0 0' : '0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
-            WebkitAppearance: 'none',
-            appearance: 'none'
-          }}
-          className="tab-button"
-        >
-          📄 계약호실
         </button>
       </div>
 
