@@ -177,7 +177,7 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
 
     const message = `[중개보수 안내]
 
-${alignWithFixedGap('지역', '서울특별시')}
+${alignWithFixedGap('지역', '      서울특별시')}
 ${alignWithFixedGap('물건유형', selectedPropertyType || '-')}
 ${alignWithFixedGap('거래유형', selectedTransactionType || '-')}
 ${alignWithFixedGap('보증금/월세', formatAmount(deposit) + ' / ' + formatAmount(monthlyRent))}
