@@ -31,6 +31,19 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     setActiveTab('기본정보');
   }, [selectedContract]);
 
+  // 물건유형 변경 시 중개요율 자동 설정
+  useEffect(() => {
+    if (selectedPropertyType) {
+      if (selectedPropertyType === '주거용오피스텔') {
+        setCalcFeeRate('0.4');
+      } else if (selectedPropertyType === '주택') {
+        setCalcFeeRate('0.3');
+      } else if (selectedPropertyType === '그 외 토지상가') {
+        setCalcFeeRate('0.9');
+      }
+    }
+  }, [selectedPropertyType]);
+
   if (!isOpen || !selectedContract) return null;
 
   // 날짜를 "2025. 8. 13" 형식으로 변환
