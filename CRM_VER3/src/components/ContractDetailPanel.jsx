@@ -154,19 +154,26 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     const totalWithVat = calculatedFee + vat;
     const feeWithoutVat = calculatedFee;
 
+    // 우측정렬을 위한 패딩 함수
+    const padRight = (label, value, width = 40) => {
+      const combined = label + value;
+      const padding = ' '.repeat(Math.max(0, width - combined.length));
+      return label + padding + value;
+    };
+
     const message = `[중개보수 안내]
 
-지역                서울특별시
-물건유형            ${selectedPropertyType || '-'}
-거래유형            ${selectedTransactionType || '-'}
-보증금/월세          ${formatAmount(deposit)} / ${formatAmount(monthlyRent)}
-환산보증금          ${formatAmount(convertedDeposit)}
-상한요율            ${feeRate}%
-한도금액            없음
+${padRight('지역', '서울특별시')}
+${padRight('물건유형', selectedPropertyType || '-')}
+${padRight('거래유형', selectedTransactionType || '-')}
+${padRight('보증금/월세', formatAmount(deposit) + ' / ' + formatAmount(monthlyRent))}
+${padRight('환산보증금', formatAmount(convertedDeposit))}
+${padRight('상한요율', feeRate + '%')}
+${padRight('한도금액', '없음')}
 
-중개보수            ${feeWithoutVat.toLocaleString()}만원
-부가세(10%)         ${vat.toLocaleString()}만원
-합계                ${totalWithVat.toLocaleString()}만원
+${padRight('중개보수', feeWithoutVat.toLocaleString() + '만원')}
+${padRight('부가세(10%)', vat.toLocaleString() + '만원')}
+${padRight('합계', totalWithVat.toLocaleString() + '만원')}
 
 중개수수료:   ${totalWithVat.toLocaleString()}만원(부가세포함)
 110-355-630099 신한은행 스마트공인중개사사무소(최영현)
