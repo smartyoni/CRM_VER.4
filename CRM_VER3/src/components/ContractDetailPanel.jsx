@@ -649,8 +649,12 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   </div>
                 </div>
 
-                {/* 입력 필드 그룹 (한 줄) */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                {/* 입력 필드 그룹 (한 줄) - 모바일에서 2/3 너비 */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gap: '10px'
+                }} className="input-fields-container">
                   {/* 보증금 입력 */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>보증금 (만원)</label>
