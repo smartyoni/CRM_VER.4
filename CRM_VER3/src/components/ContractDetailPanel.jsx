@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   CONTRACT_PROGRESS_STATUSES,
   CONTRACT_PROPERTY_MANAGEMENT,
-  CONTRACT_EXPIRY_MANAGEMENT
+  CONTRACT_EXPIRY_MANAGEMENT,
+  PROPERTY_TYPES_FOR_BROKERAGE,
+  TRANSACTION_TYPES
 } from '../constants';
 
 const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDelete, onUpdateContract }) => {
@@ -17,6 +19,8 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   const [calcMonthlyRent, setCalcMonthlyRent] = useState('');
   const [calcFeeRate, setCalcFeeRate] = useState('');
   const [calculatedFee, setCalculatedFee] = useState(null);
+  const [selectedPropertyType, setSelectedPropertyType] = useState('');
+  const [selectedTransactionType, setSelectedTransactionType] = useState('');
 
   useEffect(() => {
     setSelectedProgressStatus(selectedContract?.progressStatus || '');
@@ -499,6 +503,55 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
 
         {activeTab === '중개보수' && (
           <>
+            {/* 물건유형 및 거래유형 드롭다운 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>물건유형</label>
+                <select
+                  value={selectedPropertyType}
+                  onChange={(e) => setSelectedPropertyType(e.target.value)}
+                  style={{
+                    padding: '10px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '13px',
+                    backgroundColor: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="">선택</option>
+                  {PROPERTY_TYPES_FOR_BROKERAGE.map(type => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>거래유형</label>
+                <select
+                  value={selectedTransactionType}
+                  onChange={(e) => setSelectedTransactionType(e.target.value)}
+                  style={{
+                    padding: '10px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '13px',
+                    backgroundColor: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="">선택</option>
+                  {TRANSACTION_TYPES.map(type => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {/* 계산 버튼 */}
             <div style={{ marginBottom: '15px' }}>
               <button

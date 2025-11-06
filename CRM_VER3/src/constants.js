@@ -42,3 +42,7 @@ export const CONTRACT_EXPIRY_MANAGEMENT = [
   '15.계약이력없음',
   '16.기타'
 ];
+
+// 중개보수 계산용 상수
+export const PROPERTY_TYPES_FOR_BROKERAGE = ['주택', '주거용오피스텔', '그 외 토지상가'];
+export const TRANSACTION_TYPES = ['매매', '전세', '월세'];
