@@ -6,6 +6,7 @@ const Dashboard = ({
   activities = [],
   properties = [],
   contracts = [],
+  activeFilter = '오늘업무',
   onNavigate = () => {}
 }) => {
   // 대시보드 통계 계산
@@ -13,11 +14,50 @@ const Dashboard = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // 오늘의 계약 (계약서작성일이 오늘)
+    const todayContracts = contracts.filter(c => {
+      if (!c.contractDate) return false;
+      const contractDate = new Date(c.contractDate);
+      contractDate.setHours(0, 0, 0, 0);
+      return contractDate.getTime() === today.getTime();
+    });
+
+    // 오늘의 잔금 (잔금일이 오늘)
+    const todayBalance = contracts.filter(c => {
+      if (!c.balanceDate) return false;
+      const balanceDate = new Date(c.balanceDate);
+      balanceDate.setHours(0, 0, 0, 0);
+      return balanceDate.getTime() === today.getTime();
+    });
+
     // 오늘의 미팅
     const todayMeetings = meetings.filter(m => {
       const meetingDate = new Date(m.date);
       meetingDate.setHours(0, 0, 0, 0);
       return meetingDate.getTime() === today.getTime();
+    });
+
+    // 앞으로 예정된 계약 (미래)
+    const futureContracts = contracts.filter(c => {
+      if (!c.contractDate) return false;
+      const contractDate = new Date(c.contractDate);
+      contractDate.setHours(0, 0, 0, 0);
+      return contractDate.getTime() > today.getTime();
+    });
+
+    // 앞으로 예정된 잔금 (미래)
+    const futureBalance = contracts.filter(c => {
+      if (!c.balanceDate) return false;
+      const balanceDate = new Date(c.balanceDate);
+      balanceDate.setHours(0, 0, 0, 0);
+      return balanceDate.getTime() > today.getTime();
+    });
+
+    // 앞으로 예정된 미팅 (미래)
+    const futureMeetings = meetings.filter(m => {
+      const meetingDate = new Date(m.date);
+      meetingDate.setHours(0, 0, 0, 0);
+      return meetingDate.getTime() > today.getTime();
     });
 
     // 연락할 고객 (3일 이상 미연락)
@@ -70,7 +110,12 @@ const Dashboard = ({
     const weekChange = newThisWeek.length - lastWeekNew.length;
 
     return {
+      todayContracts,
+      todayBalance,
       todayMeetings,
+      futureContracts,
+      futureBalance,
+      futureMeetings,
       needsContact,
       awaitingReply,
       newThisWeek,
@@ -120,69 +165,181 @@ const Dashboard = ({
         </p>
       </div>
 
-      {/* 카드 그리드 */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '20px',
-          maxWidth: '1400px',
-          marginBottom: '30px'
-        }}
-      >
-        {/* 오늘의 미팅 */}
-        <StatCard
-          icon="📅"
-          title="오늘의 미팅"
-          number={stats.todayMeetings.length}
-          subtitle={
-            stats.todayMeetings.length > 0
-              ? `${stats.todayMeetings.length}명과 미팅 예정`
-              : '미팅이 없습니다'
-          }
-          color="#FF6B9D"
-          onClick={() => onNavigate('고객목록', '오늘미팅')}
-        />
+      {/* 오늘업무 필터 - 3개 카드 */}
+      {activeFilter === '오늘업무' && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '20px',
+            maxWidth: '1400px',
+            marginBottom: '30px'
+          }}
+        >
+          {/* 오늘계약 */}
+          <StatCard
+            icon="📄"
+            title="오늘계약"
+            number={stats.todayContracts.length}
+            subtitle={
+              stats.todayContracts.length > 0
+                ? `${stats.todayContracts.length}건 계약서작성`
+                : '오늘 계약 일정이 없습니다'
+            }
+            color="#2196F3"
+            onClick={() => onNavigate('계약호실', '전체')}
+          />
 
-        {/* 연락할 고객 */}
-        <StatCard
-          icon="📞"
-          title="연락할 고객"
-          number={stats.needsContact.length}
-          subtitle="3일 이상 미연락"
-          color="#2196F3"
-          onClick={() => onNavigate('고객목록', '연락할고객')}
-        />
+          {/* 오늘잔금 */}
+          <StatCard
+            icon="💰"
+            title="오늘잔금"
+            number={stats.todayBalance.length}
+            subtitle={
+              stats.todayBalance.length > 0
+                ? `${stats.todayBalance.length}건 잔금예정`
+                : '오늘 잔금 일정이 없습니다'
+            }
+            color="#FF9800"
+            onClick={() => onNavigate('계약호실', '전체')}
+          />
 
-        {/* 답장 대기 중 */}
-        <StatCard
-          icon="⏰"
-          title="답장 대기 중"
-          number={stats.awaitingReply.length}
-          subtitle="팔로업 필요"
-          color="#FF9800"
-          onClick={() => onNavigate('고객목록', '답장대기')}
-        />
+          {/* 오늘미팅 */}
+          <StatCard
+            icon="📅"
+            title="오늘미팅"
+            number={stats.todayMeetings.length}
+            subtitle={
+              stats.todayMeetings.length > 0
+                ? `${stats.todayMeetings.length}명 미팅예정`
+                : '오늘 미팅 일정이 없습니다'
+            }
+            color="#FF6B9D"
+            onClick={() => onNavigate('고객목록', '오늘미팅')}
+          />
+        </div>
+      )}
 
-        {/* 신규 고객 (이번 주) */}
-        <StatCard
-          icon="✨"
-          title="신규 고객 (이번 주)"
-          number={stats.newThisWeek.length}
-          subtitle={
-            stats.weekChange > 0
-              ? `지난주 대비 +${stats.weekChange}명`
-              : stats.weekChange < 0
-              ? `지난주 대비 ${stats.weekChange}명`
-              : '지난주와 동일'
-          }
-          color="#4CAF50"
-          onClick={() => onNavigate('고객목록', '신규')}
-        />
-      </div>
+      {/* 예정된업무 필터 - 3개 카드 */}
+      {activeFilter === '예정된업무' && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '20px',
+            maxWidth: '1400px',
+            marginBottom: '30px'
+          }}
+        >
+          {/* 계약예정 */}
+          <StatCard
+            icon="📄"
+            title="계약예정"
+            number={stats.futureContracts.length}
+            subtitle={
+              stats.futureContracts.length > 0
+                ? `${stats.futureContracts.length}건 예정`
+                : '계약 일정이 없습니다'
+            }
+            color="#2196F3"
+            onClick={() => onNavigate('계약호실', '전체')}
+          />
+
+          {/* 잔금예정 */}
+          <StatCard
+            icon="💰"
+            title="잔금예정"
+            number={stats.futureBalance.length}
+            subtitle={
+              stats.futureBalance.length > 0
+                ? `${stats.futureBalance.length}건 예정`
+                : '잔금 일정이 없습니다'
+            }
+            color="#FF9800"
+            onClick={() => onNavigate('계약호실', '전체')}
+          />
+
+          {/* 미팅예정 */}
+          <StatCard
+            icon="📅"
+            title="미팅예정"
+            number={stats.futureMeetings.length}
+            subtitle={
+              stats.futureMeetings.length > 0
+                ? `${stats.futureMeetings.length}명 예정`
+                : '미팅 일정이 없습니다'
+            }
+            color="#FF6B9D"
+            onClick={() => onNavigate('고객목록', '미팅일확정')}
+          />
+        </div>
+      )}
+
+      {/* 기타 필터들 - 기존 카드 */}
+      {activeFilter !== '오늘업무' && activeFilter !== '예정된업무' && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '20px',
+            maxWidth: '1400px',
+            marginBottom: '30px'
+          }}
+        >
+          {/* 오늘의 미팅 */}
+          <StatCard
+            icon="📅"
+            title="오늘의 미팅"
+            number={stats.todayMeetings.length}
+            subtitle={
+              stats.todayMeetings.length > 0
+                ? `${stats.todayMeetings.length}명과 미팅 예정`
+                : '미팅이 없습니다'
+            }
+            color="#FF6B9D"
+            onClick={() => onNavigate('고객목록', '오늘미팅')}
+          />
+
+          {/* 연락할 고객 */}
+          <StatCard
+            icon="📞"
+            title="연락할 고객"
+            number={stats.needsContact.length}
+            subtitle="3일 이상 미연락"
+            color="#2196F3"
+            onClick={() => onNavigate('고객목록', '연락할고객')}
+          />
+
+          {/* 답장 대기 중 */}
+          <StatCard
+            icon="⏰"
+            title="답장 대기 중"
+            number={stats.awaitingReply.length}
+            subtitle="팔로업 필요"
+            color="#FF9800"
+            onClick={() => onNavigate('고객목록', '답장대기')}
+          />
+
+          {/* 신규 고객 (이번 주) */}
+          <StatCard
+            icon="✨"
+            title="신규 고객 (이번 주)"
+            number={stats.newThisWeek.length}
+            subtitle={
+              stats.weekChange > 0
+                ? `지난주 대비 +${stats.weekChange}명`
+                : stats.weekChange < 0
+                ? `지난주 대비 ${stats.weekChange}명`
+                : '지난주와 동일'
+            }
+            color="#4CAF50"
+            onClick={() => onNavigate('고객목록', '신규')}
+          />
+        </div>
+      )}
 
       {/* 오늘의 미팅 상세 리스트 */}
-      {stats.todayMeetings.length > 0 && (
+      {activeFilter === '오늘업무' && stats.todayMeetings.length > 0 && (
         <div style={{ marginBottom: '30px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '2px solid #4CAF50', paddingBottom: '10px' }}>
             📅 오늘의 미팅

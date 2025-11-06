@@ -87,6 +87,7 @@ function App() {
   const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
   const [activeBuildingFilter, setActiveBuildingFilter] = useState('전체');
   const [activeContractFilter, setActiveContractFilter] = useState('전체');
+  const [activeDashboardFilter, setActiveDashboardFilter] = useState('오늘업무');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객목록', '매물장', '건물정보'
@@ -168,6 +169,8 @@ function App() {
       setActiveBuildingFilter(filter);
     } else if (activeTab === '계약호실') {
       setActiveContractFilter(filter);
+    } else if (activeTab === '대시보드') {
+      setActiveDashboardFilter(filter);
     }
   };
 
@@ -730,7 +733,9 @@ function App() {
             activeTab === '고객목록' ? activeCustomerFilter :
             activeTab === '매물장' ? activePropertyFilter :
             activeTab === '건물정보' ? activeBuildingFilter :
-            activeContractFilter
+            activeTab === '계약호실' ? activeContractFilter :
+            activeTab === '대시보드' ? activeDashboardFilter :
+            ''
           }
           onFilterChange={handleFilterChange}
           customers={customers}
@@ -804,6 +809,7 @@ function App() {
                 activities={activities}
                 properties={properties}
                 contracts={contracts}
+                activeFilter={activeDashboardFilter}
                 onNavigate={(tab, filter) => {
                   setActiveTab(tab);
                   setActiveCustomerFilter(filter);

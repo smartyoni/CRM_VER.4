@@ -126,6 +126,60 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
 
       // 해당 진행상황의 계약호실 개수
       return contracts?.filter(c => c.progressStatus === status).length || 0;
+    } else if (activeTab === '대시보드') {
+      // 대시보드 필터 (오늘업무)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (status === '오늘업무') {
+        // 오늘계약 + 오늘잔금 + 오늘미팅 개수 합계
+        const todayContracts = contracts?.filter(c => {
+          const contractDate = new Date(c.contractDate);
+          contractDate.setHours(0, 0, 0, 0);
+          return contractDate.getTime() === today.getTime();
+        }).length || 0;
+
+        const todayBalance = contracts?.filter(c => {
+          const balanceDate = new Date(c.balanceDate);
+          balanceDate.setHours(0, 0, 0, 0);
+          return balanceDate.getTime() === today.getTime();
+        }).length || 0;
+
+        const todayMeetings = meetings?.filter(m => {
+          const meetingDate = new Date(m.date);
+          meetingDate.setHours(0, 0, 0, 0);
+          return meetingDate.getTime() === today.getTime();
+        }).length || 0;
+
+        return todayContracts + todayBalance + todayMeetings;
+      }
+
+      if (status === '예정된업무') {
+        // 계약예정(미래) + 잔금예정(미래) + 미팅예정(미래) 개수 합계
+        const futureContracts = contracts?.filter(c => {
+          if (!c.contractDate) return false;
+          const contractDate = new Date(c.contractDate);
+          contractDate.setHours(0, 0, 0, 0);
+          return contractDate.getTime() > today.getTime();
+        }).length || 0;
+
+        const futureBalance = contracts?.filter(c => {
+          if (!c.balanceDate) return false;
+          const balanceDate = new Date(c.balanceDate);
+          balanceDate.setHours(0, 0, 0, 0);
+          return balanceDate.getTime() > today.getTime();
+        }).length || 0;
+
+        const futureMeetings = meetings?.filter(m => {
+          const meetingDate = new Date(m.date);
+          meetingDate.setHours(0, 0, 0, 0);
+          return meetingDate.getTime() > today.getTime();
+        }).length || 0;
+
+        return futureContracts + futureBalance + futureMeetings;
+      }
+
+      return 0;
     }
   };
 
@@ -149,6 +203,8 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
     ? ['전체', '계약서작성', '잔금'] // 계약호실 필터 (계약서작성, 잔금)
+    : activeTab === '대시보드'
+    ? ['오늘업무', '예정된업무'] // 대시보드 메뉴 (확장 가능)
     : [];
 
   const handleFilterClick = (status) => {
