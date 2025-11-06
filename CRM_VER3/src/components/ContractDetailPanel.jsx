@@ -167,25 +167,27 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     const totalWithVat = calculatedFee + vat;
     const feeWithoutVat = calculatedFee;
 
-    // 우측정렬을 위한 패딩 함수 (값의 끝이 동일 위치, 이미지 형식)
-    const alignRight = (label, value, totalWidth = 45) => {
-      const padding = ' '.repeat(Math.max(0, totalWidth - label.length - value.length));
+    // 정렬 함수 (가장 긴 라벨 기준 + 고정 2칸 간격)
+    // 가장 긴 라벨: "부가세(10%)" = 9글자
+    const maxLabelLength = 9;
+    const alignWithFixedGap = (label, value) => {
+      const padding = ' '.repeat(maxLabelLength - label.length + 2);
       return label + padding + value;
     };
 
     const message = `[중개보수 안내]
 
-${alignRight('지역', '서울특별시')}
-${alignRight('물건유형', selectedPropertyType || '-')}
-${alignRight('거래유형', selectedTransactionType || '-')}
-${alignRight('보증금/월세', formatAmount(deposit) + ' / ' + formatAmount(monthlyRent))}
-${alignRight('환산보증금', formatAmount(convertedDeposit))}
-${alignRight('상한요율', feeRate + '%')}
-${alignRight('한도금액', '없음')}
+${alignWithFixedGap('지역', '서울특별시')}
+${alignWithFixedGap('물건유형', selectedPropertyType || '-')}
+${alignWithFixedGap('거래유형', selectedTransactionType || '-')}
+${alignWithFixedGap('보증금/월세', formatAmount(deposit) + ' / ' + formatAmount(monthlyRent))}
+${alignWithFixedGap('환산보증금', formatAmount(convertedDeposit))}
+${alignWithFixedGap('상한요율', feeRate + '%')}
+${alignWithFixedGap('한도금액', '없음')}
 
-${alignRight('중개보수', feeWithoutVat.toLocaleString() + '만원')}
-${alignRight('부가세(10%)', vat.toLocaleString() + '만원')}
-${alignRight('합계', totalWithVat.toLocaleString() + '만원')}
+${alignWithFixedGap('중개보수', feeWithoutVat.toLocaleString() + '만원')}
+${alignWithFixedGap('부가세(10%)', vat.toLocaleString() + '만원')}
+${alignWithFixedGap('합계', totalWithVat.toLocaleString() + '만원')}
 
 중개수수료:   ${totalWithVat.toLocaleString()}만원(부가세포함)
 110-355-630099 신한은행 스마트공인중개사사무소(최영현)
