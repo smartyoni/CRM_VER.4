@@ -185,9 +185,9 @@ ${alignWithFixedGap('환산보증금', formatAmount(convertedDeposit))}
 ${alignWithFixedGap('상한요율', '  ' + feeRate + '%')}
 ${alignWithFixedGap('한도금액', ' 없음')}
 
-${alignWithFixedGap('중개보수', feeWithoutVat.toLocaleString() + '만원')}
+${alignWithFixedGap('중개보수', ' ' + feeWithoutVat.toLocaleString() + '만원')}
 ${alignWithFixedGap('부가세(10%)', vat.toLocaleString() + '만원')}
-${alignWithFixedGap('합계', totalWithVat.toLocaleString() + '만원')}
+${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
 
 중개수수료:   ${totalWithVat.toLocaleString()}만원(부가세포함)
 110-355-630099 신한은행 스마트공인중개사사무소(최영현)
