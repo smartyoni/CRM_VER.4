@@ -810,9 +810,17 @@ function App() {
                 properties={properties}
                 contracts={contracts}
                 activeFilter={activeDashboardFilter}
-                onNavigate={(tab, filter) => {
+                onNavigate={(tab, filter, itemId, itemType) => {
                   setActiveTab(tab);
                   setActiveCustomerFilter(filter);
+                  // 계약 클릭 시 상세패널 열기
+                  if (itemType === 'contract') {
+                    setSelectedContractId(itemId);
+                  }
+                  // 고객 클릭 시 상세패널 열기
+                  else if (itemType === 'customer') {
+                    setSelectedCustomerId(itemId);
+                  }
                 }}
               />
             ) : activeTab === '고객목록' ? (

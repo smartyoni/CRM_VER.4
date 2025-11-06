@@ -135,14 +135,15 @@ const Dashboard = ({
     return date.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }).replace(/\s/g, '').replace(/\./g, '-').substring(0, 5);
   };
 
-  // 모달에서 항목 클릭 핸들러
-  const handleModalItemClick = (item) => {
-    if (modalData.type === 'contract' || modalData.type === 'balance') {
-      onNavigate('계약호실', '전체');
+  // 항목 클릭 핸들러 (카드 리스트 또는 모달에서)
+  const handleItemClick = (item, type) => {
+    if (type === 'contract' || type === 'balance') {
+      // 계약 데이터의 ID를 전달하여 상세패널 직접 열기
+      onNavigate('계약호실', '전체', item.id, 'contract');
       setModalOpen(false);
-    } else if (modalData.type === 'meeting') {
-      const customer = customers.find(c => c.id === item.customerId);
-      onNavigate('고객목록', '오늘미팅');
+    } else if (type === 'meeting') {
+      // 고객 ID 전달하여 상세패널 직접 열기
+      onNavigate('고객목록', '오늘미팅', item.customerId, 'customer');
       setModalOpen(false);
     }
   };
@@ -193,7 +194,25 @@ const Dashboard = ({
         {items.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
             {displayItems.map((item, idx) => (
-              <div key={idx} style={{ color: '#555', padding: '6px 0' }}>
+              <div
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleItemClick(item, type);
+                }}
+                style={{
+                  color: '#555',
+                  padding: '6px 0',
+                  cursor: 'pointer',
+                  transition: 'color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#2196F3';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#555';
+                }}
+              >
                 {type === 'contract' || type === 'balance' ? (
                   <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
                 ) : (
@@ -266,7 +285,7 @@ const Dashboard = ({
             {items.map((item, idx) => (
               <div
                 key={idx}
-                onClick={() => onItemClick(item)}
+                onClick={() => onItemClick(item, type)}
                 style={{
                   padding: '12px',
                   backgroundColor: '#f5f5f5',
@@ -534,7 +553,7 @@ const Dashboard = ({
           items={modalData.data}
           type={modalData.type}
           onClose={() => setModalOpen(false)}
-          onItemClick={handleModalItemClick}
+          onItemClick={handleItemClick}
         />
       )}
     </div>
