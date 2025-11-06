@@ -154,10 +154,9 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     const totalWithVat = calculatedFee + vat;
     const feeWithoutVat = calculatedFee;
 
-    // 우측정렬을 위한 패딩 함수
-    const padRight = (label, value, width = 40) => {
-      const combined = label + value;
-      const padding = ' '.repeat(Math.max(0, width - combined.length));
+    // 우측정렬을 위한 패딩 함수 (이미지 형식처럼)
+    const padRight = (label, value, width = 50) => {
+      const padding = ' '.repeat(Math.max(0, width - label.length));
       return label + padding + value;
     };
 
