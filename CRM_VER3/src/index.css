@@ -623,9 +623,21 @@ button {
 /* 중개보수 계산기 입력필드 */
 .input-fields-container {
   width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr !important;
+  gap: 10px !important;
 }
 
 @media (max-width: 768px) {
+  /* 모바일: 보증금과 월세를 같은 라인에, 요율을 아래에 */
+  .input-fields-container {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* 중개요율을 보증금의 아래에 배치 (첫 번째 열) */
+  .input-fields-container > div:nth-child(3) {
+    grid-column: 1 !important;
+  }
   .app-container {
     flex-direction: row;
   }
