@@ -503,55 +503,6 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
 
         {activeTab === '중개보수' && (
           <>
-            {/* 물건유형 및 거래유형 드롭다운 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>물건유형</label>
-                <select
-                  value={selectedPropertyType}
-                  onChange={(e) => setSelectedPropertyType(e.target.value)}
-                  style={{
-                    padding: '10px 12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '13px',
-                    backgroundColor: '#fff',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="">선택</option>
-                  {PROPERTY_TYPES_FOR_BROKERAGE.map(type => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>거래유형</label>
-                <select
-                  value={selectedTransactionType}
-                  onChange={(e) => setSelectedTransactionType(e.target.value)}
-                  style={{
-                    padding: '10px 12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '13px',
-                    backgroundColor: '#fff',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="">선택</option>
-                  {TRANSACTION_TYPES.map(type => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
             {/* 계산 버튼 */}
             <div style={{ marginBottom: '15px' }}>
               <button
@@ -585,8 +536,57 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
                 flexDirection: 'column',
                 gap: '12px'
               }}>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#333', marginBottom: '10px' }}>
                   📊 중개보수 계산기
+                </div>
+
+                {/* 물건유형 및 거래유형 드롭다운 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>물건유형</label>
+                    <select
+                      value={selectedPropertyType}
+                      onChange={(e) => setSelectedPropertyType(e.target.value)}
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid #FFB74D',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        backgroundColor: '#fff',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="">선택</option>
+                      {PROPERTY_TYPES_FOR_BROKERAGE.map(type => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>거래유형</label>
+                    <select
+                      value={selectedTransactionType}
+                      onChange={(e) => setSelectedTransactionType(e.target.value)}
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid #FFB74D',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        backgroundColor: '#fff',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="">선택</option>
+                      {TRANSACTION_TYPES.map(type => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* 입력 필드 그룹 (한 줄) */}
