@@ -11,6 +11,12 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   const [selectedExpiryManagement, setSelectedExpiryManagement] = useState(selectedContract?.expiryManagement || '');
   const [memoEditMode, setMemoEditMode] = useState(false);
   const [editingMemo, setEditingMemo] = useState(selectedContract?.memo || '');
+  const [activeTab, setActiveTab] = useState('기본정보');
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+  const [calcDeposit, setCalcDeposit] = useState('');
+  const [calcMonthlyRent, setCalcMonthlyRent] = useState('');
+  const [calcFeeRate, setCalcFeeRate] = useState('');
+  const [calculatedFee, setCalculatedFee] = useState(null);
 
   useEffect(() => {
     setSelectedProgressStatus(selectedContract?.progressStatus || '');
@@ -18,6 +24,7 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     setSelectedExpiryManagement(selectedContract?.expiryManagement || '');
     setEditingMemo(selectedContract?.memo || '');
     setMemoEditMode(false);
+    setActiveTab('기본정보');
   }, [selectedContract]);
 
   if (!isOpen || !selectedContract) return null;
@@ -73,6 +80,59 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     } else if (e.ctrlKey && e.key === 'Enter') {
       handleMemoSave();
     }
+  };
+
+  // 중개보수 계산
+  const handleCalculate = () => {
+    const deposit = Number(calcDeposit) || 0;
+    const monthlyRent = Number(calcMonthlyRent) || 0;
+    const feeRate = Number(calcFeeRate) || 0;
+
+    const result = (deposit + (monthlyRent * 100)) * (feeRate / 100);
+    setCalculatedFee(Math.round(result));
+  };
+
+  // 계산된 중개보수 적용
+  const handleApplyFee = () => {
+    const updatedContract = {
+      ...selectedContract,
+      brokerageFee: calculatedFee
+    };
+    onUpdateContract(updatedContract);
+    setIsCalculatorOpen(false);
+    setCalculatedFee(null);
+    setCalcDeposit('');
+    setCalcMonthlyRent('');
+    setCalcFeeRate('');
+  };
+
+  // 계산기 취소
+  const handleCalculatorCancel = () => {
+    setIsCalculatorOpen(false);
+    setCalculatedFee(null);
+    setCalcDeposit('');
+    setCalcMonthlyRent('');
+    setCalcFeeRate('');
+  };
+
+  // 중개보수 안내문자 생성
+  const generateBrokageMessage = () => {
+    if (calculatedFee === null) return '';
+
+    // 부가세(10%) 계산
+    const vat = Math.round(calculatedFee / 10);
+    const totalWithVat = calculatedFee + vat;
+    const feeWithoutVat = calculatedFee;
+
+    const message = `[중개보수 안내]
+
+중개수수료:   ${totalWithVat.toLocaleString()}원(부가세포함)
+
+110-355-630099 신한은행 스마트공인중개사사무소(최영현)
+
+현금영수증 필요없으시면    ${feeWithoutVat.toLocaleString()}원 입금해주시면 됩니다.`;
+
+    return message;
   };
 
   return (
@@ -147,80 +207,117 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
         </div>
       </div>
 
-      {/* 드롭다운 선택 영역 */}
-      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#fafafa' }}>
-        {/* 진행상황 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '80px' }}>
-            진행상황:
-          </label>
-          <select
-            value={selectedProgressStatus}
-            onChange={(e) => setSelectedProgressStatus(e.target.value)}
-            style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
-          >
-            {CONTRACT_PROGRESS_STATUSES.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 매물관리 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '80px' }}>
-            매물관리:
-          </label>
-          <select
-            value={selectedPropertyManagement}
-            onChange={(e) => setSelectedPropertyManagement(e.target.value)}
-            style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
-          >
-            <option value="">선택하세요</option>
-            {CONTRACT_PROPERTY_MANAGEMENT.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 만기관리 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '80px' }}>
-            만기관리:
-          </label>
-          <select
-            value={selectedExpiryManagement}
-            onChange={(e) => setSelectedExpiryManagement(e.target.value)}
-            style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
-          >
-            <option value="">선택하세요</option>
-            {CONTRACT_EXPIRY_MANAGEMENT.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 저장 버튼 */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      {/* 탭 네비게이션 */}
+      <div style={{ display: 'flex', gap: '4px', padding: '12px 15px', backgroundColor: '#e3f2fd', borderRadius: '8px', margin: '15px', border: '1px solid #bbdefb' }}>
+        {['기본정보', '중개보수', '연장관리'].map((tab) => (
           <button
-            onClick={handleSave}
+            key={tab}
+            onClick={() => setActiveTab(tab)}
             style={{
-              padding: '8px 16px',
-              fontSize: '13px',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              border: 'none',
+              flex: 1,
+              padding: '10px 16px',
+              fontSize: '14px',
+              fontWeight: '700',
+              border: activeTab === tab ? '1px solid #e0e0e0' : '1px solid transparent',
+              borderRadius: '6px',
+              backgroundColor: activeTab === tab ? 'white' : 'transparent',
+              color: '#1a1a1a',
               cursor: 'pointer',
-              borderRadius: '4px'
+              transition: 'all 0.2s ease',
+              boxShadow: activeTab === tab ? '0 2px 8px rgba(33, 150, 243, 0.15)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== tab) {
+                e.target.style.backgroundColor = '#f9f9f9';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== tab) {
+                e.target.style.backgroundColor = 'transparent';
+              }
             }}
           >
-            저장
+            {tab}
           </button>
-        </div>
+        ))}
       </div>
 
       {/* 콘텐츠 */}
       <div className="panel-content" style={{ flex: 1, overflowY: 'auto', padding: '20px', paddingBottom: '130px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* 기본정보 섹션 */}
+        {activeTab === '기본정보' && (
+          <>
+            {/* 드롭다운 선택 영역 */}
+            <div style={{ padding: '15px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#fafafa', border: '1px solid #e0e0e0' }}>
+              {/* 진행상황 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '80px' }}>
+                  진행상황:
+                </label>
+                <select
+                  value={selectedProgressStatus}
+                  onChange={(e) => setSelectedProgressStatus(e.target.value)}
+                  style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  {CONTRACT_PROGRESS_STATUSES.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 매물관리 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '80px' }}>
+                  매물관리:
+                </label>
+                <select
+                  value={selectedPropertyManagement}
+                  onChange={(e) => setSelectedPropertyManagement(e.target.value)}
+                  style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  <option value="">선택하세요</option>
+                  {CONTRACT_PROPERTY_MANAGEMENT.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 만기관리 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '80px' }}>
+                  만기관리:
+                </label>
+                <select
+                  value={selectedExpiryManagement}
+                  onChange={(e) => setSelectedExpiryManagement(e.target.value)}
+                  style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  <option value="">선택하세요</option>
+                  {CONTRACT_EXPIRY_MANAGEMENT.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 저장 버튼 */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={handleSave}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '4px'
+                  }}
+                >
+                  저장
+                </button>
+              </div>
+            </div>
+
+            {/* 기본정보 섹션 */}
         <section>
           <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #FF6B9D' }}>
             📋 기본 정보
@@ -397,6 +494,323 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
             </div>
           )}
         </section>
+          </>
+        )}
+
+        {activeTab === '중개보수' && (
+          <>
+            {/* 계산 버튼 */}
+            <div style={{ marginBottom: '15px' }}>
+              <button
+                onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  backgroundColor: '#FF9800',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {isCalculatorOpen ? '계산기 닫기' : '계산하기'}
+              </button>
+            </div>
+
+            {/* 계산기 폼 */}
+            {isCalculatorOpen && (
+              <div style={{
+                padding: '15px',
+                backgroundColor: '#fff8e1',
+                borderRadius: '6px',
+                border: '1px solid #FFB74D',
+                marginBottom: '15px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                  📊 중개보수 계산기
+                </div>
+
+                {/* 입력 필드 그룹 (한 줄) */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                  {/* 보증금 입력 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>보증금 (만원)</label>
+                    <input
+                      type="number"
+                      value={calcDeposit}
+                      onChange={(e) => setCalcDeposit(e.target.value)}
+                      placeholder="예: 10000"
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid #FFB74D',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  {/* 월세 입력 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>월세 (만원)</label>
+                    <input
+                      type="number"
+                      value={calcMonthlyRent}
+                      onChange={(e) => setCalcMonthlyRent(e.target.value)}
+                      placeholder="예: 50"
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid #FFB74D',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  {/* 중개요율 입력 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>중개요율 (%)</label>
+                    <input
+                      type="number"
+                      value={calcFeeRate}
+                      onChange={(e) => setCalcFeeRate(e.target.value)}
+                      placeholder="예: 0.4"
+                      step="0.1"
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid #FFB74D',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* 계산 결과 */}
+                {calculatedFee !== null && (
+                  <div style={{
+                    padding: '12px',
+                    backgroundColor: '#e3f2fd',
+                    borderRadius: '4px',
+                    borderLeft: '3px solid #2196F3'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>계산 결과</div>
+                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2196F3' }}>
+                      {Number(calculatedFee).toLocaleString()} 만원
+                    </div>
+                  </div>
+                )}
+
+                {/* 안내문자 생성 */}
+                {calculatedFee !== null && (
+                  <div style={{
+                    padding: '12px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '4px',
+                    border: '1px solid #ddd',
+                    marginTop: '10px'
+                  }}>
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                      📱 안내문자 (복사)
+                    </div>
+                    <pre style={{
+                      fontSize: '11px',
+                      color: '#333',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      margin: 0,
+                      padding: '8px',
+                      backgroundColor: '#fff',
+                      borderRadius: '3px',
+                      border: '1px solid #e0e0e0',
+                      lineHeight: '1.4'
+                    }}>
+                      {generateBrokageMessage()}
+                    </pre>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(generateBrokageMessage());
+                        alert('메시지가 복사되었습니다!');
+                      }}
+                      style={{
+                        width: '100%',
+                        marginTop: '8px',
+                        padding: '8px 12px',
+                        fontSize: '13px',
+                        backgroundColor: '#2196F3',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      복사
+                    </button>
+                  </div>
+                )}
+
+                {/* 버튼 그룹 */}
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                  <button
+                    onClick={handleCalculate}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      backgroundColor: '#FF9800',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    계산
+                  </button>
+                  {calculatedFee !== null && (
+                    <button
+                      onClick={handleApplyFee}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        fontSize: '13px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      적용
+                    </button>
+                  )}
+                  <button
+                    onClick={handleCalculatorCancel}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      backgroundColor: '#f5f5f5',
+                      color: '#333',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <section>
+              <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #4CAF50' }}>
+                💰 중개보수 정보
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+                  <span style={{ fontWeight: '600', color: '#666' }}>중개보수금액:</span>
+                  <span style={{ color: '#333' }}>{selectedContract.brokerageFee ? `${Number(selectedContract.brokerageFee).toLocaleString()} 만원` : '-'}</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+                  <span style={{ fontWeight: '600', color: '#666' }}>입금일:</span>
+                  <span style={{ color: '#333' }}>{formatDate(selectedContract.feeReceivedDate)}</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+                  <span style={{ fontWeight: '600', color: '#666' }}>입금상태:</span>
+                  <span style={{
+                    color: selectedContract.feeStatus === '완납' ? '#4CAF50' : selectedContract.feeStatus === '일부입금' ? '#FF9800' : '#f44336',
+                    fontWeight: '600'
+                  }}>
+                    {selectedContract.feeStatus || '-'}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #FF9800' }}>
+                📝 중개보수 메모
+              </h4>
+              <div style={{
+                fontSize: '13px',
+                color: selectedContract.brokerageMemo ? '#333' : '#999',
+                padding: '10px',
+                backgroundColor: '#fffbe6',
+                borderRadius: '4px',
+                borderLeft: '3px solid #FF9800',
+                minHeight: '80px',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                lineHeight: '1.5'
+              }}>
+                {selectedContract.brokerageMemo || '중개보수 관련 메모'}
+              </div>
+            </section>
+          </>
+        )}
+
+        {activeTab === '연장관리' && (
+          <>
+            <section>
+              <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #FF9800' }}>
+                🔄 연장 히스토리
+              </h4>
+
+              {selectedContract.extensionHistory && selectedContract.extensionHistory.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {selectedContract.extensionHistory.map((ext, index) => (
+                    <div key={index} style={{
+                      padding: '12px',
+                      backgroundColor: '#fff3e0',
+                      borderRadius: '4px',
+                      borderLeft: '3px solid #FF9800'
+                    }}>
+                      <div style={{ fontSize: '13px', marginBottom: '8px', fontWeight: '600', color: '#333' }}>
+                        연장 #{index + 1}
+                      </div>
+                      <div style={{ fontSize: '13px', marginBottom: '6px' }}>
+                        <span style={{ fontWeight: '600', color: '#666' }}>연장일:</span> {formatDate(ext.extensionDate)}
+                      </div>
+                      <div style={{ fontSize: '13px', marginBottom: '6px' }}>
+                        <span style={{ fontWeight: '600', color: '#666' }}>새 만기일:</span> {formatDate(ext.newExpiryDate)}
+                      </div>
+                      <div style={{ fontSize: '13px', marginBottom: '6px' }}>
+                        <span style={{ fontWeight: '600', color: '#666' }}>연장기간:</span> {ext.extensionPeriod}개월
+                      </div>
+                      {ext.memo && (
+                        <div style={{ fontSize: '13px', color: '#666', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255, 152, 0, 0.3)' }}>
+                          <span style={{ fontWeight: '600' }}>메모:</span> {ext.memo}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  fontSize: '13px',
+                  color: '#999',
+                  padding: '20px',
+                  textAlign: 'center',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '4px'
+                }}>
+                  연장 히스토리가 없습니다
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
 
       {/* 버튼 영역 */}

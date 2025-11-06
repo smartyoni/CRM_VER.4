@@ -1,9 +1,13 @@
 import React, { useState, useMemo } from 'react';
 
-const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selectedPropertyId }) => {
+const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selectedPropertyId, activeFilter, onFilterChange, allProperties }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedProperty: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+
+  // 필터 옵션 추출
+  const filterOptions = ['전체', ...new Set(allProperties?.map(p => p.category).filter(Boolean) || [])];
+  const propertyTypeOptions = ['전체', ...new Set(allProperties?.map(p => p.propertyType).filter(Boolean) || [])];
 
   const filteredProperties = useMemo(() => {
     let filtered = properties.filter(property =>
@@ -204,6 +208,28 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
 
   return (
     <div className="property-table-wrapper" style={{ padding: '15px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* 필터 드롭다운 */}
+      <div style={{ marginBottom: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <select
+          value={activeFilter}
+          onChange={(e) => onFilterChange(e.target.value)}
+          style={{
+            padding: '10px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          {filterOptions.map(option => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* 검색 바 */}
       <div style={{ marginBottom: '15px', display: 'flex', gap: '10px' }}>
         <input
@@ -227,7 +253,8 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
               backgroundColor: '#f5f5f5',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              fontSize: '14px'
             }}
           >
             초기화

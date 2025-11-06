@@ -85,82 +85,52 @@ const PropertyDetailPanel = ({
         </div>
       </div>
 
-      {/* 매물유형 선택 */}
-      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+      {/* 필터 드롭다운 */}
+      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <select
+          value={selectedPropertyType}
+          onChange={(e) => handlePropertyTypeChange(e.target.value)}
+          style={{
+            padding: '10px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="">매물유형 선택</option>
           {PROPERTY_TYPES.map(type => (
-            <button
-              key={type}
-              onClick={() => handlePropertyTypeChange(type)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: selectedPropertyType === type ? 'none' : '1px solid #ccc',
-                backgroundColor: selectedPropertyType === type ? '#2196F3' : '#fff',
-                color: selectedPropertyType === type ? '#fff' : '#333',
-                fontWeight: selectedPropertyType === type ? 'bold' : 'normal',
-                cursor: 'pointer',
-                fontSize: '13px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedPropertyType !== type) {
-                  e.target.style.borderColor = '#999';
-                  e.target.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedPropertyType !== type) {
-                  e.target.style.borderColor = '#ccc';
-                  e.target.style.backgroundColor = '#fff';
-                }
-              }}
-            >
+            <option key={type} value={type}>
               {type}
-            </button>
+            </option>
           ))}
-        </div>
-      </div>
+        </select>
 
-      {/* 구분 선택 */}
-      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+        <select
+          value={selectedCategory}
+          onChange={(e) => handleCategoryChange(e.target.value)}
+          style={{
+            padding: '10px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="">구분 선택</option>
           {PROPERTY_CATEGORIES.map(category => (
-            <button
-              key={category}
-              onClick={() => handleCategoryChange(category)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: selectedCategory === category ? 'none' : '1px solid #ccc',
-                backgroundColor: selectedCategory === category ? '#FF6B9D' : '#fff',
-                color: selectedCategory === category ? '#fff' : '#333',
-                fontWeight: selectedCategory === category ? 'bold' : 'normal',
-                cursor: 'pointer',
-                fontSize: '13px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedCategory !== category) {
-                  e.target.style.borderColor = '#999';
-                  e.target.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedCategory !== category) {
-                  e.target.style.borderColor = '#ccc';
-                  e.target.style.backgroundColor = '#fff';
-                }
-              }}
-            >
+            <option key={category} value={category}>
               {category}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
+
         <button
           onClick={handleSave}
           className="btn-primary"
-          style={{ padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap' }}
+          style={{ padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap', marginLeft: 'auto' }}
         >
           저장
         </button>

@@ -70,82 +70,52 @@ const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete, onUp
         </div>
       </div>
 
-      {/* 유형 선택 */}
-      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+      {/* 필터 드롭다운 */}
+      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <select
+          value={selectedType}
+          onChange={(e) => handleTypeChange(e.target.value)}
+          style={{
+            padding: '10px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="">유형 선택</option>
           {BUILDING_TYPES.map(type => (
-            <button
-              key={type}
-              onClick={() => handleTypeChange(type)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: selectedType === type ? 'none' : '1px solid #ccc',
-                backgroundColor: selectedType === type ? '#2196F3' : '#fff',
-                color: selectedType === type ? '#fff' : '#333',
-                fontWeight: selectedType === type ? 'bold' : 'normal',
-                cursor: 'pointer',
-                fontSize: '13px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedType !== type) {
-                  e.target.style.borderColor = '#999';
-                  e.target.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedType !== type) {
-                  e.target.style.borderColor = '#ccc';
-                  e.target.style.backgroundColor = '#fff';
-                }
-              }}
-            >
+            <option key={type} value={type}>
               {type}
-            </button>
+            </option>
           ))}
-        </div>
-      </div>
+        </select>
 
-      {/* 위치 선택 */}
-      <div style={{ padding: '15px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+        <select
+          value={selectedLocation}
+          onChange={(e) => handleLocationChange(e.target.value)}
+          style={{
+            padding: '10px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="">위치 선택</option>
           {BUILDING_LOCATIONS.map(location => (
-            <button
-              key={location}
-              onClick={() => handleLocationChange(location)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: selectedLocation === location ? 'none' : '1px solid #ccc',
-                backgroundColor: selectedLocation === location ? '#FF6B9D' : '#fff',
-                color: selectedLocation === location ? '#fff' : '#333',
-                fontWeight: selectedLocation === location ? 'bold' : 'normal',
-                cursor: 'pointer',
-                fontSize: '13px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedLocation !== location) {
-                  e.target.style.borderColor = '#999';
-                  e.target.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedLocation !== location) {
-                  e.target.style.borderColor = '#ccc';
-                  e.target.style.backgroundColor = '#fff';
-                }
-              }}
-            >
+            <option key={location} value={location}>
               {location}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
+
         <button
           onClick={handleSave}
           className="btn-primary"
-          style={{ padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap' }}
+          style={{ padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap', marginLeft: 'auto' }}
         >
           저장
         </button>

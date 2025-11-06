@@ -88,7 +88,7 @@ function App() {
   const [activeContractFilter, setActiveContractFilter] = useState('전체');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('고객목록'); // '고객목록', '매물장', '건물정보', '계약호실'
+  const [activeTab, setActiveTab] = useState('계약호실'); // '고객목록', '매물장', '건물정보', '계약호실'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
   const [isContractImporterOpen, setIsContractImporterOpen] = useState(false);
@@ -816,6 +816,9 @@ function App() {
                 onEdit={handleOpenPropertyModal}
                 onDelete={handleDeleteProperty}
                 selectedPropertyId={selectedPropertyId}
+                activeFilter={activePropertyFilter}
+                onFilterChange={handleFilterChange}
+                allProperties={properties}
               />
             ) : activeTab === '건물정보' ? (
               <BuildingTable
@@ -824,6 +827,9 @@ function App() {
                 onEdit={handleOpenBuildingModal}
                 onDelete={handleDeleteBuilding}
                 selectedBuildingId={selectedBuildingId}
+                activeFilter={activeBuildingFilter}
+                onFilterChange={handleFilterChange}
+                allBuildings={buildings}
               />
             ) : (
               <ContractTable
