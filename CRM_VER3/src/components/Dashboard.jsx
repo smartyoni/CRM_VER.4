@@ -198,7 +198,8 @@ const Dashboard = ({
                 key={idx}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleItemClick(item, type);
+                  // 카드의 리스트 항목 클릭 시 모달 팝업 열기
+                  openModal(type, title, items);
                 }}
                 style={{
                   color: '#555',
