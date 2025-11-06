@@ -111,9 +111,11 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
 
   // 계산된 중개보수 적용
   const handleApplyFee = () => {
+    // 만원 단위 값을 원 단위로 변환 (예: 13만원 → 130000원)
+    const feeInWon = calculatedFee * 10000;
     const updatedContract = {
       ...selectedContract,
-      brokerageFee: calculatedFee
+      brokerageFee: feeInWon
     };
     onUpdateContract(updatedContract);
     setIsCalculatorOpen(false);
@@ -831,7 +833,11 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
                   <span style={{ fontWeight: '600', color: '#666' }}>중개보수금액:</span>
-                  <span style={{ color: '#333' }}>{selectedContract.brokerageFee ? `${Number(selectedContract.brokerageFee).toLocaleString()} 만원` : '미입력'}</span>
+                  <span style={{ color: '#333' }}>
+                    {selectedContract.brokerageFee ?
+                      `${(Number(selectedContract.brokerageFee) / 10000).toLocaleString()} 만원 (${Number(selectedContract.brokerageFee).toLocaleString()} 원)`
+                      : '미입력'}
+                  </span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
                   <span style={{ fontWeight: '600', color: '#666' }}>입금일:</span>
