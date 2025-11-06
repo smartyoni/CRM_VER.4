@@ -620,6 +620,11 @@ button {
   }
 }
 
+/* 중개보수 계산기 입력필드 */
+.input-fields-container {
+  width: 100% !important;
+}
+
 @media (max-width: 768px) {
   .app-container {
     flex-direction: row;
@@ -847,10 +852,5 @@ button {
     right: 0 !important;
     z-index: 1000 !important;
     width: 100vw !important;
-  }
-
-  /* 중개보수 계산기 입력필드 모바일 반응형 */
-  .input-fields-container {
-    width: 100% !important;
   }
 }
