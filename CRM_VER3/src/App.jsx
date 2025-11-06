@@ -854,11 +854,8 @@ function App() {
         paddingLeft: '40px',
         gap: '60px',
         alignItems: 'center',
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000
+        flexShrink: 0,
+        width: '100%'
       }}>
         <button
           onClick={() => setActiveTab('계약호실')}

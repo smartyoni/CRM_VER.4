@@ -121,7 +121,7 @@ const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete, onUp
         </button>
       </div>
 
-      <div className="panel-content" style={{ flex: 1, overflowY: 'auto', padding: '20px', paddingBottom: '130px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="panel-content" style={{ flex: 1, overflowY: 'auto', padding: '20px', paddingBottom: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* 기본 정보 */}
         <section>
           <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #2196F3' }}>
@@ -132,9 +132,35 @@ const BuildingDetailPanel = ({ selectedBuilding, onClose, onEdit, onDelete, onUp
               <span style={{ fontWeight: '600', color: '#666' }}>건물명:</span>
               <span style={{ color: '#333' }}>{selectedBuilding.name || '-'}</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px', alignItems: 'center' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>지번:</span>
-              <span style={{ color: '#333', wordBreak: 'break-word' }}>{selectedBuilding.address || '-'}</span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ color: '#333', wordBreak: 'break-word', flex: 1 }}>{selectedBuilding.address || '-'}</span>
+                {selectedBuilding.address && (
+                  <a
+                    href={`https://map.kakao.com/link/search/${encodeURIComponent(selectedBuilding.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 10px',
+                      backgroundColor: '#FEE500',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    🗺️ 지도보기
+                  </a>
+                )}
+              </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>위치:</span>
