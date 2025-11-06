@@ -831,20 +831,52 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
                   <span style={{ fontWeight: '600', color: '#666' }}>중개보수금액:</span>
-                  <span style={{ color: '#333' }}>{selectedContract.brokerageFee ? `${Number(selectedContract.brokerageFee).toLocaleString()} 만원` : '-'}</span>
+                  <span style={{ color: '#333' }}>{selectedContract.brokerageFee ? `${Number(selectedContract.brokerageFee).toLocaleString()} 만원` : '미입력'}</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
                   <span style={{ fontWeight: '600', color: '#666' }}>입금일:</span>
-                  <span style={{ color: '#333' }}>{formatDate(selectedContract.feeReceivedDate)}</span>
+                  <span style={{ color: '#333' }}>{formatDate(selectedContract.remainderPaymentDate)}</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '100px auto', gap: '10px', alignItems: 'center' }}>
                   <span style={{ fontWeight: '600', color: '#666' }}>입금상태:</span>
-                  <span style={{
-                    color: selectedContract.feeStatus === '완납' ? '#4CAF50' : selectedContract.feeStatus === '일부입금' ? '#FF9800' : '#f44336',
-                    fontWeight: '600'
-                  }}>
-                    {selectedContract.feeStatus || '-'}
-                  </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      onClick={() => {
+                        const updated = { ...selectedContract, feeStatus: '입금됨' };
+                        onUpdateContract(updated);
+                      }}
+                      style={{
+                        padding: '5px 10px',
+                        fontSize: '12px',
+                        backgroundColor: selectedContract.feeStatus === '입금됨' ? '#4CAF50' : '#e0e0e0',
+                        color: selectedContract.feeStatus === '입금됨' ? 'white' : '#666',
+                        border: 'none',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      입금됨
+                    </button>
+                    <button
+                      onClick={() => {
+                        const updated = { ...selectedContract, feeStatus: '미입금' };
+                        onUpdateContract(updated);
+                      }}
+                      style={{
+                        padding: '5px 10px',
+                        fontSize: '12px',
+                        backgroundColor: selectedContract.feeStatus === '미입금' ? '#f44336' : '#e0e0e0',
+                        color: selectedContract.feeStatus === '미입금' ? 'white' : '#666',
+                        border: 'none',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      미입금
+                    </button>
+                  </div>
                 </div>
               </div>
             </section>
