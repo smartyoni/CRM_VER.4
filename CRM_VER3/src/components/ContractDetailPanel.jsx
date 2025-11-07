@@ -1319,12 +1319,38 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
         {activeTab === '연장관리' && (
           <>
             <section style={{ padding: '15px', border: '1px solid #e0e0e0', borderRadius: '6px' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '15px', color: '#1a1a1a', borderBottom: '2px solid #2196F3', paddingBottom: '8px', margin: '0 0 15px 0' }}>
-                📅 만기관리 상태
-              </h4>
+              {/* 헤더와 저장 버튼을 한 줄로 정렬 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#1a1a1a', borderBottom: '2px solid #2196F3', paddingBottom: '8px', margin: '0' }}>
+                  📅 만기관리 상태
+                </h4>
+                <button
+                  onClick={handleSaveExpiryManagement}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#45a049';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#4CAF50';
+                  }}
+                >
+                  저장
+                </button>
+              </div>
 
               {/* 버튼 그리드 */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {CONTRACT_EXPIRY_MANAGEMENT.map((status) => (
                   <button
                     key={status}
@@ -1351,32 +1377,6 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                     {status}
                   </button>
                 ))}
-              </div>
-
-              {/* 저장 버튼 */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  onClick={handleSaveExpiryManagement}
-                  style={{
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#45a049';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#4CAF50';
-                  }}
-                >
-                  저장
-                </button>
               </div>
             </section>
           </>
