@@ -1180,8 +1180,8 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                       style={{
                         padding: '5px 10px',
                         fontSize: '12px',
-                        backgroundColor: selectedContract.feeStatus === '입금됨' ? '#4CAF50' : '#e0e0e0',
-                        color: selectedContract.feeStatus === '입금됨' ? 'white' : '#666',
+                        backgroundColor: selectedContract?.feeStatus === '입금됨' ? '#4CAF50' : '#e0e0e0',
+                        color: selectedContract?.feeStatus === '입금됨' ? 'white' : '#666',
                         border: 'none',
                         borderRadius: '3px',
                         cursor: 'pointer',
@@ -1200,8 +1200,8 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                       style={{
                         padding: '5px 10px',
                         fontSize: '12px',
-                        backgroundColor: selectedContract.feeStatus === '미입금' ? '#f44336' : '#e0e0e0',
-                        color: selectedContract.feeStatus === '미입금' ? 'white' : '#666',
+                        backgroundColor: (!selectedContract?.feeStatus || selectedContract?.feeStatus === '미입금') ? '#f44336' : '#e0e0e0',
+                        color: (!selectedContract?.feeStatus || selectedContract?.feeStatus === '미입금') ? 'white' : '#666',
                         border: 'none',
                         borderRadius: '3px',
                         cursor: 'pointer',
