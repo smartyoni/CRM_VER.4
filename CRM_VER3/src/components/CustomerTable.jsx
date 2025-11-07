@@ -365,14 +365,35 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
 
   return (
     <div className="table-container" onClick={handleCloseContextMenu}>
-        <div style={{ marginBottom: '15px' }}>
+        <div style={{ marginBottom: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
             <input
                 type="text"
                 placeholder="고객명, 연락처 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ width: '100%', padding: '8px' }}
+                style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px' }}
             />
+            {searchTerm && (
+                <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                        padding: '8px 12px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        fontSize: '20px',
+                        cursor: 'pointer',
+                        color: '#999',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '36px',
+                        height: '36px'
+                    }}
+                    title="검색 초기화"
+                >
+                    ✕
+                </button>
+            )}
         </div>
 
 {showProgressTabs && (

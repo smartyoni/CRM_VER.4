@@ -250,14 +250,21 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
             onClick={() => setSearchTerm('')}
             style={{
               padding: '8px 12px',
-              backgroundColor: '#f5f5f5',
-              border: '1px solid #ddd',
+              backgroundColor: 'transparent',
+              border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '14px'
+              fontSize: '20px',
+              color: '#999',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px'
             }}
+            title="검색 초기화"
           >
-            초기화
+            ✕
           </button>
         )}
       </div>
