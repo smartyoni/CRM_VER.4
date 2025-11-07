@@ -284,13 +284,10 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
                 {errors.monthlyRent && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.monthlyRent}</div>}
               </div>
 
-              <FormField label="계약기간" name="contractPeriod" value={formData.contractPeriod} placeholder="예: 24" onChange={handleChange} errors={errors} />
-              <div style={{ fontSize: '12px', color: '#999', marginTop: '-12px' }}>개월</div>
-            </div>
-
-            {/* 매매가 - 추가 행 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
-              <div></div>
+              <div>
+                <FormField label="계약기간" name="contractPeriod" value={formData.contractPeriod} placeholder="예: 24" onChange={handleChange} errors={errors} />
+                <div style={{ fontSize: '12px', color: '#999', marginTop: '-12px' }}>개월</div>
+              </div>
               <FormField label="매매가" name="salePrice" value={formData.salePrice} placeholder="예: 50000000" onChange={handleChange} errors={errors} />
             </div>
           </div>
