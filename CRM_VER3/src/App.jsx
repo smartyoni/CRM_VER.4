@@ -1113,6 +1113,7 @@ function App() {
             onClose={handleCloseContractModal}
             onSave={handleSaveContract}
             editData={editingContract}
+            buildings={buildings}
           />
         </>
       )}

@@ -47,7 +47,7 @@ const FormField = ({ label, name, type = 'text', value, placeholder = '', requir
   </div>
 );
 
-const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
+const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) => {
   // 날짜 형식 변환 헬퍼 함수
   const formatDateForInput = (dateStr) => {
     if (!dateStr) return '';
@@ -151,7 +151,34 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>기본정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="건물명" name="buildingName" value={formData.buildingName} placeholder="건물명을 입력해주세요" required onChange={handleChange} errors={errors} />
+              {/* 건물명 - datalist를 이용한 자동완성 */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
+                  건물명 <span style={{ color: '#f44336' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  name="buildingName"
+                  list="building-names"
+                  value={formData.buildingName}
+                  onChange={handleChange}
+                  placeholder="건물명을 입력해주세요"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: errors.buildingName ? '1px solid #f44336' : '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <datalist id="building-names">
+                  {buildings.map(building => (
+                    <option key={building.id} value={building.name} />
+                  ))}
+                </datalist>
+                {errors.buildingName && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.buildingName}</div>}
+              </div>
               <FormField label="호실명" name="roomName" value={formData.roomName} placeholder="예: 101, 205-A" required onChange={handleChange} errors={errors} />
             </div>
           </div>
