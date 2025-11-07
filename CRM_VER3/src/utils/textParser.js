@@ -254,19 +254,19 @@ const parseNaverFormat = (rawText) => {
   let propertyInfo = '🏠 매물정보';
 
   // 1. 소재지: 제목(첫 줄)에서 건물명만 추출
-  let location = '';
+  let location = '정보없음';
   const lines = rawText.split('\n').filter(line => line.trim());
   if (lines.length > 0) {
     // 첫 줄에서 숫자동, 층수 정보 제거
     const titleLine = lines[0].trim();
     const buildingName = titleLine.replace(/\s*\d+동\s*(저층|고층|중층)?.*$/, '').trim();
     if (buildingName) {
-      location = `• 소재지: ${buildingName}`;
+      location = buildingName;
     }
   }
 
   // 2. 임대료: "전세/월세/매매" 라인에서 금액 추출 (보증금/월세 형식)
-  let rent = '';
+  let rent = '정보없음';
   // "월세XX/XX" 또는 "전세XX" 또는 "매매XX" 형식 찾기
   const rentLineMatch = rawText.match(/(월세|전세|매매)(\d+)\/(\d+)|월세(\d+)/);
   if (rentLineMatch) {
@@ -274,18 +274,18 @@ const parseNaverFormat = (rawText) => {
       // 월세XX/XX 형식
       const deposit = rentLineMatch[2];
       const monthlyRent = rentLineMatch[3];
-      rent = `• 임대료: ${deposit}/${monthlyRent}`;
+      rent = `${deposit}/${monthlyRent}`;
     } else if (rentLineMatch[1] === '전세' && rentLineMatch[2]) {
       // 전세XX 형식
-      rent = `• 임대료: ${rentLineMatch[2]}`;
+      rent = rentLineMatch[2];
     } else if (rentLineMatch[1] === '매매' && rentLineMatch[2]) {
       // 매매XX 형식
-      rent = `• 임대료: ${rentLineMatch[2]}`;
+      rent = rentLineMatch[2];
     }
   }
 
   // 3. 구조정보: "계약/전용면적" + "방수/욕실수" → 전용면적㎡ (약X평)/방X,욕실X
-  let structure = '';
+  let structure = '정보없음';
   // 계약면적과 전용면적 모두 추출 (전용면적이 더 작은 값)
   const naverAreaMatch = rawText.match(/계약\/전용면적\s*([\d.]+)㎡\/([\d.]+)㎡/);
   const naverRoomMatch = rawText.match(/방수\/욕실수\s*(\d+)\/(\d+)/);
@@ -299,22 +299,22 @@ const parseNaverFormat = (rawText) => {
     const baths = naverRoomMatch[2];
     // 제곱미터를 평으로 환산 (1평 = 3.3, 소수점 첫째자리까지)
     const pyeong = (area / 3.3).toFixed(1);
-    structure = `• 구조정보: ${area}㎡ (전용${pyeong}평)/방${rooms},욕실${baths}`;
+    structure = `${area}㎡ (전용${pyeong}평)/방${rooms},욕실${baths}`;
   }
 
   // 4. 동/층: 제목에서 "동" + "해당층/총층"에서 층 정보
-  let floorInfo = '';
+  let floorInfo = '정보없음';
   const dongMatch = lines[0]?.match(/(\d+)동/);
   const naverFloorMatch = rawText.match(/해당층\/총층\s*([^/]+)\/(\d+)층/);
 
   if (dongMatch && naverFloorMatch) {
     const dong = dongMatch[1];
     const floor = naverFloorMatch[1].trim();
-    floorInfo = `• 동/층: ${dong}동/${floor}`;
+    floorInfo = `${dong}동/${floor}`;
   }
 
   // 5. 특징: "매물특징" + "방향" + "입주가능일" 정보 조합
-  let feature = '';
+  let feature = '정보없음';
   let featureParts = [];
 
   // 매물특징 추출
@@ -345,11 +345,11 @@ const parseNaverFormat = (rawText) => {
   }
 
   if (featureParts.length > 0) {
-    feature = `• 특징: ${featureParts.join(' | ')}`;
+    feature = featureParts.join(' | ');
   }
 
   // 6. 부동산: "중개사" 또는 "중개법인" 뒤의 이름
-  let agency = '';
+  let agency = '정보없음';
   // 공인중개사 패턴 또는 중개법인 패턴
   let naverAgencyMatch = rawText.match(/중개사\s*(.+?공인중개사사무소)/);
 
@@ -359,20 +359,27 @@ const parseNaverFormat = (rawText) => {
   }
 
   if (naverAgencyMatch) {
-    agency = `• 부동산: ${naverAgencyMatch[1].trim()}`;
+    agency = naverAgencyMatch[1].trim();
   }
 
   // 7. 연락처: 공인중개사사무소/중개법인 뒤의 전화번호 (관리소전화, 팩스 제외)
-  let contact = '';
+  let contact = '정보없음';
   const naverContactNumber = extractContactNumber(rawText);
   if (naverContactNumber) {
-    contact = `• 연락처: ${naverContactNumber}`;
+    contact = naverContactNumber;
   }
 
-  // 모든 항목 결합
-  const result = [propertyInfo, location, rent, structure, floorInfo, feature, agency, contact]
-    .filter(item => item !== '')
-    .join('\n');
+  // 모든 항목 결합 (빈 항목도 포함)
+  const result = [
+    propertyInfo,
+    `• 소재지: ${location}`,
+    `• 임대료: ${rent}`,
+    `• 구조정보: ${structure}`,
+    `• 동/층: ${floorInfo}`,
+    `• 특징: ${feature}`,
+    `• 부동산: ${agency}`,
+    `• 연락처: ${contact}`
+  ].join('\n');
 
   return result;
 };
@@ -387,21 +394,21 @@ const parseOriginalFormat = (rawText) => {
   let propertyInfo = '🏠 매물정보';
 
   // 1. 소재지: "물 건  명" + "소 재 지" → 건물명(지번주소)
-  let location = '';
+  let location = '정보없음';
   const buildingNameMatch = rawText.match(/물\s*건\s*명\s*(.+?)(?=건축|$)/s);
   const addressMatch = rawText.match(/소\s*재\s*지\s*(.+?)(?=공개여부|대\s*분|$)/);
 
   if (buildingNameMatch && addressMatch) {
     const buildingName = buildingNameMatch[1].trim().split('\n')[0].trim();
     const address = addressMatch[1].trim().split(/\s+/)[0];
-    location = `• 소재지: ${buildingName}(${address})`;
+    location = `${buildingName}(${address})`;
   } else if (buildingNameMatch) {
     const buildingName = buildingNameMatch[1].trim().split('\n')[0].trim();
-    location = `• 소재지: ${buildingName}`;
+    location = `${buildingName}`;
   }
 
   // 2. 임대료: "매도금액" 또는 "보 증 금" + "월     세" → 보증금/월세
-  let rent = '';
+  let rent = '정보없음';
   // 먼저 현보증금과 현월세를 찾고, 없으면 보증금과 월세를 찾기
   let depositMatch = rawText.match(/현\s*보\s*증\s*금\s*([0-9,]+)/);
   let monthlyRentMatch = rawText.match(/현\s*월\s*세\s*([0-9,]+)/);
@@ -416,11 +423,11 @@ const parseOriginalFormat = (rawText) => {
   if (depositMatch && monthlyRentMatch) {
     const deposit = depositMatch[1].trim();
     const monthlyRent = monthlyRentMatch[1].trim();
-    rent = `• 임대료: ${deposit}/${monthlyRent}`;
+    rent = `${deposit}/${monthlyRent}`;
   }
 
   // 3. 구조정보: 전용면적/방갯수,욕실갯수 → 면적㎡ (전용X.X평)/방X,욕실X
-  let structure = '';
+  let structure = '정보없음';
   // 전용면적이 2개일 때 작은 값을 전용면적으로 선택
   const allAreasMatch = rawText.match(/전용면적[\s(]*([0-9.]+)[\s)]*[\s]*([0-9.]*)/);
   let area = null;
@@ -443,40 +450,40 @@ const parseOriginalFormat = (rawText) => {
     const baths = bathMatch ? bathMatch[1].trim() : '0';
     // 제곱미터를 평으로 환산 (1평 = 3.3, 소수점 첫째자리까지)
     const pyeong = (area / 3.3).toFixed(1);
-    structure = `• 구조정보: ${area}㎡ (전용${pyeong}평)/방${rooms},욕실${baths}`;
+    structure = `${area}㎡ (전용${pyeong}평)/방${rooms},욕실${baths}`;
   }
 
   // 4. 동/층 정보: "동 [X/X]" 또는 "동 [X]" → X동/Y층
-  let floorInfo = '';
+  let floorInfo = '정보없음';
   // 패턴 1: 1동 [1/10]
   let floorMatch = rawText.match(/(\d+)동\s*\[(\d+)\s*\/\s*(\d+)\]/);
   if (floorMatch) {
     const building = floorMatch[1];
     const floor = floorMatch[2];
-    floorInfo = `• 동/층: ${building}동/${floor}층`;
+    floorInfo = `${building}동/${floor}층`;
   } else {
     // 패턴 2: 1동 [고] 같은 경우 (숫자가 아닌 경우)
     floorMatch = rawText.match(/(\d+)동\s*\[([^\]]+)\]/);
     if (floorMatch) {
       const building = floorMatch[1];
       const floor = floorMatch[2].trim();
-      floorInfo = `• 동/층: ${building}동/${floor}`;
+      floorInfo = `${building}동/${floor}`;
     }
   }
 
   // 5. 특징: 공개비고의 내용
-  let feature = '';
+  let feature = '정보없음';
   const featureMatch = rawText.match(/공개비고\s*(.+?)(?=매물메모|비고|복도구조|$)/s);
 
   if (featureMatch) {
     const desc = featureMatch[1].trim().replace(/\s+/g, ' ');
     if (desc) {
-      feature = `• 특징: ${desc}`;
+      feature = `${desc}`;
     }
   }
 
   // 6. 부동산명: 공인중개사 또는 중개법인 정보에서 추출
-  let agency = '';
+  let agency = '정보없음';
   // 공인중개사 패턴 또는 중개법인 패턴
   let agencyMatch = rawText.match(/(.+?공인중개사.*?사무소)/);
 
@@ -486,20 +493,27 @@ const parseOriginalFormat = (rawText) => {
   }
 
   if (agencyMatch) {
-    agency = `• 부동산: ${agencyMatch[1].trim()}`;
+    agency = `${agencyMatch[1].trim()}`;
   }
 
   // 7. 연락처: 공인중개사사무소/중개법인 뒤의 전화번호 (관리소전화, 팩스 제외)
-  let contact = '';
+  let contact = '정보없음';
   const contactNumber = extractContactNumber(rawText);
   if (contactNumber) {
-    contact = `• 연락처: ${contactNumber}`;
+    contact = `${contactNumber}`;
   }
 
-  // 모든 항목 결합
-  const result = [propertyInfo, location, rent, structure, floorInfo, feature, agency, contact]
-    .filter(item => item !== '')
-    .join('\n');
+  // 모든 항목 결합 (빈 항목도 포함)
+  const result = [
+    propertyInfo,
+    `• 소재지: ${location}`,
+    `• 임대료: ${rent}`,
+    `• 구조정보: ${structure}`,
+    `• 동/층: ${floorInfo}`,
+    `• 특징: ${feature}`,
+    `• 부동산: ${agency}`,
+    `• 연락처: ${contact}`
+  ].join('\n');
 
   return result;
 };
