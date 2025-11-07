@@ -27,7 +27,7 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
 
   useEffect(() => {
     setFormData(getInitialState());
-  }, [editData, isOpen]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

@@ -33,7 +33,7 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
       setFormData(getInitialState(editData));
       setErrors({});
     }
-  }, [editData, isOpen]);
+  }, [isOpen]);
 
   const validateForm = () => {
     const newErrors = {};
