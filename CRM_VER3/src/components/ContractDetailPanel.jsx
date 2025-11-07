@@ -22,6 +22,8 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   const [calculatedFee, setCalculatedFee] = useState(null);
   const [selectedPropertyType, setSelectedPropertyType] = useState('');
   const [selectedTransactionType, setSelectedTransactionType] = useState('');
+  const [editingBrokerageFee, setEditingBrokerageFee] = useState(selectedContract?.brokerageFee?.toString() || '');
+  const [editingRemainderPaymentDate, setEditingRemainderPaymentDate] = useState(selectedContract?.remainderPaymentDate || '');
 
   useEffect(() => {
     setSelectedProgressStatus(selectedContract?.progressStatus || '');
@@ -30,6 +32,8 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     setEditingMemo(selectedContract?.memo || '');
     setMemoEditMode(false);
     setActiveTab('기본정보');
+    setEditingBrokerageFee(selectedContract?.brokerageFee?.toString() || '');
+    setEditingRemainderPaymentDate(selectedContract?.remainderPaymentDate || '');
 
     // 입금일이 비어있을 때 잔금일로 자동 설정
     if (selectedContract && !selectedContract.remainderPaymentDate && selectedContract.balanceDate) {
@@ -37,6 +41,7 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
         ...selectedContract,
         remainderPaymentDate: selectedContract.balanceDate
       };
+      setEditingRemainderPaymentDate(selectedContract.balanceDate);
       onUpdateContract(updatedContract);
     }
   }, [selectedContract]);
@@ -65,6 +70,13 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
       }
     }
   }, [isCalculatorOpen, selectedContract]);
+
+  // 계산기에서 계산된 값이 변경되면 중개보수금액에 자동 설정
+  useEffect(() => {
+    if (calculatedFee !== null) {
+      setEditingBrokerageFee(calculatedFee.toString());
+    }
+  }, [calculatedFee]);
 
   if (!isOpen || !selectedContract) return null;
 
@@ -883,18 +895,58 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
               <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #4CAF50' }}>
                 💰 중개보수 정보
               </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
-                  <span style={{ fontWeight: '600', color: '#666' }}>중개보수금액:</span>
-                  <span style={{ color: '#333' }}>
-                    {selectedContract.brokerageFee ?
-                      `${(Number(selectedContract.brokerageFee) / 10000).toLocaleString()} 만원 (${Number(selectedContract.brokerageFee).toLocaleString()} 원)`
-                      : '미입력'}
-                  </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  <label style={{ fontWeight: '600', color: '#666' }}>중개보수금액 (원)</label>
+                  <input
+                    type="number"
+                    value={editingBrokerageFee}
+                    onChange={(e) => setEditingBrokerageFee(e.target.value)}
+                    onBlur={() => {
+                      if (editingBrokerageFee !== selectedContract.brokerageFee?.toString()) {
+                        onUpdateContract({
+                          ...selectedContract,
+                          brokerageFee: editingBrokerageFee ? Number(editingBrokerageFee) : null
+                        });
+                      }
+                    }}
+                    placeholder="중개보수금액 입력"
+                    style={{
+                      padding: '8px 12px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  {editingBrokerageFee && (
+                    <span style={{ fontSize: '12px', color: '#999' }}>
+                      {(Number(editingBrokerageFee) / 10000).toLocaleString()} 만원
+                    </span>
+                  )}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
-                  <span style={{ fontWeight: '600', color: '#666' }}>입금일:</span>
-                  <span style={{ color: '#333' }}>{formatDate(selectedContract.remainderPaymentDate)}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  <label style={{ fontWeight: '600', color: '#666' }}>입금일</label>
+                  <input
+                    type="date"
+                    value={editingRemainderPaymentDate}
+                    onChange={(e) => setEditingRemainderPaymentDate(e.target.value)}
+                    onBlur={() => {
+                      if (editingRemainderPaymentDate !== selectedContract.remainderPaymentDate) {
+                        onUpdateContract({
+                          ...selectedContract,
+                          remainderPaymentDate: editingRemainderPaymentDate
+                        });
+                      }
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '100px auto', gap: '10px', alignItems: 'center' }}>
                   <span style={{ fontWeight: '600', color: '#666' }}>입금상태:</span>
