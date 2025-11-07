@@ -54,6 +54,18 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     }
   }, [selectedPropertyType]);
 
+  // 계산기 열 때 기본정보에서 보증금과 월세 자동 입력
+  useEffect(() => {
+    if (isCalculatorOpen && selectedContract) {
+      if (selectedContract.deposit) {
+        setCalcDeposit(Math.floor(selectedContract.deposit / 10000).toString());
+      }
+      if (selectedContract.monthlyRent) {
+        setCalcMonthlyRent(Math.floor(selectedContract.monthlyRent / 10000).toString());
+      }
+    }
+  }, [isCalculatorOpen, selectedContract]);
+
   if (!isOpen || !selectedContract) return null;
 
   // 날짜를 "2025. 8. 13" 형식으로 변환
@@ -610,15 +622,6 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
             <div style={{ marginBottom: '15px' }}>
               <button
                 onClick={() => {
-                  // 계산기 열 때 기본정보에서 보증금과 월세 자동 입력
-                  if (!isCalculatorOpen) {
-                    if (selectedContract.deposit) {
-                      setCalcDeposit(Math.floor(selectedContract.deposit / 10000).toString());
-                    }
-                    if (selectedContract.monthlyRent) {
-                      setCalcMonthlyRent(Math.floor(selectedContract.monthlyRent / 10000).toString());
-                    }
-                  }
                   setIsCalculatorOpen(!isCalculatorOpen);
                 }}
                 style={{
