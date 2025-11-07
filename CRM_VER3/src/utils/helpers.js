@@ -46,40 +46,47 @@ export const formatPhoneNumber = (value) => {
     }
 };
 
-// 금액을 한글로 변환 (10000000 -> 1천만원)
+// 금액을 한글로 변환 (10000000 -> 1천만원, 590000 -> 59만원)
 export const formatAmountToKorean = (value) => {
     if (!value || value === '' || value === '0') return '';
 
     const amount = parseInt(value.toString().replace(/\D/g, ''));
     if (isNaN(amount)) return '';
 
-    const units = [
-        { value: 1000000000, label: '십억' },
-        { value: 100000000, label: '억' },
-        { value: 10000000, label: '천만' },
-        { value: 1000000, label: '백만' },
-        { value: 100000, label: '십만' },
-        { value: 10000, label: '만' }
-    ];
-
-    for (let unit of units) {
-        if (amount >= unit.value) {
-            const quotient = Math.floor(amount / unit.value);
-            const remainder = amount % unit.value;
-
-            if (remainder === 0) {
-                return `${quotient}${unit.label}원`;
-            } else {
-                // 나머지가 있는 경우 처리
-                const nextUnit = units.find(u => u.value === Math.floor(remainder / (unit.value / 10)));
-                if (nextUnit) {
-                    const remainderQuotient = Math.floor(remainder / (unit.value / 10));
-                    return `${quotient}${unit.label} ${remainderQuotient}${nextUnit.label}원`;
-                }
-                return `${quotient}${unit.label}원`;
-            }
-        }
+    // 가장 적절한 단위 찾기
+    if (amount >= 1000000000) {
+        const quotient = Math.floor(amount / 1000000000);
+        const remainder = amount % 1000000000;
+        if (remainder === 0) return `${quotient}십억원`;
+        const subQuotient = Math.floor(remainder / 100000000);
+        return `${quotient}십억 ${subQuotient}억원`;
+    } else if (amount >= 100000000) {
+        const quotient = Math.floor(amount / 100000000);
+        const remainder = amount % 100000000;
+        if (remainder === 0) return `${quotient}억원`;
+        const subQuotient = Math.floor(remainder / 10000000);
+        return `${quotient}억 ${subQuotient}천만원`;
+    } else if (amount >= 10000000) {
+        const quotient = Math.floor(amount / 10000000);
+        const remainder = amount % 10000000;
+        if (remainder === 0) return `${quotient}천만원`;
+        const subQuotient = Math.floor(remainder / 1000000);
+        return `${quotient}천만 ${subQuotient}백만원`;
+    } else if (amount >= 1000000) {
+        const quotient = Math.floor(amount / 1000000);
+        const remainder = amount % 1000000;
+        if (remainder === 0) return `${quotient}백만원`;
+        const subQuotient = Math.floor(remainder / 100000);
+        return `${quotient}백만 ${subQuotient}십만원`;
+    } else if (amount >= 100000) {
+        const quotient = Math.floor(amount / 100000);
+        const remainder = amount % 100000;
+        if (remainder === 0) return `${quotient}십만원`;
+        const subQuotient = Math.floor(remainder / 10000);
+        return `${quotient}십만 ${subQuotient}만원`;
+    } else if (amount >= 10000) {
+        return `${Math.floor(amount / 10000)}만원`;
+    } else {
+        return `${amount}원`;
     }
-
-    return `${amount}원`;
 };
