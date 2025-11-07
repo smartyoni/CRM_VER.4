@@ -70,7 +70,11 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
     landlordName: data?.landlordName || '',
     landlordPhone: data?.landlordPhone || '',
     tenantName: data?.tenantName || '',
-    tenantPhone: data?.tenantPhone || ''
+    tenantPhone: data?.tenantPhone || '',
+    deposit: data?.deposit || '',
+    monthlyRent: data?.monthlyRent || '',
+    contractPeriod: data?.contractPeriod || '',
+    salePrice: data?.salePrice || ''
   });
 
   const [formData, setFormData] = useState(() => getInitialState(editData));
@@ -225,6 +229,17 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <FormField label="임차인이름" name="tenantName" value={formData.tenantName} placeholder="임차인 이름을 입력해주세요" onChange={handleChange} errors={errors} />
               <FormField label="임차인번호" name="tenantPhone" value={formData.tenantPhone} placeholder="010-0000-0000" onChange={handleChange} errors={errors} />
+            </div>
+          </div>
+
+          {/* 임대차정보 섹션 */}
+          <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
+            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임대차정보</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="보증금" name="deposit" value={formData.deposit} placeholder="예: 10000000" onChange={handleChange} errors={errors} />
+              <FormField label="월세" name="monthlyRent" value={formData.monthlyRent} placeholder="예: 500000" onChange={handleChange} errors={errors} />
+              <FormField label="계약기간" name="contractPeriod" value={formData.contractPeriod} placeholder="예: 2년" onChange={handleChange} errors={errors} />
+              <FormField label="매매가" name="salePrice" value={formData.salePrice} placeholder="예: 50000000" onChange={handleChange} errors={errors} />
             </div>
           </div>
         </div>
