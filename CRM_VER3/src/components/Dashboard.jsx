@@ -549,8 +549,8 @@ const Dashboard = ({
       )}
 
 
-      {/* 기타 필터들 - 기존 카드 */}
-      {activeFilter !== '중개업무' && activeFilter !== '예정된업무' && activeFilter !== '중개보수' && (
+      {/* 기타 필터들 - 오늘업무일 때만 표시 */}
+      {activeFilter === '오늘업무' && (
         <div
           style={{
             display: 'grid',
