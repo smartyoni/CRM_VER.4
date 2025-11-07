@@ -1011,6 +1011,7 @@ function App() {
                 onDelete={handleDeleteContract}
                 selectedContractId={selectedContractId}
                 onCloseDetailPanel={handleCloseDetailPanel}
+                activeFilter={activeContractFilter}
               />
             )}
           </main>

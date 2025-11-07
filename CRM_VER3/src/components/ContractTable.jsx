@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selectedContractId, onCloseDetailPanel }) => {
+const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selectedContractId, onCloseDetailPanel, activeFilter = '전체' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedContract: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -390,6 +390,44 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
             {searchTerm || startDate || endDate ? '검색 결과가 없습니다' : '등록된 계약호실이 없습니다'}
+          </div>
+        )}
+
+        {/* 입금 통계 박스 - 전월입금, 금월입금, 다음달입금 필터일 때만 표시 */}
+        {['전월입금', '금월입금', '다음달입금'].includes(activeFilter) && filteredContracts.length > 0 && (
+          <div style={{
+            marginTop: '20px',
+            padding: '16px',
+            backgroundColor: '#f5f5f5',
+            border: '1px solid #e0e0e0',
+            borderRadius: '6px',
+            textAlign: 'center',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '30px',
+            fontSize: '14px',
+            fontWeight: '600'
+          }}>
+            <div>
+              <span style={{ color: '#666' }}>총액: </span>
+              <span style={{ color: '#000', fontWeight: '700' }}>
+                {(filteredContracts.reduce((sum, c) => sum + (Number(c.brokerageFee) || 0), 0) / 10000).toLocaleString('ko-KR')} 만원
+              </span>
+            </div>
+            <span style={{ color: '#ddd' }}>|</span>
+            <div>
+              <span style={{ color: '#666' }}>입금: </span>
+              <span style={{ color: '#2e7d32', fontWeight: '700' }}>
+                {(filteredContracts.filter(c => c.feeStatus === '입금됨').reduce((sum, c) => sum + (Number(c.brokerageFee) || 0), 0) / 10000).toLocaleString('ko-KR')} 만원
+              </span>
+            </div>
+            <span style={{ color: '#ddd' }}>|</span>
+            <div>
+              <span style={{ color: '#666' }}>미입금: </span>
+              <span style={{ color: '#c62828', fontWeight: '700' }}>
+                {(filteredContracts.filter(c => c.feeStatus === '미입금').reduce((sum, c) => sum + (Number(c.brokerageFee) || 0), 0) / 10000).toLocaleString('ko-KR')} 만원
+              </span>
+            </div>
           </div>
         )}
       </div>
