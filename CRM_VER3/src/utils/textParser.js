@@ -180,7 +180,9 @@ export const parsePropertyDetails = (text, source = 'TEN') => {
   const lines = text.split('\n').filter(line => line.trim() !== '');
 
   // 정리본 포맷 감지 (소재지:, 임대료:, 부동산: 등 라벨이 있는지 확인)
-  const isStructuredFormat = lines.some(line => line.includes('소재지:'));
+  // ⭐ 정리본 형식을 최우선으로 감지
+  const isStructuredFormat = lines.some(line => line.includes('소재지:')) ||
+                            lines.some(line => line.includes('• 소재지:'));
 
   if (isStructuredFormat) {
     // 정리본 포맷에서 추출
@@ -191,15 +193,18 @@ export const parsePropertyDetails = (text, source = 'TEN') => {
     for (const line of lines) {
       if (line.includes('소재지:')) {
         // 소재지: 건물명(주소) → 건물명 추출
+        // "• 소재지:" 형식도 처리
         const match = line.match(/소재지:\s*(.+?)\(/);
         if (match) {
           propertyName = match[1].trim();
         }
       } else if (line.includes('부동산:')) {
         // 부동산: 부동산명 → 부동산명 추출
-        agencyName = line.replace('부동산:', '').trim();
+        // "• 부동산:" 형식도 처리
+        agencyName = line.replace('•', '').replace('부동산:', '').trim();
       } else if (line.includes('연락처:') && !line.match(/\b(팩스|fax|FAX|관리소|관리팀|관리사무소)\b/i)) {
         // 연락처: 전화번호 → 전화번호 추출 (팩스, 관리소전화는 제외)
+        // "• 연락처:" 형식도 처리
         const match = line.match(/연락처:\s*([\d\-]+)/);
         if (match) {
           contactNumber = match[1].trim();
