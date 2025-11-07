@@ -446,6 +446,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
       const [propertyData, setPropertyData] = useState(
         propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] }
       );
+      const [source, setSource] = useState('TEN');
 
       const handleInfoChange = (e) => {
         const info = e.target.value;
@@ -521,9 +522,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                   ⚡ 매물정보 자동 생성
                 </button>
                 <p className="form-hint">
-                  {source === 'TEN'
-                    ? '매물 정보를 붙여넣으면 2번째 줄이 호실명, 7번째 줄이 부동산, 마지막 줄이 연락처로 자동 입력됩니다.'
-                    : '매물 정보를 붙여넣으면 첫 줄이 호실명, 중개사 섹션의 부동산명, 전화 라벨 뒤의 연락처가 자동 입력됩니다.'}
+                  원본 매물정보를 붙여넣고 아래 '⚡ 매물정보 자동 생성' 버튼을 클릭하면 호실명, 부동산, 연락처가 자동으로 입력됩니다.
                 </p>
               </div>
               <div className="form-group">
