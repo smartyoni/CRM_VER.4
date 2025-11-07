@@ -88,14 +88,10 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
 
       const handleInfoChange = (e) => {
         const info = e.target.value;
-        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(info, source);
 
         setPropertyData({
           ...propertyData,
-          info: info,
-          roomName: propertyName || propertyData.roomName,
-          agency: agencyName || propertyData.agency,
-          agencyPhone: contactNumber || propertyData.agencyPhone
+          info: info
         });
       };
 
@@ -215,7 +211,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                 </div>
                 <textarea
                   className="large"
-                  placeholder="매물 정보를 붙여넣으세요&#10;2번째 줄 → 호실명 자동입력&#10;7번째 줄 → 부동산 자동입력&#10;마지막 줄 → 연락처 자동입력"
+                  placeholder="원본 매물정보를 붙여넣으세요&#10;아래 '⚡ 매물정보 자동 생성' 버튼을 클릭하면&#10;호실명, 부동산, 연락처가 자동으로 입력됩니다"
                   value={propertyData.info}
                   onChange={handleInfoChange}
                 ></textarea>
@@ -453,14 +449,10 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
 
       const handleInfoChange = (e) => {
         const info = e.target.value;
-        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(info);
 
         setPropertyData({
           ...propertyData,
-          info: info,
-          roomName: propertyName || propertyData.roomName,
-          agency: agencyName || propertyData.agency,
-          agencyPhone: contactNumber || propertyData.agencyPhone
+          info: info
         });
       };
 
@@ -503,7 +495,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                 <label>매물정보 (전체 텍스트 붙여넣기)</label>
                 <textarea
                   className="large"
-                  placeholder="매물 정보를 붙여넣으세요&#10;2번째 줄 → 호실명 자동입력&#10;7번째 줄 → 부동산 자동입력&#10;마지막 줄 → 연락처 자동입력"
+                  placeholder="원본 매물정보를 붙여넣으세요&#10;아래 '⚡ 매물정보 자동 생성' 버튼을 클릭하면&#10;호실명, 부동산, 연락처가 자동으로 입력됩니다"
                   value={propertyData.info}
                   onChange={handleInfoChange}
                 ></textarea>
