@@ -24,6 +24,8 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   const [selectedTransactionType, setSelectedTransactionType] = useState('');
   const [editingBrokerageFee, setEditingBrokerageFee] = useState(selectedContract?.brokerageFee?.toString() || '');
   const [editingRemainderPaymentDate, setEditingRemainderPaymentDate] = useState(selectedContract?.remainderPaymentDate || '');
+  const [brokerageMemoEditMode, setBrokerageMemoEditMode] = useState(false);
+  const [editingBrokerageMemo, setEditingBrokerageMemo] = useState(selectedContract?.brokerageMemo || '');
 
   useEffect(() => {
     setSelectedProgressStatus(selectedContract?.progressStatus || '');
@@ -31,9 +33,10 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     setSelectedExpiryManagement(selectedContract?.expiryManagement || '');
     setEditingMemo(selectedContract?.memo || '');
     setMemoEditMode(false);
-    setActiveTab('기본정보');
     setEditingBrokerageFee(selectedContract?.brokerageFee?.toString() || '');
     setEditingRemainderPaymentDate(selectedContract?.remainderPaymentDate || '');
+    setBrokerageMemoEditMode(false);
+    setEditingBrokerageMemo(selectedContract?.brokerageMemo || '');
 
     // 입금일이 비어있을 때 잔금일로 자동 설정
     if (selectedContract && !selectedContract.remainderPaymentDate && selectedContract.balanceDate) {
@@ -44,7 +47,12 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
       setEditingRemainderPaymentDate(selectedContract.balanceDate);
       onUpdateContract(updatedContract);
     }
-  }, [selectedContract]);
+  }, [selectedContract?.id]);
+
+  // 새로운 계약을 선택했을 때만 탭을 초기화
+  useEffect(() => {
+    setActiveTab('기본정보');
+  }, [selectedContract?.id]);
 
   // 물건유형 변경 시 중개요율 자동 설정
   useEffect(() => {
@@ -952,7 +960,9 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   <span style={{ fontWeight: '600', color: '#666' }}>입금상태:</span>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         const updated = { ...selectedContract, feeStatus: '입금됨' };
                         onUpdateContract(updated);
                       }}
@@ -970,7 +980,9 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                       입금됨
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         const updated = { ...selectedContract, feeStatus: '미입금' };
                         onUpdateContract(updated);
                       }}
@@ -996,20 +1008,83 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
               <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #FF9800' }}>
                 📝 중개보수 메모
               </h4>
-              <div style={{
-                fontSize: '13px',
-                color: selectedContract.brokerageMemo ? '#333' : '#999',
-                padding: '10px',
-                backgroundColor: '#fffbe6',
-                borderRadius: '4px',
-                borderLeft: '3px solid #FF9800',
-                minHeight: '80px',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                lineHeight: '1.5'
-              }}>
-                {selectedContract.brokerageMemo || '중개보수 관련 메모'}
-              </div>
+              {brokerageMemoEditMode ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <textarea
+                    value={editingBrokerageMemo}
+                    onChange={(e) => setEditingBrokerageMemo(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      fontSize: '13px',
+                      border: '1px solid #FF9800',
+                      borderRadius: '4px',
+                      minHeight: '80px',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <button
+                      onClick={() => {
+                        onUpdateContract({
+                          ...selectedContract,
+                          brokerageMemo: editingBrokerageMemo
+                        });
+                        setBrokerageMemoEditMode(false);
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#4CAF50',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingBrokerageMemo(selectedContract.brokerageMemo || '');
+                        setBrokerageMemoEditMode(false);
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#999',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      취소
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onDoubleClick={() => setBrokerageMemoEditMode(true)}
+                  style={{
+                    fontSize: '13px',
+                    color: selectedContract.brokerageMemo ? '#333' : '#999',
+                    padding: '10px',
+                    backgroundColor: '#fffbe6',
+                    borderRadius: '4px',
+                    borderLeft: '3px solid #FF9800',
+                    minHeight: '80px',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    lineHeight: '1.5',
+                    cursor: 'text',
+                    userSelect: 'none'
+                  }}
+                >
+                  {selectedContract.brokerageMemo || '중개보수 관련 메모 (더블클릭으로 편집)'}
+                </div>
+              )}
             </section>
           </>
         )}
