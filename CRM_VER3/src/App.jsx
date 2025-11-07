@@ -356,6 +356,10 @@ function App() {
 
   const handleSaveContract = async (contractData) => {
     await saveContract(contractData);
+    // 로컬 상태를 즉시 업데이트하여 UI를 빠르게 반영
+    setContracts(prevContracts =>
+      prevContracts.map(c => c.id === contractData.id ? contractData : c)
+    );
   };
 
   const handleDeleteContract = async (contract) => {
