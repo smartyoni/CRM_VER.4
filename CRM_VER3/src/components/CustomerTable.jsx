@@ -365,29 +365,39 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
 
   return (
     <div className="table-container" onClick={handleCloseContextMenu}>
-        <div style={{ marginBottom: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ marginBottom: '15px', position: 'relative' }}>
             <input
                 type="text"
                 placeholder="고객명, 연락처 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ flex: 1, padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px' }}
+                style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    paddingRight: searchTerm ? '36px' : '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    boxSizing: 'border-box',
+                    fontSize: '14px'
+                }}
             />
             {searchTerm && (
                 <button
                     onClick={() => setSearchTerm('')}
                     style={{
-                        padding: '8px 12px',
+                        position: 'absolute',
+                        right: '6px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        padding: '4px 8px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        fontSize: '20px',
+                        fontSize: '18px',
                         cursor: 'pointer',
                         color: '#999',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '36px',
-                        height: '36px'
+                        justifyContent: 'center'
                     }}
                     title="검색 초기화"
                 >

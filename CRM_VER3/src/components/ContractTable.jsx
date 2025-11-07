@@ -172,36 +172,40 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
       {/* 검색 바 */}
       <div style={{ marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {/* 텍스트 검색 */}
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ position: 'relative' }}>
           <input
             type="text"
             placeholder="건물명, 호실명, 임차인이름, 임대인이름으로 검색..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              flex: 1,
+              width: '100%',
               padding: '10px 12px',
+              paddingRight: searchTerm ? '36px' : '12px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              fontSize: '14px'
+              fontSize: '14px',
+              boxSizing: 'border-box'
             }}
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
               style={{
-                padding: '8px 12px',
+                position: 'absolute',
+                right: '6px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                padding: '4px 8px',
                 backgroundColor: 'transparent',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '20px',
+                fontSize: '18px',
                 color: '#999',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                width: '36px',
-                height: '36px'
+                justifyContent: 'center'
               }}
               title="검색 초기화"
             >

@@ -118,36 +118,40 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
       </div>
 
       {/* 검색 바 */}
-      <div style={{ display: 'flex', gap: '10px' }}>
+      <div style={{ position: 'relative' }}>
         <input
           type="text"
           placeholder="건물명이나 지번으로 검색..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
+            width: '100%',
             padding: '8px 12px',
+            paddingRight: searchTerm ? '36px' : '12px',
             border: '1px solid #ddd',
             borderRadius: '4px',
             fontSize: '14px',
-            flex: 1
+            boxSizing: 'border-box'
           }}
         />
         {searchTerm && (
           <button
             onClick={() => setSearchTerm('')}
             style={{
-              padding: '8px 12px',
+              position: 'absolute',
+              right: '6px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: '4px 8px',
               backgroundColor: 'transparent',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '20px',
+              fontSize: '18px',
               color: '#999',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px'
+              justifyContent: 'center'
             }}
             title="검색 초기화"
           >
