@@ -172,6 +172,11 @@ const Dashboard = ({
       );
     });
 
+    // 중개보수 총합 (모든 계약호실의 중개보수금액 합산)
+    const totalBrokerageFee = contracts.reduce((sum, c) => {
+      return sum + (Number(c.brokerageFee) || 0);
+    }, 0);
+
     return {
       todayContracts,
       todayBalance,
@@ -190,7 +195,8 @@ const Dashboard = ({
       weekChange,
       totalCustomers: customers.length,
       totalProperties: properties.length,
-      totalContracts: contracts.length
+      totalContracts: contracts.length,
+      totalBrokerageFee
     };
   }, [customers, meetings, activities, properties, contracts]);
 
@@ -411,9 +417,17 @@ const Dashboard = ({
             })()}
           </span>
         </div>
-        <p style={{ fontSize: '13px', color: '#999', margin: '8px 0 0 0' }}>
-          마지막 업데이트: {new Date().toLocaleString('ko-KR')}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '12px' }}>
+          <p style={{ fontSize: '13px', color: '#999', margin: '0' }}>
+            마지막 업데이트: {new Date().toLocaleString('ko-KR')}
+          </p>
+          <div style={{ padding: '8px 16px', backgroundColor: '#FFF9C4', borderRadius: '6px', border: '1px solid #FBC02D' }}>
+            <span style={{ fontSize: '13px', fontWeight: '600', color: '#666' }}>중개보수 합계: </span>
+            <span style={{ fontSize: '15px', fontWeight: '700', color: '#FF6B00' }}>
+              {(stats.totalBrokerageFee / 10000).toLocaleString('ko-KR')} 만원
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* 중개업무 필터 - 5개 카드 */}
