@@ -114,6 +114,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
   };
 
   const columnConfigs = {
+    progressStatus: { width: '80px' },
     buildingName: { width: '200px' },
     contractDate: { width: '95px' },
     balanceDate: { width: '95px' },
@@ -121,7 +122,9 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
     landlordName: { width: '100px' },
     landlordPhone: { width: '120px' },
     tenantName: { width: '100px' },
-    tenantPhone: { width: '120px' }
+    tenantPhone: { width: '120px' },
+    remainderPaymentDate: { width: '95px' },
+    brokerageFee: { width: '130px' }
   };
 
   const cellStyle = (column) => ({
@@ -286,6 +289,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
           <table className="customer-table" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ backgroundColor: '#4CAF50', color: 'white' }}>
+                <SortHeader column="progressStatus" label="진행상황" />
                 <SortHeader column="buildingName" label="계약호실명" />
                 <SortHeader column="contractDate" label="계약서작성일" isDateColumn={true} />
                 <SortHeader column="balanceDate" label="잔금일" isDateColumn={true} />
@@ -294,6 +298,8 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                 <SortHeader column="landlordPhone" label="임대인번호" />
                 <SortHeader column="tenantName" label="임차인이름" />
                 <SortHeader column="tenantPhone" label="임차인번호" />
+                <SortHeader column="remainderPaymentDate" label="입금일" isDateColumn={true} />
+                <SortHeader column="brokerageFee" label="중개보수금액(원)" />
               </tr>
             </thead>
             <tbody>
@@ -316,6 +322,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                     e.currentTarget.style.backgroundColor = selectedContractId === contract.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                   }}
                 >
+                  <td style={{ ...cellStyle('progressStatus'), textAlign: 'center' }}>{contract.progressStatus || '-'}</td>
                   <td style={cellStyle('buildingName')}>{contract.buildingName && contract.roomName ? `${contract.buildingName} ${contract.roomName}` : '-'}</td>
                   <td style={dateColumnStyle('contractDate')}>{formatDate(contract.contractDate)}</td>
                   <td style={dateColumnStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
@@ -335,6 +342,10 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                         {contract.tenantPhone}
                       </a>
                     ) : '-'}
+                  </td>
+                  <td style={dateColumnStyle('remainderPaymentDate')}>{formatDate(contract.remainderPaymentDate)}</td>
+                  <td style={{ ...cellStyle('brokerageFee'), textAlign: 'right' }}>
+                    {contract.brokerageFee ? Number(contract.brokerageFee).toLocaleString() : '-'}
                   </td>
                 </tr>
               ))}
