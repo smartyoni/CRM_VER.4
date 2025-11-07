@@ -265,7 +265,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
             {selectedContract.buildingName} {selectedContract.roomName}
           </h3>
           <p style={{ fontSize: '13px', color: '#999', margin: '4px 0 0 0' }}>
-            {selectedContract.tenantName || '-'}
+            {selectedContract.tenantName || '-'} {selectedContract.propertyLocation ? `· ${selectedContract.propertyLocation}` : ''}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
