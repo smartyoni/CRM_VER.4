@@ -718,6 +718,38 @@ function App() {
       });
     }
 
+    // "금월계약" 필터: 계약서작성일이 이번 달
+    if (activeContractFilter === '금월계약') {
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+
+      return contracts.filter(c => {
+        if (!c.contractDate) return false;
+
+        const contractDate = new Date(c.contractDate);
+        return (
+          contractDate.getFullYear() === currentYear &&
+          contractDate.getMonth() === currentMonth
+        );
+      });
+    }
+
+    // "금월잔금" 필터: 잔금일이 이번 달
+    if (activeContractFilter === '금월잔금') {
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+
+      return contracts.filter(c => {
+        if (!c.balanceDate) return false;
+
+        const balanceDate = new Date(c.balanceDate);
+        return (
+          balanceDate.getFullYear() === currentYear &&
+          balanceDate.getMonth() === currentMonth
+        );
+      });
+    }
+
     return contracts.filter(c => c.progressStatus === activeContractFilter);
   })();
 

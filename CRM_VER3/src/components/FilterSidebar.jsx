@@ -124,6 +124,38 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
         }).length || 0;
       }
 
+      // "금월계약" 필터: 계약서작성일이 이번 달
+      if (status === '금월계약') {
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        return contracts?.filter(c => {
+          if (!c.contractDate) return false;
+
+          const contractDate = new Date(c.contractDate);
+          return (
+            contractDate.getFullYear() === currentYear &&
+            contractDate.getMonth() === currentMonth
+          );
+        }).length || 0;
+      }
+
+      // "금월잔금" 필터: 잔금일이 이번 달
+      if (status === '금월잔금') {
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        return contracts?.filter(c => {
+          if (!c.balanceDate) return false;
+
+          const balanceDate = new Date(c.balanceDate);
+          return (
+            balanceDate.getFullYear() === currentYear &&
+            balanceDate.getMonth() === currentMonth
+          );
+        }).length || 0;
+      }
+
       // 해당 진행상황의 계약호실 개수
       return contracts?.filter(c => c.progressStatus === status).length || 0;
     } else if (activeTab === '대시보드') {
@@ -202,7 +234,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '건물정보'
     ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
-    ? ['전체', '계약서작성', '잔금'] // 계약호실 필터 (계약서작성, 잔금)
+    ? ['전체', '계약서작성', '잔금', '금월계약', '금월잔금'] // 계약호실 필터
     : activeTab === '대시보드'
     ? ['오늘업무', '예정된업무'] // 대시보드 메뉴 (확장 가능)
     : [];
