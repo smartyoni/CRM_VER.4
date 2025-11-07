@@ -549,68 +549,6 @@ const Dashboard = ({
       )}
 
 
-      {/* 기타 필터들 - 오늘업무일 때만 표시 */}
-      {activeFilter === '오늘업무' && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '20px',
-            maxWidth: '1400px',
-            marginBottom: '30px'
-          }}
-        >
-          {/* 오늘의 미팅 */}
-          <StatCard
-            icon="📅"
-            title="오늘의 미팅"
-            number={stats.todayMeetings.length}
-            subtitle={
-              stats.todayMeetings.length > 0
-                ? `${stats.todayMeetings.length}명과 미팅 예정`
-                : '미팅이 없습니다'
-            }
-            color="#FF6B9D"
-            onClick={() => onNavigate('고객목록', '오늘미팅')}
-          />
-
-          {/* 연락할 고객 */}
-          <StatCard
-            icon="📞"
-            title="연락할 고객"
-            number={stats.needsContact.length}
-            subtitle="3일 이상 미연락"
-            color="#2196F3"
-            onClick={() => onNavigate('고객목록', '연락할고객')}
-          />
-
-          {/* 답장 대기 중 */}
-          <StatCard
-            icon="⏰"
-            title="답장 대기 중"
-            number={stats.awaitingReply.length}
-            subtitle="팔로업 필요"
-            color="#FF9800"
-            onClick={() => onNavigate('고객목록', '답장대기')}
-          />
-
-          {/* 신규 고객 (이번 주) */}
-          <StatCard
-            icon="✨"
-            title="신규 고객 (이번 주)"
-            number={stats.newThisWeek.length}
-            subtitle={
-              stats.weekChange > 0
-                ? `지난주 대비 +${stats.weekChange}명`
-                : stats.weekChange < 0
-                ? `지난주 대비 ${stats.weekChange}명`
-                : '지난주와 동일'
-            }
-            color="#4CAF50"
-            onClick={() => onNavigate('고객목록', '신규')}
-          />
-        </div>
-      )}
 
       {/* 오늘의 미팅 상세 리스트 */}
       {activeFilter === '중개업무' && stats.todayMeetings.length > 0 && (
