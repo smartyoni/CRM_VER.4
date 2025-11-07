@@ -169,7 +169,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* 기본 정보 섹션 */}
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>기본정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               {/* 건물명 - datalist를 이용한 자동완성 */}
               <div style={{ marginBottom: '16px' }}>
@@ -205,7 +204,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
 
           {/* 날짜 정보 섹션 */}
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>날짜정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <FormField label="계약서작성일" name="contractDate" type="date" value={formData.contractDate} onChange={handleChange} errors={errors} />
               <FormField label="잔금일" name="balanceDate" type="date" value={formData.balanceDate} onChange={handleChange} errors={errors} />
@@ -218,7 +216,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
 
           {/* 임대인 정보 섹션 */}
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임대인정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <FormField label="임대인이름" name="landlordName" value={formData.landlordName} placeholder="임대인 이름을 입력해주세요" onChange={handleChange} errors={errors} />
               <FormField label="임대인번호" name="landlordPhone" value={formData.landlordPhone} placeholder="010-0000-0000" onChange={handleChange} errors={errors} />
@@ -227,7 +224,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
 
           {/* 임차인 정보 섹션 */}
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임차인정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <FormField label="임차인이름" name="tenantName" value={formData.tenantName} placeholder="임차인 이름을 입력해주세요" onChange={handleChange} errors={errors} />
               <FormField label="임차인번호" name="tenantPhone" value={formData.tenantPhone} placeholder="010-0000-0000" onChange={handleChange} errors={errors} />
@@ -236,7 +232,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
 
           {/* 임대차정보 섹션 */}
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임대차정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               {/* 보증금 - 한글 표시 포함 */}
               <div style={{ marginBottom: '16px' }}>

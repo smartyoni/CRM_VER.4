@@ -98,10 +98,9 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
 
       if (status === '전체') return contracts?.length || 0;
 
-      // "계약서작성" 필터: 진행상황이 '계약서작성'이고 계약서작성일이 오늘 이후
+      // "계약서작성" 필터: 계약서작성일이 오늘 이후
       if (status === '계약서작성') {
         return contracts?.filter(c => {
-          if (c.progressStatus !== '계약서작성') return false;
           if (!c.contractDate) return false;
 
           const contractDate = new Date(c.contractDate);
@@ -234,7 +233,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '건물정보'
     ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
-    ? ['전체', '계약서작성', '잔금', '금월계약', '금월잔금'] // 계약호실 필터
+    ? ['전체', '금월계약', '금월잔금'] // 계약호실 필터
     : activeTab === '대시보드'
     ? ['오늘업무', '예정된업무'] // 대시보드 메뉴 (확장 가능)
     : [];
