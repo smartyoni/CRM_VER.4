@@ -6,6 +6,7 @@ import {
   PROPERTY_TYPES_FOR_BROKERAGE,
   TRANSACTION_TYPES
 } from '../constants';
+import { formatAmountToKorean } from '../utils/helpers';
 
 const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDelete, onUpdateContract }) => {
   const [selectedProgressStatus, setSelectedProgressStatus] = useState(selectedContract?.progressStatus || '');
@@ -29,6 +30,15 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     setEditingMemo(selectedContract?.memo || '');
     setMemoEditMode(false);
     setActiveTab('기본정보');
+
+    // 입금일이 비어있을 때 잔금일로 자동 설정
+    if (selectedContract && !selectedContract.remainderPaymentDate && selectedContract.balanceDate) {
+      const updatedContract = {
+        ...selectedContract,
+        remainderPaymentDate: selectedContract.balanceDate
+      };
+      onUpdateContract(updatedContract);
+    }
   }, [selectedContract]);
 
   // 물건유형 변경 시 중개요율 자동 설정
@@ -465,6 +475,39 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
           </div>
         </section>
 
+        {/* 계약정보 섹션 */}
+        <section>
+          <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #4CAF50' }}>
+            💰 계약 정보
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>보증금:</span>
+              <span style={{ color: '#333' }}>
+                {selectedContract.deposit ? formatAmountToKorean(selectedContract.deposit) : '-'}
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>월세:</span>
+              <span style={{ color: '#333' }}>
+                {selectedContract.monthlyRent ? formatAmountToKorean(selectedContract.monthlyRent) : '-'}
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>매매가:</span>
+              <span style={{ color: '#333' }}>
+                {selectedContract.salePrice ? formatAmountToKorean(selectedContract.salePrice) : '-'}
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>계약기간:</span>
+              <span style={{ color: '#333' }}>
+                {selectedContract.contractPeriod ? `${selectedContract.contractPeriod}개월` : '-'}
+              </span>
+            </div>
+          </div>
+        </section>
+
         {/* 추가정보 섹션 */}
         <section>
           <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #607D8B' }}>
@@ -566,7 +609,18 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
             {/* 계산 버튼 */}
             <div style={{ marginBottom: '15px' }}>
               <button
-                onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
+                onClick={() => {
+                  // 계산기 열 때 기본정보에서 보증금과 월세 자동 입력
+                  if (!isCalculatorOpen) {
+                    if (selectedContract.deposit) {
+                      setCalcDeposit(Math.floor(selectedContract.deposit / 10000).toString());
+                    }
+                    if (selectedContract.monthlyRent) {
+                      setCalcMonthlyRent(Math.floor(selectedContract.monthlyRent / 10000).toString());
+                    }
+                  }
+                  setIsCalculatorOpen(!isCalculatorOpen);
+                }}
                 style={{
                   width: '100%',
                   padding: '10px 16px',
