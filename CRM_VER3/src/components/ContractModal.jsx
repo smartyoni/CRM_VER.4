@@ -173,7 +173,7 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
                   }}
                 />
                 <datalist id="building-names">
-                  {buildings.map(building => (
+                  {[...buildings].sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(building => (
                     <option key={building.id} value={building.name} />
                   ))}
                 </datalist>
