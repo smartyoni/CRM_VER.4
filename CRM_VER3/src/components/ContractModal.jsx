@@ -67,6 +67,7 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
     contractDate: formatDateForInput(data?.contractDate) || '',
     balanceDate: formatDateForInput(data?.balanceDate) || '',
     expiryDate: formatDateForInput(data?.expiryDate) || '',
+    propertyLocation: data?.propertyLocation || '',
     landlordName: data?.landlordName || '',
     landlordPhone: data?.landlordPhone || '',
     tenantName: data?.tenantName || '',
@@ -209,8 +210,9 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
               <FormField label="계약서작성일" name="contractDate" type="date" value={formData.contractDate} onChange={handleChange} errors={errors} />
               <FormField label="잔금일" name="balanceDate" type="date" value={formData.balanceDate} onChange={handleChange} errors={errors} />
             </div>
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
               <FormField label="만기일" name="expiryDate" type="date" value={formData.expiryDate} onChange={handleChange} errors={errors} />
+              <FormField label="물건지" name="propertyLocation" type="text" value={formData.propertyLocation} placeholder="물건 위치를 입력해주세요" onChange={handleChange} errors={errors} />
             </div>
           </div>
 
