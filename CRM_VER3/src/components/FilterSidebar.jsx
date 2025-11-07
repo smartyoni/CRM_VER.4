@@ -217,130 +217,18 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       today.setHours(0, 0, 0, 0);
 
       if (status === '중개업무') {
-        // 중개업무의 6개 카드: 오늘계약 + 오늘잔금 + 오늘미팅 + 금월계약 + 금월잔금 + 예정된미팅
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-
-        // 오늘계약
-        const todayContracts = contracts?.filter(c => {
-          const contractDate = new Date(c.contractDate);
-          contractDate.setHours(0, 0, 0, 0);
-          return contractDate.getTime() === today.getTime();
-        }).length || 0;
-
-        // 오늘잔금
-        const todayBalance = contracts?.filter(c => {
-          const balanceDate = new Date(c.balanceDate);
-          balanceDate.setHours(0, 0, 0, 0);
-          return balanceDate.getTime() === today.getTime();
-        }).length || 0;
-
-        // 오늘미팅
-        const todayMeetings = meetings?.filter(m => {
-          const meetingDate = new Date(m.date);
-          meetingDate.setHours(0, 0, 0, 0);
-          return meetingDate.getTime() === today.getTime();
-        }).length || 0;
-
-        // 금월계약: 계약서작성일이 이번 달
-        const thisMonthContracts = contracts?.filter(c => {
-          if (!c.contractDate) return false;
-          const contractDate = new Date(c.contractDate);
-          return (
-            contractDate.getFullYear() === currentYear &&
-            contractDate.getMonth() === currentMonth
-          );
-        }).length || 0;
-
-        // 금월잔금: 잔금일이 이번 달
-        const thisMonthBalance = contracts?.filter(c => {
-          if (!c.balanceDate) return false;
-          const balanceDate = new Date(c.balanceDate);
-          return (
-            balanceDate.getFullYear() === currentYear &&
-            balanceDate.getMonth() === currentMonth
-          );
-        }).length || 0;
-
-        // 예정된미팅: 미팅일이 미래
-        const futureMeetings = meetings?.filter(m => {
-          const meetingDate = new Date(m.date);
-          meetingDate.setHours(0, 0, 0, 0);
-          return meetingDate.getTime() > today.getTime();
-        }).length || 0;
-
-        return todayContracts + todayBalance + todayMeetings + thisMonthContracts + thisMonthBalance + futureMeetings;
+        // 중개업무 필터에 표시되는 카드의 개수: 6개
+        return 6;
       }
 
       if (status === '중개보수') {
-        // 중개보수 카드 3개(전월입금, 금월입금, 다음달입금)의 계약 개수 합계
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-
-        // 전월입금: 입금일이 전달
-        const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
-        const previousYear = previousMonthDate.getFullYear();
-        const previousMonth = previousMonthDate.getMonth();
-
-        const lastMonthPayment = contracts?.filter(c => {
-          if (!c.remainderPaymentDate) return false;
-          const paymentDate = new Date(c.remainderPaymentDate);
-          return (
-            paymentDate.getFullYear() === previousYear &&
-            paymentDate.getMonth() === previousMonth
-          );
-        }).length || 0;
-
-        // 금월입금: 입금일이 이번 달
-        const thisMonthPayment = contracts?.filter(c => {
-          if (!c.remainderPaymentDate) return false;
-          const paymentDate = new Date(c.remainderPaymentDate);
-          return (
-            paymentDate.getFullYear() === currentYear &&
-            paymentDate.getMonth() === currentMonth
-          );
-        }).length || 0;
-
-        // 다음달입금: 입금일이 다음달
-        const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
-        const nextYear = nextMonthDate.getFullYear();
-        const nextMonth = nextMonthDate.getMonth();
-
-        const nextMonthPayment = contracts?.filter(c => {
-          if (!c.remainderPaymentDate) return false;
-          const paymentDate = new Date(c.remainderPaymentDate);
-          return (
-            paymentDate.getFullYear() === nextYear &&
-            paymentDate.getMonth() === nextMonth
-          );
-        }).length || 0;
-
-        return lastMonthPayment + thisMonthPayment + nextMonthPayment;
+        // 중개보수 필터에 표시되는 카드의 개수: 3개 (전월입금, 금월입금, 다음달입금)
+        return 3;
       }
 
       if (status === '예정된업무') {
-        // 계약예정(미래) + 잔금예정(미래) + 미팅예정(미래) 개수 합계
-        const futureContracts = contracts?.filter(c => {
-          if (!c.contractDate) return false;
-          const contractDate = new Date(c.contractDate);
-          contractDate.setHours(0, 0, 0, 0);
-          return contractDate.getTime() > today.getTime();
-        }).length || 0;
-
-        const futureBalance = contracts?.filter(c => {
-          if (!c.balanceDate) return false;
-          const balanceDate = new Date(c.balanceDate);
-          balanceDate.setHours(0, 0, 0, 0);
-          return balanceDate.getTime() > today.getTime();
-        }).length || 0;
-
-        const futureMeetings = meetings?.filter(m => {
-          const meetingDate = new Date(m.date);
-          meetingDate.setHours(0, 0, 0, 0);
-          return meetingDate.getTime() > today.getTime();
-        }).length || 0;
-
-        return futureContracts + futureBalance + futureMeetings;
+        // 예정된업무 필터에 표시되는 카드의 개수: 3개 (계약예정, 잔금예정, 미팅예정)
+        return 3;
       }
 
       return 0;
