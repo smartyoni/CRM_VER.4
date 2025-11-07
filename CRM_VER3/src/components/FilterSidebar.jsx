@@ -212,11 +212,11 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       // 해당 진행상황의 계약호실 개수
       return contracts?.filter(c => c.progressStatus === status).length || 0;
     } else if (activeTab === '대시보드') {
-      // 대시보드 필터 (오늘업무)
+      // 대시보드 필터
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      if (status === '오늘업무') {
+      if (status === '중개업무') {
         // 오늘계약 + 오늘잔금 + 오늘미팅 개수 합계
         const todayContracts = contracts?.filter(c => {
           const contractDate = new Date(c.contractDate);
@@ -237,6 +237,52 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
         }).length || 0;
 
         return todayContracts + todayBalance + todayMeetings;
+      }
+
+      if (status === '중개보수') {
+        // 중개보수 카드 3개(전월입금, 금월입금, 다음달입금)의 계약 개수 합계
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        // 전월입금: 입금일이 전달
+        const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
+        const previousYear = previousMonthDate.getFullYear();
+        const previousMonth = previousMonthDate.getMonth();
+
+        const lastMonthPayment = contracts?.filter(c => {
+          if (!c.remainderPaymentDate) return false;
+          const paymentDate = new Date(c.remainderPaymentDate);
+          return (
+            paymentDate.getFullYear() === previousYear &&
+            paymentDate.getMonth() === previousMonth
+          );
+        }).length || 0;
+
+        // 금월입금: 입금일이 이번 달
+        const thisMonthPayment = contracts?.filter(c => {
+          if (!c.remainderPaymentDate) return false;
+          const paymentDate = new Date(c.remainderPaymentDate);
+          return (
+            paymentDate.getFullYear() === currentYear &&
+            paymentDate.getMonth() === currentMonth
+          );
+        }).length || 0;
+
+        // 다음달입금: 입금일이 다음달
+        const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
+        const nextYear = nextMonthDate.getFullYear();
+        const nextMonth = nextMonthDate.getMonth();
+
+        const nextMonthPayment = contracts?.filter(c => {
+          if (!c.remainderPaymentDate) return false;
+          const paymentDate = new Date(c.remainderPaymentDate);
+          return (
+            paymentDate.getFullYear() === nextYear &&
+            paymentDate.getMonth() === nextMonth
+          );
+        }).length || 0;
+
+        return lastMonthPayment + thisMonthPayment + nextMonthPayment;
       }
 
       if (status === '예정된업무') {
