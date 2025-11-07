@@ -331,8 +331,19 @@ const Dashboard = ({
     <div style={{ padding: '20px', overflow: 'auto', height: '100%' }}>
       {/* 헤더 */}
       <div style={{ marginBottom: '30px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0 0 8px 0' }}>대시보드</h1>
-        <p style={{ fontSize: '13px', color: '#999', margin: '0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0 }}>대시보드</h1>
+          <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff0000' }}>
+            {(() => {
+              const today = new Date();
+              const year = today.getFullYear();
+              const month = String(today.getMonth() + 1).padStart(2, '0');
+              const date = String(today.getDate()).padStart(2, '0');
+              return `${year}년 ${month}월 ${date}일`;
+            })()}
+          </span>
+        </div>
+        <p style={{ fontSize: '13px', color: '#999', margin: '8px 0 0 0' }}>
           마지막 업데이트: {new Date().toLocaleString('ko-KR')}
         </p>
       </div>
