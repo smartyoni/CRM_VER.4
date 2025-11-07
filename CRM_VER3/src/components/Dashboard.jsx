@@ -215,7 +215,7 @@ const Dashboard = ({
       setModalOpen(false);
     } else if (type === 'meeting') {
       // 고객 ID 전달하여 상세패널 직접 열기
-      onNavigate('고객목록', '오늘미팅', item.customerId, 'customer');
+      onNavigate('고객관리', '오늘미팅', item.customerId, 'customer');
       setModalOpen(false);
     }
   };

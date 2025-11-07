@@ -18,7 +18,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
 
   const getStatusCount = (status) => {
     // 고객목록 필터
-    if (activeTab === '고객목록') {
+    if (activeTab === '고객관리') {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -247,7 +247,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
   };
 
   // activeTab에 따라 다른 필터 목록 표시
-  const allStatuses = activeTab === '고객목록'
+  const allStatuses = activeTab === '고객관리'
     ? ['전체', '오늘활동', '오늘미팅', '미팅일확정', '즐겨찾기', '답장대기', '보류']
     : activeTab === '매물장'
     ? getPropertyCategories() // 매물장 필터 (구분별 동적 생성)

@@ -90,7 +90,7 @@ function App() {
   const [activeDashboardFilter, setActiveDashboardFilter] = useState('오늘업무');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객목록', '매물장', '건물정보'
+  const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객관리', '매물장', '건물정보'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
   const [isContractImporterOpen, setIsContractImporterOpen] = useState(false);
@@ -202,7 +202,7 @@ function App() {
   }, [contracts]);
 
   const handleFilterChange = (filter) => {
-    if (activeTab === '고객목록') {
+    if (activeTab === '고객관리') {
       setActiveCustomerFilter(filter);
       setActiveProgressFilter(null); // 상태 변경 시 진행상황 필터 초기화
     } else if (activeTab === '매물장') {
@@ -870,7 +870,7 @@ function App() {
         <FilterSidebar
           activeTab={activeTab}
           activeFilter={
-            activeTab === '고객목록' ? activeCustomerFilter :
+            activeTab === '고객관리' ? activeCustomerFilter :
             activeTab === '매물장' ? activePropertyFilter :
             activeTab === '건물정보' ? activeBuildingFilter :
             activeTab === '계약호실' ? activeContractFilter :
@@ -895,9 +895,9 @@ function App() {
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <h1>
-                {activeTab === '대시보드' ? '대시보드' : activeTab === '고객목록' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
+                {activeTab === '대시보드' ? '대시보드' : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
               </h1>
-              {activeTab === '고객목록' && activeCustomerFilter !== '전체' && (
+              {activeTab === '고객관리' && activeCustomerFilter !== '전체' && (
                 <span style={{ fontSize: '13px', color: '#7f8c8d' }}>
                   필터: {activeCustomerFilter} - {getFilterDescription(activeCustomerFilter)}
                 </span>
@@ -906,7 +906,7 @@ function App() {
             <div className="header-actions">
               {activeTab === '대시보드' ? (
                 <></>
-              ) : activeTab === '고객목록' ? (
+              ) : activeTab === '고객관리' ? (
                 <>
                   <button onClick={() => handleOpenModal()} className="btn-primary">+ 고객 추가</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
@@ -963,7 +963,7 @@ function App() {
                   }
                 }}
               />
-            ) : activeTab === '고객목록' ? (
+            ) : activeTab === '고객관리' ? (
               <CustomerTable
                 customers={filteredCustomers}
                 onSelectCustomer={handleSelectCustomer}
@@ -1074,19 +1074,19 @@ function App() {
           📄 계약호실
         </button>
         <button
-          onClick={() => setActiveTab('고객목록')}
+          onClick={() => setActiveTab('고객관리')}
           style={{
             padding: '12px 24px',
             fontSize: '18px',
             fontWeight: 'bold',
-            color: activeTab === '고객목록' ? '#000' : '#888',
+            color: activeTab === '고객관리' ? '#000' : '#888',
             border: 'none',
-            backgroundColor: activeTab === '고객목록' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
-            borderBottom: activeTab === '고객목록' ? '4px solid #FF6B9D' : '4px solid transparent',
-            borderRadius: activeTab === '고객목록' ? '8px 8px 0 0' : '0',
+            backgroundColor: activeTab === '고객관리' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
+            borderBottom: activeTab === '고객관리' ? '4px solid #FF6B9D' : '4px solid transparent',
+            borderRadius: activeTab === '고객관리' ? '8px 8px 0 0' : '0',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
-            boxShadow: activeTab === '고객목록' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            boxShadow: activeTab === '고객관리' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
             WebkitAppearance: 'none',
             appearance: 'none'
           }}
@@ -1138,7 +1138,7 @@ function App() {
         </button>
       </div>
 
-      {activeTab === '고객목록' && (
+      {activeTab === '고객관리' && (
         <>
           <CustomerDetailPanel
             selectedCustomer={selectedCustomer}
