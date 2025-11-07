@@ -124,7 +124,8 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
     tenantName: { width: '100px' },
     tenantPhone: { width: '120px' },
     remainderPaymentDate: { width: '95px' },
-    brokerageFee: { width: '130px' }
+    brokerageFee: { width: '130px' },
+    feeStatus: { width: '90px' }
   };
 
   const cellStyle = (column) => ({
@@ -300,6 +301,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                 <SortHeader column="tenantPhone" label="임차인번호" />
                 <SortHeader column="remainderPaymentDate" label="입금일" isDateColumn={true} />
                 <SortHeader column="brokerageFee" label="중개보수금액(원)" />
+                <SortHeader column="feeStatus" label="입금상태" />
               </tr>
             </thead>
             <tbody>
@@ -346,6 +348,18 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                   <td style={dateColumnStyle('remainderPaymentDate')}>{formatDate(contract.remainderPaymentDate)}</td>
                   <td style={{ ...cellStyle('brokerageFee'), textAlign: 'right' }}>
                     {contract.brokerageFee ? Number(contract.brokerageFee).toLocaleString() : '-'}
+                  </td>
+                  <td style={{ ...cellStyle('feeStatus'), textAlign: 'center' }}>
+                    <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '3px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      backgroundColor: contract.feeStatus === '입금됨' ? '#c8e6c9' : '#ffcccc',
+                      color: contract.feeStatus === '입금됨' ? '#2e7d32' : '#c62828'
+                    }}>
+                      {contract.feeStatus || '-'}
+                    </span>
                   </td>
                 </tr>
               ))}
