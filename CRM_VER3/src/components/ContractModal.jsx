@@ -94,10 +94,19 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: value
+      };
+
+      // 잔금일이 변경되면 만기일도 함께 설정
+      if (name === 'balanceDate' && value) {
+        updated.expiryDate = value;
+      }
+
+      return updated;
+    });
 
     // 에러 메시지 제거
     if (errors[name]) {
