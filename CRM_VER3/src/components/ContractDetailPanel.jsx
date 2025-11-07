@@ -921,7 +921,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   />
                   {editingBrokerageFee && (
                     <span style={{ fontSize: '12px', color: '#999' }}>
-                      {(Number(editingBrokerageFee) / 10000).toLocaleString()} 만원
+                      {Number(editingBrokerageFee).toLocaleString('ko-KR')} 원
                     </span>
                   )}
                 </div>
