@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatPhoneNumber } from '../utils/helpers';
 
 // FormField 컴포넌트를 외부에 정의하여 매 렌더링마다 재생성되지 않도록 함
 // 이를 통해 한글 IME 입력이 정상적으로 작동함
@@ -94,15 +95,20 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // 전화번호 필드인 경우 포맷팅 적용
+    const isPhoneField = ['landlordPhone', 'tenantPhone'].includes(name);
+    const formattedValue = isPhoneField ? formatPhoneNumber(value) : value;
+
     setFormData(prev => {
       const updated = {
         ...prev,
-        [name]: value
+        [name]: formattedValue
       };
 
       // 잔금일이 변경되면 만기일도 함께 설정
-      if (name === 'balanceDate' && value) {
-        updated.expiryDate = value;
+      if (name === 'balanceDate' && formattedValue) {
+        updated.expiryDate = formattedValue;
       }
 
       return updated;

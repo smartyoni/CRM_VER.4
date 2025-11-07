@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { generateId } from '../utils/helpers';
+import { generateId, formatPhoneNumber } from '../utils/helpers';
 import { PROPERTY_CATEGORIES, PROPERTY_TYPES } from '../constants';
 
 const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
@@ -37,12 +37,7 @@ const PropertyModal = ({ isOpen, onClose, onSave, editData }) => {
   };
 
   const handlePhoneChange = (e, fieldName) => {
-    let value = e.target.value.replace(/[^0-9]/g, '');
-    if (value.length > 3 && value.length <= 7) {
-      value = `${value.slice(0, 3)}-${value.slice(3)}`;
-    } else if (value.length > 7) {
-      value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
-    }
+    const value = formatPhoneNumber(e.target.value);
     setFormData(prev => ({ ...prev, [fieldName]: value }));
   };
 

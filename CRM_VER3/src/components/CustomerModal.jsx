@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SOURCES, PROPERTY_TYPES, STATUSES, PROGRESS_STATUSES } from '../constants';
 import { validateCustomer } from '../utils/validation';
-import { generateId } from '../utils/helpers';
+import { generateId, formatPhoneNumber } from '../utils/helpers';
 
 const CustomerModal = ({ isOpen, onClose, onSave, editData }) => {
   const getInitialState = () => ({
@@ -34,13 +34,9 @@ const CustomerModal = ({ isOpen, onClose, onSave, editData }) => {
   };
 
   const handlePhoneChange = (e) => {
-    let value = e.target.value.replace(/[^0-9]/g, '');
-    if (value.length > 3 && value.length <= 7) {
-        value = `${value.slice(0, 3)}-${value.slice(3)}`;
-    } else if (value.length > 7) {
-        value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
-    }
-    setFormData(prev => ({ ...prev, phone: value }));
+    const { name, value } = e.target;
+    const formattedValue = formatPhoneNumber(value);
+    setFormData(prev => ({ ...prev, [name]: formattedValue }));
   };
 
   const handleSubmit = () => {
