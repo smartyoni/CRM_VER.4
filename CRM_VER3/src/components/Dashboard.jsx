@@ -258,11 +258,11 @@ const Dashboard = ({
       >
         {/* 헤더 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${color}40`, paddingBottom: '8px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <h3 style={{ fontSize: '17px', fontWeight: '1000', color, margin: 0 }}>{title}</h3>
             {brokerageFeeTotal > 0 && (
-              <span style={{ fontSize: '12px', fontWeight: '600', color: '#FF6B00' }}>
-                중개보수: {(brokerageFeeTotal / 10000).toLocaleString('ko-KR')} 만원
+              <span style={{ fontSize: '15px', fontWeight: '700', color: '#FF6B00' }}>
+                {(brokerageFeeTotal / 10000).toLocaleString('ko-KR')} 만원
               </span>
             )}
           </div>
