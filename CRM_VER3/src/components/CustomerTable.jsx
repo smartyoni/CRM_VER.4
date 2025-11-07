@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { PROGRESS_STATUSES } from '../constants';
 
-const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selectedCustomerId, activeFilter, activeProgressFilter, onProgressFilterChange, allCustomers, onFavoriteCustomer, activities, meetings }) => {
+const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selectedCustomerId, activeFilter, activeProgressFilter, onProgressFilterChange, allCustomers, onFavoriteCustomer, activities, meetings, onCloseDetailPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedCustomer: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -371,6 +371,7 @@ const CustomerTable = ({ customers, onSelectCustomer, onEdit, onDelete, selected
                 placeholder="고객명, 연락처 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => onCloseDetailPanel && onCloseDetailPanel()}
                 style={{
                     width: '100%',
                     padding: '8px 12px',

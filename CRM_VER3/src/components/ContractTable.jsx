@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selectedContractId }) => {
+const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selectedContractId, onCloseDetailPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedContract: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -178,6 +178,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
             placeholder="건물명, 호실명, 임차인이름, 임대인이름으로 검색..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => onCloseDetailPanel && onCloseDetailPanel()}
             style={{
               width: '100%',
               padding: '10px 12px',

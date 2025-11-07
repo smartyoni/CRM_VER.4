@@ -346,6 +346,14 @@ function App() {
     setEditingContract(null);
   };
 
+  // 상세패널 닫기 핸들러 (검색창 클릭 시 호출)
+  const handleCloseDetailPanel = () => {
+    setSelectedCustomerId(null);
+    setSelectedPropertyId(null);
+    setSelectedBuildingId(null);
+    setSelectedContractId(null);
+  };
+
   const handleSaveContract = async (contractData) => {
     await saveContract(contractData);
   };
@@ -837,6 +845,7 @@ function App() {
                 onFavoriteCustomer={handleFavoriteCustomer}
                 activities={activities}
                 meetings={meetings}
+                onCloseDetailPanel={handleCloseDetailPanel}
               />
             ) : activeTab === '매물장' ? (
               <PropertyTable
@@ -848,6 +857,7 @@ function App() {
                 activeFilter={activePropertyFilter}
                 onFilterChange={handleFilterChange}
                 allProperties={properties}
+                onCloseDetailPanel={handleCloseDetailPanel}
               />
             ) : activeTab === '건물정보' ? (
               <BuildingTable
@@ -859,6 +869,7 @@ function App() {
                 activeFilter={activeBuildingFilter}
                 onFilterChange={handleFilterChange}
                 allBuildings={buildings}
+                onCloseDetailPanel={handleCloseDetailPanel}
               />
             ) : (
               <ContractTable
@@ -867,6 +878,7 @@ function App() {
                 onEdit={handleOpenContractModal}
                 onDelete={handleDeleteContract}
                 selectedContractId={selectedContractId}
+                onCloseDetailPanel={handleCloseDetailPanel}
               />
             )}
           </main>

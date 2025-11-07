@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selectedPropertyId, activeFilter, onFilterChange, allProperties }) => {
+const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selectedPropertyId, activeFilter, onFilterChange, allProperties, onCloseDetailPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedProperty: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -237,6 +237,7 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
           placeholder="건물명, 소유자명, 번호로 검색..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => onCloseDetailPanel && onCloseDetailPanel()}
           style={{
             width: '100%',
             padding: '8px 12px',

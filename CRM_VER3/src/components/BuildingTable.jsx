@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { BUILDING_LOCATIONS, BUILDING_TYPES } from '../constants';
 
-const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selectedBuildingId, activeFilter, onFilterChange, allBuildings }) => {
+const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selectedBuildingId, activeFilter, onFilterChange, allBuildings, onCloseDetailPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedBuilding: null });
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
@@ -124,6 +124,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
           placeholder="건물명이나 지번으로 검색..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => onCloseDetailPanel && onCloseDetailPanel()}
           style={{
             width: '100%',
             padding: '8px 12px',
