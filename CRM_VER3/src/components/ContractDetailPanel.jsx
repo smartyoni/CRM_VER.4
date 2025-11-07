@@ -27,6 +27,9 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   const [brokerageMemoEditMode, setBrokerageMemoEditMode] = useState(false);
   const [editingBrokerageMemo, setEditingBrokerageMemo] = useState(selectedContract?.brokerageMemo || '');
   const [selectedFeeStatus, setSelectedFeeStatus] = useState(selectedContract?.feeStatus || '미입금');
+  const [newHistoryTime, setNewHistoryTime] = useState('');
+  const [newHistoryContent, setNewHistoryContent] = useState('');
+  const [editingHistoryItem, setEditingHistoryItem] = useState(null);
 
   useEffect(() => {
     setSelectedProgressStatus(selectedContract?.progressStatus || '');
@@ -317,7 +320,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
 
       {/* 탭 네비게이션 */}
       <div style={{ display: 'flex', gap: '4px', padding: '12px 15px', backgroundColor: '#e3f2fd', borderRadius: '8px', margin: '15px', border: '1px solid #bbdefb' }}>
-        {['기본정보', '중개보수', '연장관리'].map((tab) => (
+        {['기본정보', 'History', '중개보수', '연장관리'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -635,6 +638,232 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
             </div>
           )}
         </section>
+          </>
+        )}
+
+        {activeTab === 'History' && (
+          <>
+            {/* 히스토리 항목 입력 폼 */}
+            <section style={{ padding: '15px', backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0', borderRadius: '6px' }}>
+              <h4 style={{ margin: '0 0 15px 0', fontSize: '15px', fontWeight: '700' }}>📝 히스토리 추가</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '4px' }}>시간</label>
+                  <input
+                    type="datetime-local"
+                    value={newHistoryTime}
+                    onChange={(e) => setNewHistoryTime(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '4px' }}>내용</label>
+                  <textarea
+                    value={newHistoryContent}
+                    onChange={(e) => setNewHistoryContent(e.target.value)}
+                    placeholder="진행 내용을 입력하세요..."
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', minHeight: '60px', resize: 'vertical', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                  <button
+                    onClick={() => {
+                      setNewHistoryTime('');
+                      setNewHistoryContent('');
+                    }}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      backgroundColor: '#e0e0e0',
+                      color: '#333',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    초기화
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!newHistoryTime || !newHistoryContent.trim()) {
+                        alert('시간과 내용을 모두 입력해주세요.');
+                        return;
+                      }
+                      const historyCards = selectedContract.historyCards || [];
+                      const historyTime = new Date(newHistoryTime);
+                      const cardDate = historyTime.toISOString().split('T')[0];
+                      let targetCard = historyCards.find(card => card.date === cardDate);
+
+                      if (!targetCard) {
+                        targetCard = {
+                          id: `hist_${cardDate}`,
+                          date: cardDate,
+                          items: [],
+                          createdAt: new Date().toISOString()
+                        };
+                        historyCards.push(targetCard);
+                      }
+
+                      targetCard.items.push({
+                        id: `item_${Date.now()}`,
+                        time: newHistoryTime,
+                        content: newHistoryContent,
+                        createdAt: new Date().toISOString()
+                      });
+
+                      onUpdateContract({ ...selectedContract, historyCards });
+                      setNewHistoryTime('');
+                      setNewHistoryContent('');
+                    }}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      backgroundColor: '#2196F3',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    추가
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* 날짜별 히스토리 카드 목록 (최신순) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {selectedContract.historyCards && selectedContract.historyCards.length > 0 ? (
+                (() => {
+                  const sortedCards = [...(selectedContract.historyCards || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+                  return sortedCards.map(card => {
+                    const cardDate = new Date(card.date);
+                    const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][cardDate.getDay()];
+                    const formattedDate = `${cardDate.getFullYear()}년 ${String(cardDate.getMonth() + 1).padStart(2, '0')}월 ${String(cardDate.getDate()).padStart(2, '0')}일 (${dayOfWeek})`;
+
+                    return (
+                      <section key={card.id} style={{ padding: '15px', border: '1px solid #e0e0e0', borderLeft: '3px solid #2196F3', borderRadius: '6px', backgroundColor: '#fafafa' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>📋 {formattedDate}</h4>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('이 카드의 모든 히스토리를 삭제하시겠습니까?')) {
+                                const updatedCards = (selectedContract.historyCards || []).filter(c => c.id !== card.id);
+                                onUpdateContract({ ...selectedContract, historyCards: updatedCards });
+                              }
+                            }}
+                            style={{
+                              padding: '4px 12px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              backgroundColor: '#ffebee',
+                              color: '#c62828',
+                              border: '1px solid #ef5350',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            카드 삭제
+                          </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {card.items && card.items.length > 0 ? (
+                            [...card.items].reverse().map(item => {
+                              const itemTime = new Date(item.time);
+                              const formattedTime = `${String(itemTime.getHours()).padStart(2, '0')}:${String(itemTime.getMinutes()).padStart(2, '0')}`;
+
+                              return (
+                                <div key={item.id} style={{ padding: '10px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #e0e0e0' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#2196F3' }}>{formattedTime}</span>
+                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                      <button
+                                        onClick={() => {
+                                          const newContent = prompt('히스토리 내용을 수정하세요:', item.content);
+                                          if (newContent !== null) {
+                                            const updatedCards = selectedContract.historyCards.map(c => {
+                                              if (c.id === card.id) {
+                                                return {
+                                                  ...c,
+                                                  items: c.items.map(i => i.id === item.id ? { ...i, content: newContent } : i)
+                                                };
+                                              }
+                                              return c;
+                                            });
+                                            onUpdateContract({ ...selectedContract, historyCards: updatedCards });
+                                          }
+                                        }}
+                                        style={{
+                                          padding: '4px 8px',
+                                          fontSize: '11px',
+                                          fontWeight: '600',
+                                          backgroundColor: '#e3f2fd',
+                                          color: '#1976d2',
+                                          border: '1px solid #90caf9',
+                                          borderRadius: '3px',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s'
+                                        }}
+                                      >
+                                        수정
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (window.confirm('이 항목을 삭제하시겠습니까?')) {
+                                            const updatedCards = selectedContract.historyCards.map(c => {
+                                              if (c.id === card.id) {
+                                                const updatedItems = c.items.filter(i => i.id !== item.id);
+                                                if (updatedItems.length === 0) {
+                                                  return null;
+                                                }
+                                                return { ...c, items: updatedItems };
+                                              }
+                                              return c;
+                                            }).filter(Boolean);
+                                            onUpdateContract({ ...selectedContract, historyCards: updatedCards });
+                                          }
+                                        }}
+                                        style={{
+                                          padding: '4px 8px',
+                                          fontSize: '11px',
+                                          fontWeight: '600',
+                                          backgroundColor: '#ffebee',
+                                          color: '#c62828',
+                                          border: '1px solid #ef5350',
+                                          borderRadius: '3px',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s'
+                                        }}
+                                      >
+                                        삭제
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#555', whiteSpace: 'pre-line', lineHeight: '1.5' }}>{item.content}</p>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <p style={{ margin: 0, fontSize: '13px', color: '#999', textAlign: 'center', padding: '10px' }}>이 날짜의 히스토리가 없습니다</p>
+                          )}
+                        </div>
+                      </section>
+                    );
+                  });
+                })()
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                  <p style={{ margin: 0, fontSize: '14px' }}>히스토리가 없습니다</p>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '12px' }}>위의 폼에서 첫 항목을 추가해주세요.</p>
+                </div>
+              )}
+            </div>
           </>
         )}
 
