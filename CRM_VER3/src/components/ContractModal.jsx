@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatPhoneNumber } from '../utils/helpers';
+import { formatPhoneNumber, formatAmountToKorean } from '../utils/helpers';
 
 // FormField 컴포넌트를 외부에 정의하여 매 렌더링마다 재생성되지 않도록 함
 // 이를 통해 한글 IME 입력이 정상적으로 작동함
@@ -236,8 +236,54 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임대차정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="보증금" name="deposit" value={formData.deposit} placeholder="예: 10000000" onChange={handleChange} errors={errors} />
-              <FormField label="월세" name="monthlyRent" value={formData.monthlyRent} placeholder="예: 500000" onChange={handleChange} errors={errors} />
+              {/* 보증금 - 한글 표시 포함 */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
+                  <span>보증금</span>
+                  {formData.deposit && <span style={{ color: '#f44336', fontSize: '13px', fontWeight: 'normal' }}>{formatAmountToKorean(formData.deposit)}</span>}
+                </label>
+                <input
+                  type="text"
+                  name="deposit"
+                  value={formData.deposit}
+                  onChange={handleChange}
+                  placeholder="예: 10000000"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: errors.deposit ? '1px solid #f44336' : '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {errors.deposit && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.deposit}</div>}
+              </div>
+
+              {/* 월세 - 한글 표시 포함 */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
+                  <span>월세</span>
+                  {formData.monthlyRent && <span style={{ color: '#f44336', fontSize: '13px', fontWeight: 'normal' }}>{formatAmountToKorean(formData.monthlyRent)}</span>}
+                </label>
+                <input
+                  type="text"
+                  name="monthlyRent"
+                  value={formData.monthlyRent}
+                  onChange={handleChange}
+                  placeholder="예: 500000"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: errors.monthlyRent ? '1px solid #f44336' : '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {errors.monthlyRent && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.monthlyRent}</div>}
+              </div>
+
               <FormField label="계약기간" name="contractPeriod" value={formData.contractPeriod} placeholder="예: 2년" onChange={handleChange} errors={errors} />
               <FormField label="매매가" name="salePrice" value={formData.salePrice} placeholder="예: 50000000" onChange={handleChange} errors={errors} />
             </div>

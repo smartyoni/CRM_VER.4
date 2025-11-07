@@ -45,3 +45,41 @@ export const formatPhoneNumber = (value) => {
         return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
     }
 };
+
+// 금액을 한글로 변환 (10000000 -> 1천만원)
+export const formatAmountToKorean = (value) => {
+    if (!value || value === '' || value === '0') return '';
+
+    const amount = parseInt(value.toString().replace(/\D/g, ''));
+    if (isNaN(amount)) return '';
+
+    const units = [
+        { value: 1000000000, label: '십억' },
+        { value: 100000000, label: '억' },
+        { value: 10000000, label: '천만' },
+        { value: 1000000, label: '백만' },
+        { value: 100000, label: '십만' },
+        { value: 10000, label: '만' }
+    ];
+
+    for (let unit of units) {
+        if (amount >= unit.value) {
+            const quotient = Math.floor(amount / unit.value);
+            const remainder = amount % unit.value;
+
+            if (remainder === 0) {
+                return `${quotient}${unit.label}원`;
+            } else {
+                // 나머지가 있는 경우 처리
+                const nextUnit = units.find(u => u.value === Math.floor(remainder / (unit.value / 10)));
+                if (nextUnit) {
+                    const remainderQuotient = Math.floor(remainder / (unit.value / 10));
+                    return `${quotient}${unit.label} ${remainderQuotient}${nextUnit.label}원`;
+                }
+                return `${quotient}${unit.label}원`;
+            }
+        }
+    }
+
+    return `${amount}원`;
+};
