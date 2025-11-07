@@ -1,5 +1,52 @@
 import React, { useState, useEffect } from 'react';
 
+// FormField 컴포넌트를 외부에 정의하여 매 렌더링마다 재생성되지 않도록 함
+// 이를 통해 한글 IME 입력이 정상적으로 작동함
+const FormField = ({ label, name, type = 'text', value, placeholder = '', required = false, options = null, onChange, errors }) => (
+  <div style={{ marginBottom: '16px' }}>
+    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
+      {label} {required && <span style={{ color: '#f44336' }}>*</span>}
+    </label>
+    {options ? (
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        style={{
+          width: '100%',
+          padding: '10px',
+          border: errors[name] ? '1px solid #f44336' : '1px solid #ddd',
+          borderRadius: '4px',
+          fontSize: '14px',
+          boxSizing: 'border-box'
+        }}
+      >
+        <option value="">선택하세요</option>
+        {options.map(opt => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+    ) : (
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        style={{
+          width: '100%',
+          padding: '10px',
+          border: errors[name] ? '1px solid #f44336' : '1px solid #ddd',
+          borderRadius: '4px',
+          fontSize: '14px',
+          boxSizing: 'border-box'
+        }}
+      />
+    )}
+    {errors[name] && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors[name]}</div>}
+  </div>
+);
+
 const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
   // 날짜 형식 변환 헬퍼 함수
   const formatDateForInput = (dateStr) => {
@@ -75,51 +122,6 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
 
   if (!isOpen) return null;
 
-  const FormField = ({ label, name, type = 'text', value, placeholder = '', required = false, options = null }) => (
-    <div style={{ marginBottom: '16px' }}>
-      <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
-        {label} {required && <span style={{ color: '#f44336' }}>*</span>}
-      </label>
-      {options ? (
-        <select
-          name={name}
-          value={value}
-          onChange={handleChange}
-          style={{
-            width: '100%',
-            padding: '10px',
-            border: errors[name] ? '1px solid #f44336' : '1px solid #ddd',
-            borderRadius: '4px',
-            fontSize: '14px',
-            boxSizing: 'border-box'
-          }}
-        >
-          <option value="">선택하세요</option>
-          {options.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      ) : (
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          style={{
-            width: '100%',
-            padding: '10px',
-            border: errors[name] ? '1px solid #f44336' : '1px solid #ddd',
-            borderRadius: '4px',
-            fontSize: '14px',
-            boxSizing: 'border-box'
-          }}
-        />
-      )}
-      {errors[name] && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors[name]}</div>}
-    </div>
-  );
-
   return (
     <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
       <div className="modal-content" style={{ backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 2px 16px rgba(0,0,0,0.2)', maxWidth: '800px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
@@ -149,8 +151,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>기본정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="건물명" name="buildingName" value={formData.buildingName} placeholder="건물명을 입력해주세요" required />
-              <FormField label="호실명" name="roomName" value={formData.roomName} placeholder="예: 101, 205-A" required />
+              <FormField label="건물명" name="buildingName" value={formData.buildingName} placeholder="건물명을 입력해주세요" required onChange={handleChange} errors={errors} />
+              <FormField label="호실명" name="roomName" value={formData.roomName} placeholder="예: 101, 205-A" required onChange={handleChange} errors={errors} />
             </div>
           </div>
 
@@ -158,11 +160,11 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>날짜정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="계약서작성일" name="contractDate" type="date" value={formData.contractDate} />
-              <FormField label="잔금일" name="balanceDate" type="date" value={formData.balanceDate} />
+              <FormField label="계약서작성일" name="contractDate" type="date" value={formData.contractDate} onChange={handleChange} errors={errors} />
+              <FormField label="잔금일" name="balanceDate" type="date" value={formData.balanceDate} onChange={handleChange} errors={errors} />
             </div>
             <div style={{ marginTop: '16px' }}>
-              <FormField label="만기일" name="expiryDate" type="date" value={formData.expiryDate} />
+              <FormField label="만기일" name="expiryDate" type="date" value={formData.expiryDate} onChange={handleChange} errors={errors} />
             </div>
           </div>
 
@@ -170,8 +172,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임대인정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="임대인이름" name="landlordName" value={formData.landlordName} placeholder="임대인 이름을 입력해주세요" />
-              <FormField label="임대인번호" name="landlordPhone" value={formData.landlordPhone} placeholder="010-0000-0000" />
+              <FormField label="임대인이름" name="landlordName" value={formData.landlordName} placeholder="임대인 이름을 입력해주세요" onChange={handleChange} errors={errors} />
+              <FormField label="임대인번호" name="landlordPhone" value={formData.landlordPhone} placeholder="010-0000-0000" onChange={handleChange} errors={errors} />
             </div>
           </div>
 
@@ -179,8 +181,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData }) => {
           <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>임차인정보</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <FormField label="임차인이름" name="tenantName" value={formData.tenantName} placeholder="임차인 이름을 입력해주세요" />
-              <FormField label="임차인번호" name="tenantPhone" value={formData.tenantPhone} placeholder="010-0000-0000" />
+              <FormField label="임차인이름" name="tenantName" value={formData.tenantName} placeholder="임차인 이름을 입력해주세요" onChange={handleChange} errors={errors} />
+              <FormField label="임차인번호" name="tenantPhone" value={formData.tenantPhone} placeholder="010-0000-0000" onChange={handleChange} errors={errors} />
             </div>
           </div>
         </div>
