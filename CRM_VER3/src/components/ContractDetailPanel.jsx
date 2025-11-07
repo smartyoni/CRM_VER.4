@@ -782,7 +782,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>계산 결과</div>
                     <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2196F3' }}>
-                      {Number(calculatedFee).toLocaleString()} 만원
+                      {(calculatedFee * 10000).toLocaleString('ko-KR')} 원
                     </div>
                   </div>
                 )}
