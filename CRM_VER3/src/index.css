@@ -101,6 +101,8 @@ button {
   border-radius: 5px;
   cursor: pointer;
   margin-bottom: 5px;
+  color: #000;
+  font-weight: bold;
 }
 
 .filter-item:hover {

@@ -87,7 +87,7 @@ function App() {
   const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
   const [activeBuildingFilter, setActiveBuildingFilter] = useState('전체');
   const [activeContractFilter, setActiveContractFilter] = useState('전체');
-  const [activeDashboardFilter, setActiveDashboardFilter] = useState('오늘업무');
+  const [activeDashboardFilter, setActiveDashboardFilter] = useState('중개업무');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객관리', '매물장', '건물정보'
@@ -1037,7 +1037,7 @@ function App() {
             padding: '12px 24px',
             fontSize: '18px',
             fontWeight: 'bold',
-            color: activeTab === '대시보드' ? '#000' : '#888',
+            color: '#000',
             border: 'none',
             backgroundColor: activeTab === '대시보드' ? 'rgba(76, 175, 80, 0.12)' : 'transparent',
             borderBottom: activeTab === '대시보드' ? '4px solid #4CAF50' : '4px solid transparent',
@@ -1058,7 +1058,7 @@ function App() {
             padding: '12px 24px',
             fontSize: '18px',
             fontWeight: 'bold',
-            color: activeTab === '계약호실' ? '#000' : '#888',
+            color: '#000',
             border: 'none',
             backgroundColor: activeTab === '계약호실' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
             borderBottom: activeTab === '계약호실' ? '4px solid #9C27B0' : '4px solid transparent',
@@ -1079,7 +1079,7 @@ function App() {
             padding: '12px 24px',
             fontSize: '18px',
             fontWeight: 'bold',
-            color: activeTab === '고객관리' ? '#000' : '#888',
+            color: '#000',
             border: 'none',
             backgroundColor: activeTab === '고객관리' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
             borderBottom: activeTab === '고객관리' ? '4px solid #FF6B9D' : '4px solid transparent',
@@ -1100,7 +1100,7 @@ function App() {
             padding: '12px 24px',
             fontSize: '18px',
             fontWeight: 'bold',
-            color: activeTab === '매물장' ? '#000' : '#888',
+            color: '#000',
             border: 'none',
             backgroundColor: activeTab === '매물장' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
             borderBottom: activeTab === '매물장' ? '4px solid #2196F3' : '4px solid transparent',
@@ -1121,7 +1121,7 @@ function App() {
             padding: '12px 24px',
             fontSize: '18px',
             fontWeight: 'bold',
-            color: activeTab === '건물정보' ? '#000' : '#888',
+            color: '#000',
             border: 'none',
             backgroundColor: activeTab === '건물정보' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
             borderBottom: activeTab === '건물정보' ? '4px solid #FF9800' : '4px solid transparent',
