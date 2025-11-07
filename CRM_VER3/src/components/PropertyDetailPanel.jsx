@@ -102,7 +102,7 @@ const PropertyDetailPanel = ({
             cursor: 'pointer'
           }}
         >
-          <option value="">매물유형 선택</option>
+          <option value="">매물유형</option>
           {PROPERTY_TYPES.map(type => (
             <option key={type} value={type}>
               {type}
