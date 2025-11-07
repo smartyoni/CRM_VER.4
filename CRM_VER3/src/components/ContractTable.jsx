@@ -324,7 +324,29 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                     e.currentTarget.style.backgroundColor = selectedContractId === contract.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                   }}
                 >
-                  <td style={{ ...cellStyle('progressStatus'), textAlign: 'center', fontSize: '12px', fontWeight: '500' }}>{contract.progressStatus || '-'}</td>
+                  <td style={{ ...cellStyle('progressStatus'), textAlign: 'left', paddingLeft: '12px' }}>
+                    <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '3px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      backgroundColor:
+                        contract.progressStatus === '계약서작성' ? '#c8e6c9' :
+                        contract.progressStatus === '잔금' ? '#ffcccc' :
+                        contract.progressStatus === '입주완료' ? '#bbdefb' :
+                        '#e0e0e0',
+                      color:
+                        contract.progressStatus === '계약서작성' ? '#2e7d32' :
+                        contract.progressStatus === '잔금' ? '#c62828' :
+                        contract.progressStatus === '입주완료' ? '#1565c0' :
+                        '#666',
+                      display: 'inline-block',
+                      minWidth: '70px',
+                      textAlign: 'center'
+                    }}>
+                      {contract.progressStatus || '-'}
+                    </span>
+                  </td>
                   <td style={cellStyle('buildingName')}>{contract.buildingName && contract.roomName ? `${contract.buildingName} ${contract.roomName}` : '-'}</td>
                   <td style={dateColumnStyle('contractDate')}>{formatDate(contract.contractDate)}</td>
                   <td style={dateColumnStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
