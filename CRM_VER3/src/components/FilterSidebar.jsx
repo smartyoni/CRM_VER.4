@@ -289,7 +289,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '계약호실'
     ? ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'] // 계약호실 필터
     : activeTab === '대시보드'
-    ? ['중개업무', '예정된업무'] // 대시보드 메뉴 (확장 가능)
+    ? ['중개업무', '중개보수', '예정된업무'] // 대시보드 메뉴 (확장 가능)
     : [];
 
   const handleFilterClick = (status) => {

@@ -111,6 +111,67 @@ const Dashboard = ({
 
     const weekChange = newThisWeek.length - lastWeekNew.length;
 
+    // 금월계약 (계약서작성일이 이번 달)
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    const thisMonthContracts = contracts.filter(c => {
+      if (!c.contractDate) return false;
+      const contractDate = new Date(c.contractDate);
+      return (
+        contractDate.getFullYear() === currentYear &&
+        contractDate.getMonth() === currentMonth
+      );
+    });
+
+    // 금월잔금 (잔금일이 이번 달)
+    const thisMonthBalance = contracts.filter(c => {
+      if (!c.balanceDate) return false;
+      const balanceDate = new Date(c.balanceDate);
+      return (
+        balanceDate.getFullYear() === currentYear &&
+        balanceDate.getMonth() === currentMonth
+      );
+    });
+
+    // 전월입금 (입금일이 지난달)
+    const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
+    const previousYear = previousMonthDate.getFullYear();
+    const previousMonth = previousMonthDate.getMonth();
+
+    const lastMonthPayment = contracts.filter(c => {
+      if (!c.remainderPaymentDate) return false;
+      const paymentDate = new Date(c.remainderPaymentDate);
+      return (
+        paymentDate.getFullYear() === previousYear &&
+        paymentDate.getMonth() === previousMonth
+      );
+    });
+
+    // 금월입금 (입금일이 이번 달)
+    const thisMonthPayment = contracts.filter(c => {
+      if (!c.remainderPaymentDate) return false;
+      const paymentDate = new Date(c.remainderPaymentDate);
+      return (
+        paymentDate.getFullYear() === currentYear &&
+        paymentDate.getMonth() === currentMonth
+      );
+    });
+
+    // 다음달입금 (입금일이 다음달)
+    const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
+    const nextYear = nextMonthDate.getFullYear();
+    const nextMonth = nextMonthDate.getMonth();
+
+    const nextMonthPayment = contracts.filter(c => {
+      if (!c.remainderPaymentDate) return false;
+      const paymentDate = new Date(c.remainderPaymentDate);
+      return (
+        paymentDate.getFullYear() === nextYear &&
+        paymentDate.getMonth() === nextMonth
+      );
+    });
+
     return {
       todayContracts,
       todayBalance,
@@ -118,6 +179,11 @@ const Dashboard = ({
       futureContracts,
       futureBalance,
       futureMeetings,
+      thisMonthContracts,
+      thisMonthBalance,
+      lastMonthPayment,
+      thisMonthPayment,
+      nextMonthPayment,
       needsContact,
       awaitingReply,
       newThisWeek,
@@ -155,7 +221,7 @@ const Dashboard = ({
   };
 
   // 신규 StatCard 컴포넌트 (헤더 + 리스트 형식)
-  const StatCard = ({ title, number, items, onClick, color = '#4CAF50', type = 'contract' }) => {
+  const StatCard = ({ title, number, items = [], onClick, color = '#4CAF50', type = 'contract' }) => {
     const displayItems = items.slice(0, 5);
     const remainingCount = items.length - 5;
 
@@ -186,13 +252,13 @@ const Dashboard = ({
       >
         {/* 헤더 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${color}40`, paddingBottom: '8px' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 'bold', color, margin: 0 }}>{title}</h3>
-          <span style={{ fontSize: '16px', fontWeight: 'bold', color, backgroundColor: `${color}15`, padding: '4px 10px', borderRadius: '4px' }}>{number}건</span>
+          <h3 style={{ fontSize: '17px', fontWeight: '1000', color, margin: 0 }}>{title}</h3>
+          <span style={{ fontSize: '18px', fontWeight: '1000', color, backgroundColor: `${color}15`, padding: '4px 10px', borderRadius: '4px' }}>{number}건</span>
         </div>
 
         {/* 항목 리스트 */}
         {items.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px' }}>
             {displayItems.map((item, idx) => (
               <div
                 key={idx}
@@ -350,12 +416,12 @@ const Dashboard = ({
         </p>
       </div>
 
-      {/* 오늘업무 필터 - 3개 카드 */}
-      {activeFilter === '오늘업무' && (
+      {/* 중개업무 필터 - 5개 카드 */}
+      {activeFilter === '중개업무' && (
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '20px',
             maxWidth: '1400px',
             marginBottom: '30px'
@@ -390,54 +456,85 @@ const Dashboard = ({
             type="meeting"
             onClick={() => openModal('meeting', '오늘미팅', stats.todayMeetings.sort((a, b) => new Date(a.date) - new Date(b.date)))}
           />
+
+          {/* 금월계약 */}
+          <StatCard
+            title="금월계약"
+            number={stats.thisMonthContracts.length}
+            items={stats.thisMonthContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate))}
+            color="#4CAF50"
+            type="contract"
+            onClick={() => openModal('contract', '금월계약', stats.thisMonthContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate)))}
+          />
+
+          {/* 금월잔금 */}
+          <StatCard
+            title="금월잔금"
+            number={stats.thisMonthBalance.length}
+            items={stats.thisMonthBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate))}
+            color="#9C27B0"
+            type="balance"
+            onClick={() => openModal('balance', '금월잔금', stats.thisMonthBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate)))}
+          />
+
+          {/* 예정된미팅 */}
+          <StatCard
+            title="예정된미팅"
+            number={stats.futureMeetings.length}
+            items={stats.futureMeetings.sort((a, b) => new Date(a.date) - new Date(b.date))}
+            color="#FFC107"
+            type="meeting"
+            onClick={() => openModal('meeting', '예정된미팅', stats.futureMeetings.sort((a, b) => new Date(a.date) - new Date(b.date)))}
+          />
         </div>
       )}
 
-      {/* 예정된업무 필터 - 3개 카드 */}
-      {activeFilter === '예정된업무' && (
+      {/* 중개보수 필터 - 3개 카드 */}
+      {activeFilter === '중개보수' && (
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '20px',
             maxWidth: '1400px',
             marginBottom: '30px'
           }}
         >
-          {/* 계약예정 */}
+          {/* 전월입금 */}
           <StatCard
-            title="계약예정"
-            number={stats.futureContracts.length}
-            items={stats.futureContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate))}
+            title="전월입금"
+            number={stats.lastMonthPayment.length}
+            items={stats.lastMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate))}
+            color="#9C27B0"
+            type="contract"
+            onClick={() => openModal('contract', '전월입금', stats.lastMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate)))}
+          />
+
+          {/* 금월입금 */}
+          <StatCard
+            title="금월입금"
+            number={stats.thisMonthPayment.length}
+            items={stats.thisMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate))}
             color="#2196F3"
             type="contract"
-            onClick={() => openModal('contract', '계약예정', stats.futureContracts.sort((a, b) => new Date(a.contractDate) - new Date(b.contractDate)))}
+            onClick={() => openModal('contract', '금월입금', stats.thisMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate)))}
           />
 
-          {/* 잔금예정 */}
+          {/* 다음달입금 */}
           <StatCard
-            title="잔금예정"
-            number={stats.futureBalance.length}
-            items={stats.futureBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate))}
+            title="다음달입금"
+            number={stats.nextMonthPayment.length}
+            items={stats.nextMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate))}
             color="#FF9800"
-            type="balance"
-            onClick={() => openModal('balance', '잔금예정', stats.futureBalance.sort((a, b) => new Date(a.balanceDate) - new Date(b.balanceDate)))}
-          />
-
-          {/* 미팅예정 */}
-          <StatCard
-            title="미팅예정"
-            number={stats.futureMeetings.length}
-            items={stats.futureMeetings.sort((a, b) => new Date(a.date) - new Date(b.date))}
-            color="#FF6B9D"
-            type="meeting"
-            onClick={() => openModal('meeting', '미팅예정', stats.futureMeetings.sort((a, b) => new Date(a.date) - new Date(b.date)))}
+            type="contract"
+            onClick={() => openModal('contract', '다음달입금', stats.nextMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate)))}
           />
         </div>
       )}
 
+
       {/* 기타 필터들 - 기존 카드 */}
-      {activeFilter !== '오늘업무' && activeFilter !== '예정된업무' && (
+      {activeFilter !== '중개업무' && activeFilter !== '예정된업무' && activeFilter !== '중개보수' && (
         <div
           style={{
             display: 'grid',
@@ -500,7 +597,7 @@ const Dashboard = ({
       )}
 
       {/* 오늘의 미팅 상세 리스트 */}
-      {activeFilter === '오늘업무' && stats.todayMeetings.length > 0 && (
+      {activeFilter === '중개업무' && stats.todayMeetings.length > 0 && (
         <div style={{ marginBottom: '30px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '2px solid #4CAF50', paddingBottom: '10px' }}>
             📅 오늘의 미팅
