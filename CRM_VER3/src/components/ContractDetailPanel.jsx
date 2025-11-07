@@ -26,6 +26,7 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   const [editingRemainderPaymentDate, setEditingRemainderPaymentDate] = useState(selectedContract?.remainderPaymentDate || '');
   const [brokerageMemoEditMode, setBrokerageMemoEditMode] = useState(false);
   const [editingBrokerageMemo, setEditingBrokerageMemo] = useState(selectedContract?.brokerageMemo || '');
+  const [selectedFeeStatus, setSelectedFeeStatus] = useState(selectedContract?.feeStatus || '미입금');
 
   useEffect(() => {
     setSelectedProgressStatus(selectedContract?.progressStatus || '');
@@ -37,6 +38,7 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     setEditingRemainderPaymentDate(selectedContract?.remainderPaymentDate || '');
     setBrokerageMemoEditMode(false);
     setEditingBrokerageMemo(selectedContract?.brokerageMemo || '');
+    setSelectedFeeStatus(selectedContract?.feeStatus || '미입금');
 
     // 입금일이 비어있을 때 잔금일로 자동 설정
     if (selectedContract && !selectedContract.remainderPaymentDate && selectedContract.balanceDate) {

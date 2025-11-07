@@ -75,7 +75,8 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
     deposit: data?.deposit || '',
     monthlyRent: data?.monthlyRent || '',
     contractPeriod: data?.contractPeriod || '',
-    salePrice: data?.salePrice || ''
+    salePrice: data?.salePrice || '',
+    feeStatus: data?.feeStatus || '미입금'
   });
 
   const [formData, setFormData] = useState(() => getInitialState(editData));
