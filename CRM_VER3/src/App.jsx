@@ -159,6 +159,48 @@ function App() {
     });
   }, [customers, meetings]);
 
+  // 계약호실 진행상황 자동 변경
+  // 계약서작성일 다음날 → 잔금, 잔금일 다음날 → 입주완료
+  useEffect(() => {
+    if (contracts.length === 0) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    contracts.forEach(contract => {
+      let newProgressStatus = null;
+
+      // 잔금일이 지났는지 확인 (잔금일 다음날부터 입주완료로 변경)
+      if (contract.balanceDate && contract.progressStatus !== '입주완료') {
+        const balanceDate = new Date(contract.balanceDate);
+        balanceDate.setHours(0, 0, 0, 0);
+        const nextDayAfterBalance = new Date(balanceDate);
+        nextDayAfterBalance.setDate(nextDayAfterBalance.getDate() + 1);
+
+        if (today >= nextDayAfterBalance) {
+          newProgressStatus = '입주완료';
+        }
+      }
+
+      // 계약서작성일이 지났는지 확인 (계약서작성일 다음날부터 잔금으로 변경)
+      if (!newProgressStatus && contract.contractDate && contract.progressStatus !== '잔금' && contract.progressStatus !== '입주완료') {
+        const contractDate = new Date(contract.contractDate);
+        contractDate.setHours(0, 0, 0, 0);
+        const nextDayAfterContract = new Date(contractDate);
+        nextDayAfterContract.setDate(nextDayAfterContract.getDate() + 1);
+
+        if (today >= nextDayAfterContract) {
+          newProgressStatus = '잔금';
+        }
+      }
+
+      // 진행상황이 변경되어야 하는 경우
+      if (newProgressStatus && contract.progressStatus !== newProgressStatus) {
+        saveContract({ ...contract, progressStatus: newProgressStatus });
+      }
+    });
+  }, [contracts]);
+
   const handleFilterChange = (filter) => {
     if (activeTab === '고객목록') {
       setActiveCustomerFilter(filter);
