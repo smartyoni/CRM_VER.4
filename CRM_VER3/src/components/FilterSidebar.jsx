@@ -155,6 +155,60 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
         }).length || 0;
       }
 
+      // "전월입금" 필터: 입금일이 전달
+      if (status === '전월입금') {
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
+        const previousYear = previousMonthDate.getFullYear();
+        const previousMonth = previousMonthDate.getMonth();
+
+        return contracts?.filter(c => {
+          if (!c.remainderPaymentDate) return false;
+
+          const paymentDate = new Date(c.remainderPaymentDate);
+          return (
+            paymentDate.getFullYear() === previousYear &&
+            paymentDate.getMonth() === previousMonth
+          );
+        }).length || 0;
+      }
+
+      // "금월입금" 필터: 입금일이 이번 달
+      if (status === '금월입금') {
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        return contracts?.filter(c => {
+          if (!c.remainderPaymentDate) return false;
+
+          const paymentDate = new Date(c.remainderPaymentDate);
+          return (
+            paymentDate.getFullYear() === currentYear &&
+            paymentDate.getMonth() === currentMonth
+          );
+        }).length || 0;
+      }
+
+      // "다음달입금" 필터: 입금일이 다음달
+      if (status === '다음달입금') {
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
+        const nextYear = nextMonthDate.getFullYear();
+        const nextMonth = nextMonthDate.getMonth();
+
+        return contracts?.filter(c => {
+          if (!c.remainderPaymentDate) return false;
+
+          const paymentDate = new Date(c.remainderPaymentDate);
+          return (
+            paymentDate.getFullYear() === nextYear &&
+            paymentDate.getMonth() === nextMonth
+          );
+        }).length || 0;
+      }
+
       // 해당 진행상황의 계약호실 개수
       return contracts?.filter(c => c.progressStatus === status).length || 0;
     } else if (activeTab === '대시보드') {
@@ -233,9 +287,9 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '건물정보'
     ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
-    ? ['전체', '금월계약', '금월잔금'] // 계약호실 필터
+    ? ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'] // 계약호실 필터
     : activeTab === '대시보드'
-    ? ['오늘업무', '예정된업무'] // 대시보드 메뉴 (확장 가능)
+    ? ['중개업무', '예정된업무'] // 대시보드 메뉴 (확장 가능)
     : [];
 
   const handleFilterClick = (status) => {

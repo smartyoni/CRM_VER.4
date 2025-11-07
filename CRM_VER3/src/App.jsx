@@ -796,6 +796,60 @@ function App() {
       });
     }
 
+    // "전월입금" 필터: 입금일이 전달
+    if (activeContractFilter === '전월입금') {
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+      const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
+      const previousYear = previousMonthDate.getFullYear();
+      const previousMonth = previousMonthDate.getMonth();
+
+      return contracts.filter(c => {
+        if (!c.remainderPaymentDate) return false;
+
+        const paymentDate = new Date(c.remainderPaymentDate);
+        return (
+          paymentDate.getFullYear() === previousYear &&
+          paymentDate.getMonth() === previousMonth
+        );
+      });
+    }
+
+    // "금월입금" 필터: 입금일이 이번 달
+    if (activeContractFilter === '금월입금') {
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+
+      return contracts.filter(c => {
+        if (!c.remainderPaymentDate) return false;
+
+        const paymentDate = new Date(c.remainderPaymentDate);
+        return (
+          paymentDate.getFullYear() === currentYear &&
+          paymentDate.getMonth() === currentMonth
+        );
+      });
+    }
+
+    // "다음달입금" 필터: 입금일이 다음달
+    if (activeContractFilter === '다음달입금') {
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+      const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
+      const nextYear = nextMonthDate.getFullYear();
+      const nextMonth = nextMonthDate.getMonth();
+
+      return contracts.filter(c => {
+        if (!c.remainderPaymentDate) return false;
+
+        const paymentDate = new Date(c.remainderPaymentDate);
+        return (
+          paymentDate.getFullYear() === nextYear &&
+          paymentDate.getMonth() === nextMonth
+        );
+      });
+    }
+
     return contracts.filter(c => c.progressStatus === activeContractFilter);
   })();
 
