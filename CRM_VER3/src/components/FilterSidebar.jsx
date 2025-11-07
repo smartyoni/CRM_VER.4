@@ -217,26 +217,59 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       today.setHours(0, 0, 0, 0);
 
       if (status === '중개업무') {
-        // 오늘계약 + 오늘잔금 + 오늘미팅 개수 합계
+        // 중개업무의 6개 카드: 오늘계약 + 오늘잔금 + 오늘미팅 + 금월계약 + 금월잔금 + 예정된미팅
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        // 오늘계약
         const todayContracts = contracts?.filter(c => {
           const contractDate = new Date(c.contractDate);
           contractDate.setHours(0, 0, 0, 0);
           return contractDate.getTime() === today.getTime();
         }).length || 0;
 
+        // 오늘잔금
         const todayBalance = contracts?.filter(c => {
           const balanceDate = new Date(c.balanceDate);
           balanceDate.setHours(0, 0, 0, 0);
           return balanceDate.getTime() === today.getTime();
         }).length || 0;
 
+        // 오늘미팅
         const todayMeetings = meetings?.filter(m => {
           const meetingDate = new Date(m.date);
           meetingDate.setHours(0, 0, 0, 0);
           return meetingDate.getTime() === today.getTime();
         }).length || 0;
 
-        return todayContracts + todayBalance + todayMeetings;
+        // 금월계약: 계약서작성일이 이번 달
+        const thisMonthContracts = contracts?.filter(c => {
+          if (!c.contractDate) return false;
+          const contractDate = new Date(c.contractDate);
+          return (
+            contractDate.getFullYear() === currentYear &&
+            contractDate.getMonth() === currentMonth
+          );
+        }).length || 0;
+
+        // 금월잔금: 잔금일이 이번 달
+        const thisMonthBalance = contracts?.filter(c => {
+          if (!c.balanceDate) return false;
+          const balanceDate = new Date(c.balanceDate);
+          return (
+            balanceDate.getFullYear() === currentYear &&
+            balanceDate.getMonth() === currentMonth
+          );
+        }).length || 0;
+
+        // 예정된미팅: 미팅일이 미래
+        const futureMeetings = meetings?.filter(m => {
+          const meetingDate = new Date(m.date);
+          meetingDate.setHours(0, 0, 0, 0);
+          return meetingDate.getTime() > today.getTime();
+        }).length || 0;
+
+        return todayContracts + todayBalance + todayMeetings + thisMonthContracts + thisMonthBalance + futureMeetings;
       }
 
       if (status === '중개보수') {
