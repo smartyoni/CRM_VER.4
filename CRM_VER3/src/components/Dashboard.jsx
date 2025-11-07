@@ -431,15 +431,7 @@ const Dashboard = ({
 
       {/* 중개업무 필터 - 5개 카드 */}
       {activeFilter === '중개업무' && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '20px',
-            maxWidth: '1400px',
-            marginBottom: '30px'
-          }}
-        >
+        <div className="dashboard-grid">
           {/* 오늘계약 */}
           <StatCard
             title="오늘계약"
@@ -504,15 +496,7 @@ const Dashboard = ({
 
       {/* 중개보수 필터 - 3개 카드 */}
       {activeFilter === '중개보수' && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '20px',
-            maxWidth: '1400px',
-            marginBottom: '30px'
-          }}
-        >
+        <div className="dashboard-grid">
           {/* 전월입금 */}
           <StatCard
             title="전월입금"
