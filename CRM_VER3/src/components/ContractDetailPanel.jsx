@@ -1328,7 +1328,13 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                 {CONTRACT_EXPIRY_MANAGEMENT.map((status) => (
                   <button
                     key={status}
-                    onClick={() => setTempExpiryManagement(status)}
+                    onClick={() => {
+                      if (tempExpiryManagement === status) {
+                        setTempExpiryManagement('');
+                      } else {
+                        setTempExpiryManagement(status);
+                      }
+                    }}
                     style={{
                       padding: '8px 12px',
                       fontSize: '13px',
