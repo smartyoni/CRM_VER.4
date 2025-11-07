@@ -322,7 +322,7 @@ const ContractTable = ({ contracts, onSelectContract, onEdit, onDelete, selected
                     e.currentTarget.style.backgroundColor = selectedContractId === contract.id ? '#e3f2fd' : index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                   }}
                 >
-                  <td style={{ ...cellStyle('progressStatus'), textAlign: 'center' }}>{contract.progressStatus || '-'}</td>
+                  <td style={{ ...cellStyle('progressStatus'), textAlign: 'center', fontSize: '12px', fontWeight: '500' }}>{contract.progressStatus || '-'}</td>
                   <td style={cellStyle('buildingName')}>{contract.buildingName && contract.roomName ? `${contract.buildingName} ${contract.roomName}` : '-'}</td>
                   <td style={dateColumnStyle('contractDate')}>{formatDate(contract.contractDate)}</td>
                   <td style={dateColumnStyle('balanceDate')}>{formatDate(contract.balanceDate)}</td>
