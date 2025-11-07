@@ -212,7 +212,7 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
               <FormField label="만기일" name="expiryDate" type="date" value={formData.expiryDate} onChange={handleChange} errors={errors} />
-              <FormField label="물건지" name="propertyLocation" type="text" value={formData.propertyLocation} placeholder="물건 위치를 입력해주세요" onChange={handleChange} errors={errors} />
+              <FormField label="물건지" name="propertyLocation" type="text" value={formData.propertyLocation} placeholder="물건지 부동산명을 입력하세요" onChange={handleChange} errors={errors} />
             </div>
           </div>
 
