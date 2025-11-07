@@ -530,35 +530,6 @@ const Dashboard = ({
         </div>
       )}
 
-      {/* 통계 요약 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '15px',
-        padding: '20px',
-        backgroundColor: '#f9f9f9',
-        borderRadius: '12px'
-      }}>
-        <div>
-          <p style={{ fontSize: '12px', color: '#999', margin: '0' }}>전체 고객</p>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: '8px 0 0 0' }}>
-            {stats.totalCustomers}명
-          </p>
-        </div>
-        <div>
-          <p style={{ fontSize: '12px', color: '#999', margin: '0' }}>보유 매물</p>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: '8px 0 0 0' }}>
-            {stats.totalProperties}건
-          </p>
-        </div>
-        <div>
-          <p style={{ fontSize: '12px', color: '#999', margin: '0' }}>관리 계약</p>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: '8px 0 0 0' }}>
-            {stats.totalContracts}건
-          </p>
-        </div>
-      </div>
-
       {/* 모달 렌더링 */}
       {modalData && (
         <Modal
