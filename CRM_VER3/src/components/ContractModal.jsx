@@ -286,9 +286,29 @@ const ContractModal = ({ isOpen, onClose, onSave, editData, buildings = [] }) =>
                 {errors.monthlyRent && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.monthlyRent}</div>}
               </div>
 
-              <div>
-                <FormField label="계약기간" name="contractPeriod" value={formData.contractPeriod} placeholder="예: 24" onChange={handleChange} errors={errors} />
-                <div style={{ fontSize: '12px', color: '#999', marginTop: '-12px' }}>개월</div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
+                  계약기간
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input
+                    type="number"
+                    name="contractPeriod"
+                    value={formData.contractPeriod}
+                    onChange={handleChange}
+                    placeholder="예: 24"
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      border: errors.contractPeriod ? '1px solid #f44336' : '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <span style={{ fontSize: '14px', color: '#666', fontWeight: '500', minWidth: '40px' }}>개월</span>
+                </div>
+                {errors.contractPeriod && <div style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>{errors.contractPeriod}</div>}
               </div>
               <FormField label="매매가" name="salePrice" value={formData.salePrice} placeholder="예: 50000000" onChange={handleChange} errors={errors} />
             </div>
