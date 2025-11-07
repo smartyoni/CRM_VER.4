@@ -227,7 +227,7 @@ const Dashboard = ({
   };
 
   // 신규 StatCard 컴포넌트 (헤더 + 리스트 형식)
-  const StatCard = ({ title, number, items = [], onClick, color = '#4CAF50', type = 'contract' }) => {
+  const StatCard = ({ title, number, items = [], onClick, color = '#4CAF50', type = 'contract', brokerageFeeTotal = 0 }) => {
     const displayItems = items.slice(0, 5);
     const remainingCount = items.length - 5;
 
@@ -258,7 +258,14 @@ const Dashboard = ({
       >
         {/* 헤더 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${color}40`, paddingBottom: '8px' }}>
-          <h3 style={{ fontSize: '17px', fontWeight: '1000', color, margin: 0 }}>{title}</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: '1000', color, margin: 0 }}>{title}</h3>
+            {brokerageFeeTotal > 0 && (
+              <span style={{ fontSize: '12px', fontWeight: '600', color: '#FF6B00' }}>
+                중개보수: {(brokerageFeeTotal / 10000).toLocaleString('ko-KR')} 만원
+              </span>
+            )}
+          </div>
           <span style={{ fontSize: '18px', fontWeight: '1000', color, backgroundColor: `${color}15`, padding: '4px 10px', borderRadius: '4px' }}>{number}건</span>
         </div>
 
@@ -417,17 +424,9 @@ const Dashboard = ({
             })()}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '12px' }}>
-          <p style={{ fontSize: '13px', color: '#999', margin: '0' }}>
-            마지막 업데이트: {new Date().toLocaleString('ko-KR')}
-          </p>
-          <div style={{ padding: '8px 16px', backgroundColor: '#FFF9C4', borderRadius: '6px', border: '1px solid #FBC02D' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#666' }}>중개보수 합계: </span>
-            <span style={{ fontSize: '15px', fontWeight: '700', color: '#FF6B00' }}>
-              {(stats.totalBrokerageFee / 10000).toLocaleString('ko-KR')} 만원
-            </span>
-          </div>
-        </div>
+        <p style={{ fontSize: '13px', color: '#999', margin: '0' }}>
+          마지막 업데이트: {new Date().toLocaleString('ko-KR')}
+        </p>
       </div>
 
       {/* 중개업무 필터 - 5개 카드 */}
@@ -521,6 +520,7 @@ const Dashboard = ({
             items={stats.lastMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate))}
             color="#9C27B0"
             type="contract"
+            brokerageFeeTotal={stats.lastMonthPayment.reduce((sum, c) => sum + (Number(c.brokerageFee) || 0), 0)}
             onClick={() => openModal('contract', '전월입금', stats.lastMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate)))}
           />
 
@@ -531,6 +531,7 @@ const Dashboard = ({
             items={stats.thisMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate))}
             color="#2196F3"
             type="contract"
+            brokerageFeeTotal={stats.thisMonthPayment.reduce((sum, c) => sum + (Number(c.brokerageFee) || 0), 0)}
             onClick={() => openModal('contract', '금월입금', stats.thisMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate)))}
           />
 
@@ -541,6 +542,7 @@ const Dashboard = ({
             items={stats.nextMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate))}
             color="#FF9800"
             type="contract"
+            brokerageFeeTotal={stats.nextMonthPayment.reduce((sum, c) => sum + (Number(c.brokerageFee) || 0), 0)}
             onClick={() => openModal('contract', '다음달입금', stats.nextMonthPayment.sort((a, b) => new Date(a.remainderPaymentDate) - new Date(b.remainderPaymentDate)))}
           />
         </div>
