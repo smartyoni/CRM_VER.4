@@ -29,6 +29,7 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   const [selectedFeeStatus, setSelectedFeeStatus] = useState(selectedContract?.feeStatus || '미입금');
   const [editingHistoryItemId, setEditingHistoryItemId] = useState(null);
   const [editingHistoryContent, setEditingHistoryContent] = useState('');
+  const [tempExpiryManagement, setTempExpiryManagement] = useState(selectedContract?.expiryManagement || '');
 
   useEffect(() => {
     setSelectedProgressStatus(selectedContract?.progressStatus || '');
@@ -57,6 +58,13 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
   useEffect(() => {
     setActiveTab('기본정보');
   }, [selectedContract?.id]);
+
+  // 연장관리 탭 진입 시 tempExpiryManagement 초기화
+  useEffect(() => {
+    if (activeTab === '연장관리') {
+      setTempExpiryManagement(selectedContract?.expiryManagement || '');
+    }
+  }, [activeTab, selectedContract?.expiryManagement]);
 
   // 물건유형 변경 시 중개요율 자동 설정
   useEffect(() => {
@@ -113,6 +121,14 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
       expiryManagement: selectedExpiryManagement
     };
     onUpdateContract(updatedContract);
+  };
+
+  // 만기관리 상태 저장
+  const handleSaveExpiryManagement = () => {
+    const updated = { ...selectedContract, expiryManagement: tempExpiryManagement };
+    onUpdateContract(updated);
+    setSelectedExpiryManagement(tempExpiryManagement);
+    alert('만기관리 상태가 저장되었습니다.');
   };
 
   // 메모 더블클릭 시 편집 모드 활성화
@@ -1302,52 +1318,60 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
 
         {activeTab === '연장관리' && (
           <>
-            <section>
-              <h4 style={{ fontSize: '13px', fontWeight: '600', color: '#666', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #FF9800' }}>
-                🔄 연장 히스토리
+            <section style={{ padding: '15px', border: '1px solid #e0e0e0', borderRadius: '6px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '15px', color: '#1a1a1a', borderBottom: '2px solid #2196F3', paddingBottom: '8px', margin: '0 0 15px 0' }}>
+                📅 만기관리 상태
               </h4>
 
-              {selectedContract.extensionHistory && selectedContract.extensionHistory.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {selectedContract.extensionHistory.map((ext, index) => (
-                    <div key={index} style={{
-                      padding: '12px',
-                      backgroundColor: '#fff3e0',
+              {/* 버튼 그리드 */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '15px' }}>
+                {CONTRACT_EXPIRY_MANAGEMENT.map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setTempExpiryManagement(status)}
+                    style={{
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      backgroundColor: tempExpiryManagement === status ? '#2196F3' : '#e0e0e0',
+                      color: tempExpiryManagement === status ? 'white' : '#666',
+                      border: 'none',
                       borderRadius: '4px',
-                      borderLeft: '3px solid #FF9800'
-                    }}>
-                      <div style={{ fontSize: '13px', marginBottom: '8px', fontWeight: '600', color: '#333' }}>
-                        연장 #{index + 1}
-                      </div>
-                      <div style={{ fontSize: '13px', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: '600', color: '#666' }}>연장일:</span> {formatDate(ext.extensionDate)}
-                      </div>
-                      <div style={{ fontSize: '13px', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: '600', color: '#666' }}>새 만기일:</span> {formatDate(ext.newExpiryDate)}
-                      </div>
-                      <div style={{ fontSize: '13px', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: '600', color: '#666' }}>연장기간:</span> {ext.extensionPeriod}개월
-                      </div>
-                      {ext.memo && (
-                        <div style={{ fontSize: '13px', color: '#666', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255, 152, 0, 0.3)' }}>
-                          <span style={{ fontWeight: '600' }}>메모:</span> {ext.memo}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{
-                  fontSize: '13px',
-                  color: '#999',
-                  padding: '20px',
-                  textAlign: 'center',
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: '4px'
-                }}>
-                  연장 히스토리가 없습니다
-                </div>
-              )}
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+
+              {/* 저장 버튼 */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={handleSaveExpiryManagement}
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#45a049';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#4CAF50';
+                  }}
+                >
+                  저장
+                </button>
+              </div>
             </section>
           </>
         )}
