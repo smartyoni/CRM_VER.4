@@ -484,13 +484,13 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>보증금:</span>
               <span style={{ color: '#333' }}>
-                {selectedContract.deposit ? formatAmountToKorean(selectedContract.deposit) : '-'}
+                {selectedContract.deposit ? parseInt(selectedContract.deposit).toLocaleString('ko-KR') : '-'}
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>월세:</span>
               <span style={{ color: '#333' }}>
-                {selectedContract.monthlyRent ? formatAmountToKorean(selectedContract.monthlyRent) : '-'}
+                {selectedContract.monthlyRent ? parseInt(selectedContract.monthlyRent).toLocaleString('ko-KR') : '-'}
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
