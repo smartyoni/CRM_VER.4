@@ -10,10 +10,12 @@ const PropertyDetailPanel = ({
 }) => {
   const [selectedPropertyType, setSelectedPropertyType] = useState(selectedProperty?.propertyType || '');
   const [selectedCategory, setSelectedCategory] = useState(selectedProperty?.category || '');
+  const [receivedDate, setReceivedDate] = useState(selectedProperty?.createdAt?.slice(0, 10) || '');
 
   useEffect(() => {
     setSelectedPropertyType(selectedProperty?.propertyType || '');
     setSelectedCategory(selectedProperty?.category || '');
+    setReceivedDate(selectedProperty?.createdAt?.slice(0, 10) || '');
   }, [selectedProperty]);
 
   if (!selectedProperty) return null;
@@ -35,7 +37,8 @@ const PropertyDetailPanel = ({
     const updatedProperty = {
       ...selectedProperty,
       propertyType: selectedPropertyType,
-      category: selectedCategory
+      category: selectedCategory,
+      createdAt: receivedDate
     };
     onUpdateProperty(updatedProperty);
   };
@@ -126,6 +129,20 @@ const PropertyDetailPanel = ({
             </option>
           ))}
         </select>
+
+        <input
+          type="date"
+          value={receivedDate}
+          onChange={(e) => setReceivedDate(e.target.value)}
+          style={{
+            padding: '10px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            cursor: 'pointer'
+          }}
+        />
 
         <button
           onClick={handleSave}

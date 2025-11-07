@@ -22,7 +22,8 @@
       "Bash(git checkout:*)",
       "Bash(git stash:*)",
       "Bash(git remote set-url:*)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
