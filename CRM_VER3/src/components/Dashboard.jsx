@@ -530,7 +530,8 @@ const Dashboard = ({
               const cardDate = card.date.substring(0, 10);
               return cardDate === todayStr;
             });
-            if (todayCard && todayCard.items && todayCard.items.length > 0) {
+            // 완료되지 않은 카드만 표시 (isCompleted !== true)
+            if (todayCard && !todayCard.isCompleted && todayCard.items && todayCard.items.length > 0) {
               todayCard.items.forEach(item => {
                 if (item.content) {
                   todayHistories.push({
