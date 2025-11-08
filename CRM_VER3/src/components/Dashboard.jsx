@@ -549,8 +549,8 @@ const Dashboard = ({
                   // 오늘의 기록: 모든 항목
                   todayHistories.push(historyItem);
 
-                  // 미완료 기록: 등록되었지만 완료되지 않은 항목
-                  if (item.isRegistered && !item.isCompleted) {
+                  // 미완료 기록: 완료되지 않은 항목 (isRegistered 필드가 없거나 true인 경우)
+                  if (!item.isCompleted && (item.isRegistered === undefined || item.isRegistered === true)) {
                     incompleteHistories.push(historyItem);
                   }
                 }
