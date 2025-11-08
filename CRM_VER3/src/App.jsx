@@ -959,7 +959,7 @@ function App() {
               )}
             </div>
           </header>
-          <main className="table-container" style={{ flex: 1, overflow: activeTab === '대시보드' ? 'hidden' : 'auto' }}>
+          <main className="table-container" style={{ flex: 1, overflow: activeTab === '대시보드' ? 'auto' : 'auto' }}>
             {activeTab === '대시보드' ? (
               <Dashboard
                 customers={customers}

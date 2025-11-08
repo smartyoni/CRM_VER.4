@@ -407,7 +407,7 @@ const Dashboard = ({
   };
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', gap: '20px' }}>
+    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* 중개업무 필터 - 5개 카드 (고정 영역) */}
       {activeFilter === '중개업무' && (
         <div className="dashboard-grid" style={{ marginBottom: '0px' }}>
