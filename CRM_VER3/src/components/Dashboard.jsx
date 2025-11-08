@@ -408,26 +408,6 @@ const Dashboard = ({
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', gap: '20px' }}>
-      {/* 헤더 - 대시보드 년월일 정보 */}
-      <div style={{ marginBottom: '0px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: '#ff0000' }}>
-            대시보드 {(() => {
-              const today = new Date();
-              const year = today.getFullYear();
-              const month = String(today.getMonth() + 1).padStart(2, '0');
-              const date = String(today.getDate()).padStart(2, '0');
-              const hours = String(today.getHours()).padStart(2, '0');
-              const minutes = String(today.getMinutes()).padStart(2, '0');
-              return `${year}년 ${month}월 ${date}일 ${hours}:${minutes}`;
-            })()}
-          </h2>
-        </div>
-        <p style={{ fontSize: '13px', color: '#999', margin: '4px 0 0 0' }}>
-          마지막 업데이트: {new Date().toLocaleString('ko-KR')}
-        </p>
-      </div>
-
       {/* 중개업무 필터 - 5개 카드 (고정 영역) */}
       {activeFilter === '중개업무' && (
         <div className="dashboard-grid" style={{ marginBottom: '0px' }}>

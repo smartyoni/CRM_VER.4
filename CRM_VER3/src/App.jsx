@@ -894,9 +894,22 @@ function App() {
               ☰
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <h1>
-                {activeTab === '대시보드' ? '대시보드' : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
+              <h1 style={activeTab === '대시보드' ? { color: '#ff0000' } : {}}>
+                {activeTab === '대시보드' ? (() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, '0');
+                  const date = String(today.getDate()).padStart(2, '0');
+                  const hours = String(today.getHours()).padStart(2, '0');
+                  const minutes = String(today.getMinutes()).padStart(2, '0');
+                  return `대시보드 ${year}년 ${month}월 ${date}일 ${hours}:${minutes}`;
+                })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
               </h1>
+              {activeTab === '대시보드' && (
+                <span style={{ fontSize: '13px', color: '#999' }}>
+                  마지막 업데이트: {new Date().toLocaleString('ko-KR')}
+                </span>
+              )}
               {activeTab === '고객관리' && activeCustomerFilter !== '전체' && (
                 <span style={{ fontSize: '13px', color: '#7f8c8d' }}>
                   필터: {activeCustomerFilter} - {getFilterDescription(activeCustomerFilter)}
