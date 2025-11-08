@@ -679,6 +679,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   todayCard.items.push({
                     id: `item_${Date.now()}`,
                     content: '',
+                    status: '임시저장',
                     createdAt: new Date().toISOString()
                   });
 
@@ -716,53 +717,27 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                       <section key={card.id} style={{ padding: '15px', border: '1px solid #e0e0e0', borderLeft: '3px solid #2196F3', borderRadius: '6px', backgroundColor: '#fafafa' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>
                           <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>📋 {formattedDate}</h4>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button
-                              onClick={() => {
-                                const updatedCards = selectedContract.historyCards.map(c => {
-                                  if (c.id === card.id) {
-                                    return { ...c, isCompleted: !c.isCompleted };
-                                  }
-                                  return c;
-                                });
+                          <button
+                            onClick={() => {
+                              if (window.confirm('이 카드의 모든 히스토리를 삭제하시겠습니까?')) {
+                                const updatedCards = (selectedContract.historyCards || []).filter(c => c.id !== card.id);
                                 onUpdateContract({ ...selectedContract, historyCards: updatedCards });
-                              }}
-                              style={{
-                                padding: '4px 12px',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                                backgroundColor: card.isCompleted ? '#c8e6c9' : '#e3f2fd',
-                                color: card.isCompleted ? '#2e7d32' : '#1565c0',
-                                border: `1px solid ${card.isCompleted ? '#66bb6a' : '#42a5f5'}`,
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                              }}
-                            >
-                              {card.isCompleted ? '✓ 완료됨' : '등록 완료'}
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (window.confirm('이 카드의 모든 히스토리를 삭제하시겠습니까?')) {
-                                  const updatedCards = (selectedContract.historyCards || []).filter(c => c.id !== card.id);
-                                  onUpdateContract({ ...selectedContract, historyCards: updatedCards });
-                                }
-                              }}
-                              style={{
-                                padding: '4px 12px',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                                backgroundColor: '#ffebee',
-                                color: '#c62828',
-                                border: '1px solid #ef5350',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                              }}
-                            >
-                              카드 삭제
-                            </button>
-                          </div>
+                              }
+                            }}
+                            style={{
+                              padding: '4px 12px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              backgroundColor: '#ffebee',
+                              color: '#c62828',
+                              border: '1px solid #ef5350',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            카드 삭제
+                          </button>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -837,37 +812,67 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                                       {item.content || '(더블클릭하여 내용 입력)'}
                                     </p>
                                   )}
-                                  <button
-                                    onClick={() => {
-                                      if (window.confirm('이 항목을 삭제하시겠습니까?')) {
+                                  <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                                    <button
+                                      onClick={() => {
                                         const updatedCards = selectedContract.historyCards.map(c => {
                                           if (c.id === card.id) {
-                                            const updatedItems = c.items.filter(i => i.id !== item.id);
-                                            if (updatedItems.length === 0) {
-                                              return null;
-                                            }
-                                            return { ...c, items: updatedItems };
+                                            return {
+                                              ...c,
+                                              items: c.items.map(i => i.id === item.id ? { ...i, status: item.status === '등록' ? '완료' : '등록' } : i)
+                                            };
                                           }
                                           return c;
-                                        }).filter(Boolean);
+                                        });
                                         onUpdateContract({ ...selectedContract, historyCards: updatedCards });
-                                      }
-                                    }}
-                                    style={{
-                                      padding: '4px 8px',
-                                      fontSize: '11px',
-                                      fontWeight: '600',
-                                      backgroundColor: '#ffebee',
-                                      color: '#c62828',
-                                      border: '1px solid #ef5350',
-                                      borderRadius: '3px',
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s',
-                                      whiteSpace: 'nowrap'
-                                    }}
-                                  >
-                                    삭제
-                                  </button>
+                                      }}
+                                      style={{
+                                        padding: '4px 8px',
+                                        fontSize: '11px',
+                                        fontWeight: '600',
+                                        backgroundColor: item.status === '등록' ? '#c8e6c9' : '#e3f2fd',
+                                        color: item.status === '등록' ? '#2e7d32' : '#1565c0',
+                                        border: `1px solid ${item.status === '등록' ? '#66bb6a' : '#42a5f5'}`,
+                                        borderRadius: '3px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      {item.status === '등록' ? '✓ 완료' : '등록'}
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (window.confirm('이 항목을 삭제하시겠습니까?')) {
+                                          const updatedCards = selectedContract.historyCards.map(c => {
+                                            if (c.id === card.id) {
+                                              const updatedItems = c.items.filter(i => i.id !== item.id);
+                                              if (updatedItems.length === 0) {
+                                                return null;
+                                              }
+                                              return { ...c, items: updatedItems };
+                                            }
+                                            return c;
+                                          }).filter(Boolean);
+                                          onUpdateContract({ ...selectedContract, historyCards: updatedCards });
+                                        }
+                                      }}
+                                      style={{
+                                        padding: '4px 8px',
+                                        fontSize: '11px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#ffebee',
+                                        color: '#c62828',
+                                        border: '1px solid #ef5350',
+                                        borderRadius: '3px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      삭제
+                                    </button>
+                                  </div>
                                 </div>
                               );
                             })
