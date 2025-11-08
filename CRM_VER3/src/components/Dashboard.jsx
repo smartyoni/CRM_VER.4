@@ -513,7 +513,7 @@ const Dashboard = ({
 
 
 
-      {/* 오늘의 기록 상세 리스트 - 오늘 등록된 계약호실의 히스토리 */}
+      {/* 오늘의 기록 & 미완료 기록 - 두 개의 패널 */}
       {activeFilter === '중개업무' && contracts.length > 0 && (() => {
         // 오늘 등록된 계약호실과 그들의 오늘 히스토리 필터링
         const today = new Date();
@@ -522,24 +522,37 @@ const Dashboard = ({
         const day = String(today.getDate()).padStart(2, '0');
         const todayStr = `${year}-${month}-${day}`;
 
+        // 오늘의 기록: 모든 항목 (필터링 없음)
         const todayHistories = [];
+        // 미완료 기록: isRegistered === true && !isCompleted 항목만
+        const incompleteHistories = [];
+
         contracts.forEach(contract => {
           if (contract.historyCards && contract.historyCards.length > 0) {
             const todayCard = contract.historyCards.find(card => {
-              // card.date가 YYYY-MM-DD 형식일 수도 있고 ISO 형식일 수도 있으므로 둘 다 처리
               const cardDate = card.date.substring(0, 10);
               return cardDate === todayStr;
             });
-            // 완료되지 않은 항목만 표시 (isCompleted !== true)
             if (todayCard && todayCard.items && todayCard.items.length > 0) {
               todayCard.items.forEach(item => {
-                if (item.content && !item.isCompleted) {
-                  todayHistories.push({
+                if (item.content) {
+                  const historyItem = {
                     contractId: contract.id,
                     buildingName: contract.buildingName,
                     roomName: contract.roomName,
-                    historyContent: item.content
-                  });
+                    historyContent: item.content,
+                    itemId: item.id,
+                    isCompleted: item.isCompleted,
+                    isRegistered: item.isRegistered
+                  };
+
+                  // 오늘의 기록: 모든 항목
+                  todayHistories.push(historyItem);
+
+                  // 미완료 기록: 등록되었지만 완료되지 않은 항목
+                  if (item.isRegistered && !item.isCompleted) {
+                    incompleteHistories.push(historyItem);
+                  }
                 }
               });
             }
@@ -549,43 +562,91 @@ const Dashboard = ({
         if (todayHistories.length === 0) return null;
 
         return (
-          <div style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '2px solid #4CAF50', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
-              📋 오늘의 기록
-            </h2>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {todayHistories.map((history, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => onNavigate('계약호실', '전체', history.contractId, 'contract')}
-                  style={{
-                    padding: '12px 15px',
-                    backgroundColor: '#f5f5f5',
-                    borderLeft: '4px solid #2196F3',
-                    borderRadius: '4px',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    ':hover': {
-                      backgroundColor: '#e3f2fd',
-                      boxShadow: '0 2px 8px rgba(33, 150, 243, 0.2)'
-                    }
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#e3f2fd';
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(33, 150, 243, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f5f5f5';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  <strong>{[history.buildingName, history.roomName].filter(Boolean).join(' ')}</strong>
-                  <div style={{ color: '#666', marginTop: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {history.historyContent}
+          <div style={{ marginBottom: '30px', display: 'flex', gap: '15px', height: '400px', borderRadius: '8px' }}>
+            {/* 왼쪽 패널: 오늘의 기록 */}
+            <div style={{ flex: '0 0 50%', display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', borderBottom: '2px solid #4CAF50', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
+                📋 오늘의 기록
+              </h2>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {todayHistories.length > 0 ? (
+                  todayHistories.map((history, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => onNavigate('계약호실', '전체', history.contractId, 'contract')}
+                      style={{
+                        padding: '12px 15px',
+                        backgroundColor: '#f5f5f5',
+                        borderLeft: '4px solid #2196F3',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#e3f2fd';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(33, 150, 243, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f5f5f5';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <strong>{[history.buildingName, history.roomName].filter(Boolean).join(' ')}</strong>
+                      <div style={{ color: '#666', marginTop: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {history.historyContent}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                    오늘의 기록이 없습니다
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
+            </div>
+
+            {/* 오른쪽 패널: 미완료 기록 */}
+            <div style={{ flex: '0 0 50%', display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', borderBottom: '2px solid #FF9800', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
+                ⚠️ 미완료 기록
+              </h2>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {incompleteHistories.length > 0 ? (
+                  incompleteHistories.map((history, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => onNavigate('계약호실', '전체', history.contractId, 'contract')}
+                      style={{
+                        padding: '12px 15px',
+                        backgroundColor: '#fffaf0',
+                        borderLeft: '4px solid #FF9800',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fff3e0';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(255, 152, 0, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fffaf0';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <strong>{[history.buildingName, history.roomName].filter(Boolean).join(' ')}</strong>
+                      <div style={{ color: '#666', marginTop: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {history.historyContent}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                    미완료 기록이 없습니다
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );

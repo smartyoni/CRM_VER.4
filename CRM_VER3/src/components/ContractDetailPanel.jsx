@@ -680,6 +680,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                     id: `item_${Date.now()}`,
                     content: '',
                     isCompleted: false,
+                    isRegistered: false,
                     createdAt: new Date().toISOString()
                   });
 
@@ -815,7 +816,16 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                                   <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                                     <button
                                       onClick={() => {
-                                        // 등록 버튼: 기능 준비 중
+                                        const updatedCards = selectedContract.historyCards.map(c => {
+                                          if (c.id === card.id) {
+                                            return {
+                                              ...c,
+                                              items: c.items.map(i => i.id === item.id ? { ...i, isRegistered: true } : i)
+                                            };
+                                          }
+                                          return c;
+                                        });
+                                        onUpdateContract({ ...selectedContract, historyCards: updatedCards });
                                       }}
                                       style={{
                                         padding: '4px 8px',
