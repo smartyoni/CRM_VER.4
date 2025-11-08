@@ -112,6 +112,29 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     return `${year}. ${month}. ${day}`;
   };
 
+  // Google Calendar URL 생성
+  const generateGoogleCalendarUrl = (date, eventTitle) => {
+    if (!date) return '';
+
+    // 날짜 파싱 (YYYY-MM-DD 형식)
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return '';
+
+    // Google Calendar 형식: YYYYMMDD
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const googleDate = `${year}${month}${day}`;
+
+    // Google Calendar 추가 URL
+    const url = new URL('https://www.google.com/calendar/render');
+    url.searchParams.append('action', 'TEMPLATE');
+    url.searchParams.append('text', eventTitle);
+    url.searchParams.append('dates', `${googleDate}/${googleDate}`);
+
+    return url.toString();
+  };
+
   // 드롭다운 선택 저장
   const handleSave = () => {
     const updatedContract = {
@@ -495,13 +518,65 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
             📅 날짜정보
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px', alignItems: 'center' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>계약서작성일:</span>
-              <span style={{ color: '#333' }}>{formatDate(selectedContract.contractDate)}</span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ color: '#333' }}>{formatDate(selectedContract.contractDate)}</span>
+                {selectedContract.contractDate && (
+                  <a
+                    href={generateGoogleCalendarUrl(selectedContract.contractDate, `계약서작성 - ${selectedContract.buildingName} ${selectedContract.roomName}`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 10px',
+                      backgroundColor: '#4285F4',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    📅 캘린더
+                  </a>
+                )}
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px', alignItems: 'center' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>잔금일:</span>
-              <span style={{ color: '#333' }}>{formatDate(selectedContract.balanceDate)}</span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ color: '#333' }}>{formatDate(selectedContract.balanceDate)}</span>
+                {selectedContract.balanceDate && (
+                  <a
+                    href={generateGoogleCalendarUrl(selectedContract.balanceDate, `잔금 - ${selectedContract.buildingName} ${selectedContract.roomName}`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 10px',
+                      backgroundColor: '#4285F4',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    📅 캘린더
+                  </a>
+                )}
+              </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>만기일:</span>
