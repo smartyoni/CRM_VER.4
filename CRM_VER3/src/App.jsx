@@ -1268,6 +1268,7 @@ function App() {
             onEdit={handleOpenContractModal}
             onDelete={handleDeleteContract}
             onUpdateContract={handleSaveContract}
+            buildings={buildings}
           />
 
           {/* ContractModal */}

@@ -8,7 +8,7 @@ import {
 } from '../constants';
 import { formatAmountToKorean } from '../utils/helpers';
 
-const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDelete, onUpdateContract }) => {
+const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDelete, onUpdateContract, buildings = [] }) => {
   const [selectedProgressStatus, setSelectedProgressStatus] = useState(selectedContract?.progressStatus || '');
   const [selectedPropertyManagement, setSelectedPropertyManagement] = useState(selectedContract?.propertyManagement || '');
   const [selectedExpiryManagement, setSelectedExpiryManagement] = useState(selectedContract?.expiryManagement || '');
@@ -449,9 +449,38 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
             📋 기본 정보
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px', alignItems: 'center' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>건물명:</span>
-              <span style={{ color: '#333' }}>{selectedContract.buildingName || '-'}</span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ color: '#333', flex: 1 }}>{selectedContract.buildingName || '-'}</span>
+                {selectedContract.buildingName && (() => {
+                  const matchedBuilding = buildings.find(b => b.name === selectedContract.buildingName);
+                  return matchedBuilding && matchedBuilding.address ? (
+                    <a
+                      href={`https://map.kakao.com/link/search/${encodeURIComponent(matchedBuilding.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 10px',
+                        backgroundColor: '#FEE500',
+                        color: '#000',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        textDecoration: 'none',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      🗺️ 지도보기
+                    </a>
+                  ) : null;
+                })()}
+              </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               <span style={{ fontWeight: '600', color: '#666' }}>호실명:</span>
