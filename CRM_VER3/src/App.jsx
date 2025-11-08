@@ -904,7 +904,7 @@ function App() {
                   const minutes = String(today.getMinutes()).padStart(2, '0');
                   return (
                     <>
-                      <span style={{ fontSize: 'calc(1em + 3px)' }}>대시보드</span>
+                      <span style={{ fontSize: 'calc(1em + 5px)' }}>대시보드</span>
                       <span style={{ fontSize: 'calc(1em - 2px)', color: '#ff0000' }}>{` ${year}년 ${month}월 ${date}일 ${hours}:${minutes}`}</span>
                     </>
                   );
