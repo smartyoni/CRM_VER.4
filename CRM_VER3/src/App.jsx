@@ -894,7 +894,7 @@ function App() {
               ☰
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <h1 style={activeTab === '대시보드' ? { color: '#ff0000' } : {}}>
+              <h1 style={activeTab === '대시보드' ? { color: '#000000', fontSize: 'calc(1em + 3px)' } : {}}>
                 {activeTab === '대시보드' ? (() => {
                   const today = new Date();
                   const year = today.getFullYear();
@@ -906,7 +906,7 @@ function App() {
                 })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
               </h1>
               {activeTab === '대시보드' && (
-                <span style={{ fontSize: '13px', color: '#999' }}>
+                <span style={{ fontSize: '11px', color: '#999' }}>
                   마지막 업데이트: {new Date().toLocaleString('ko-KR')}
                 </span>
               )}
