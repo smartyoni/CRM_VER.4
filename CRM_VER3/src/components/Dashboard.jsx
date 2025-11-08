@@ -534,36 +534,61 @@ const Dashboard = ({
 
 
 
-      {/* 오늘의 미팅 상세 리스트 */}
-      {activeFilter === '중개업무' && stats.todayMeetings.length > 0 && (
-        <div style={{ marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '2px solid #4CAF50', paddingBottom: '10px' }}>
-            📅 오늘의 미팅
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {stats.todayMeetings.map((meeting, idx) => {
-              const customer = customers.find(c => c.id === meeting.customerId);
-              return (
+      {/* 오늘의 기록 상세 리스트 - 오늘 등록된 계약호실의 히스토리 */}
+      {activeFilter === '중개업무' && contracts.length > 0 && (() => {
+        // 오늘 등록된 계약호실과 그들의 오늘 히스토리 필터링
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split('T')[0];
+
+        const todayHistories = [];
+        contracts.forEach(contract => {
+          if (contract.historyCards && contract.historyCards.length > 0) {
+            const todayCard = contract.historyCards.find(card => card.date === todayStr);
+            if (todayCard && todayCard.items && todayCard.items.length > 0) {
+              todayCard.items.forEach(item => {
+                if (item.content) {
+                  todayHistories.push({
+                    contractId: contract.id,
+                    buildingName: contract.buildingName,
+                    roomName: contract.roomName,
+                    historyContent: item.content
+                  });
+                }
+              });
+            }
+          }
+        });
+
+        if (todayHistories.length === 0) return null;
+
+        return (
+          <div style={{ marginBottom: '30px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '2px solid #4CAF50', paddingBottom: '10px' }}>
+              📋 오늘의 기록
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {todayHistories.map((history, idx) => (
                 <div
                   key={idx}
                   style={{
                     padding: '12px 15px',
                     backgroundColor: '#f5f5f5',
-                    borderLeft: '4px solid #FF6B9D',
+                    borderLeft: '4px solid #2196F3',
                     borderRadius: '4px',
                     fontSize: '13px'
                   }}
                 >
-                  <strong>{customer?.name || '알 수 없음'}</strong>
-                  <div style={{ color: '#666', marginTop: '4px' }}>
-                    📍 {meeting.location || '장소 미정'} | 📝 {meeting.memo || '메모 없음'}
+                  <strong>{[history.buildingName, history.roomName].filter(Boolean).join(' ')}</strong>
+                  <div style={{ color: '#666', marginTop: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {history.historyContent}
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 모달 렌더링 */}
       {modalData && (
