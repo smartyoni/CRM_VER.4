@@ -894,7 +894,7 @@ function App() {
               ☰
             </button>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <h1 style={activeTab === '대시보드' ? { color: '#000000', fontSize: 'calc(1em + 3px)' } : {}}>
+              <h1 style={activeTab === '대시보드' ? { color: '#000000' } : {}}>
                 {activeTab === '대시보드' ? (() => {
                   const today = new Date();
                   const year = today.getFullYear();
@@ -902,7 +902,12 @@ function App() {
                   const date = String(today.getDate()).padStart(2, '0');
                   const hours = String(today.getHours()).padStart(2, '0');
                   const minutes = String(today.getMinutes()).padStart(2, '0');
-                  return `대시보드 ${year}년 ${month}월 ${date}일 ${hours}:${minutes}`;
+                  return (
+                    <>
+                      <span style={{ fontSize: 'calc(1em + 3px)' }}>대시보드</span>
+                      {` ${year}년 ${month}월 ${date}일 ${hours}:${minutes}`}
+                    </>
+                  );
                 })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
               </h1>
               {activeTab === '대시보드' && (
