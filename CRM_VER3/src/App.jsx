@@ -905,7 +905,7 @@ function App() {
                   return (
                     <>
                       <span style={{ fontSize: 'calc(1em + 3px)' }}>대시보드</span>
-                      {` ${year}년 ${month}월 ${date}일 ${hours}:${minutes}`}
+                      <span style={{ fontSize: 'calc(1em - 2px)', color: '#ff0000' }}>{` ${year}년 ${month}월 ${date}일 ${hours}:${minutes}`}</span>
                     </>
                   );
                 })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
