@@ -556,12 +556,27 @@ const Dashboard = ({
               {todayHistories.map((history, idx) => (
                 <div
                   key={idx}
+                  onClick={() => onNavigate('계약호실', '전체', history.contractId, 'contract')}
                   style={{
                     padding: '12px 15px',
                     backgroundColor: '#f5f5f5',
                     borderLeft: '4px solid #2196F3',
                     borderRadius: '4px',
-                    fontSize: '13px'
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    ':hover': {
+                      backgroundColor: '#e3f2fd',
+                      boxShadow: '0 2px 8px rgba(33, 150, 243, 0.2)'
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e3f2fd';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(33, 150, 243, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f5f5f5';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   <strong>{[history.buildingName, history.roomName].filter(Boolean).join(' ')}</strong>
