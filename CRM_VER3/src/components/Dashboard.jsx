@@ -563,9 +563,9 @@ const Dashboard = ({
         if (todayHistories.length === 0 && incompleteHistories.length === 0) return null;
 
         return (
-          <div style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <div className="dashboard-history-container" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'row', gap: '15px', flexWrap: 'wrap' }}>
             {/* 오늘의 기록 카드 */}
-            <div style={{ display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0', width: '100%' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', borderBottom: '2px solid #4CAF50', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
                 📋 오늘의 기록
               </h2>
@@ -608,7 +608,7 @@ const Dashboard = ({
             </div>
 
             {/* 미완료 기록 카드 */}
-            <div style={{ display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0', width: '100%' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', borderBottom: '2px solid #FF9800', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
                 ⚠️ 미완료 기록
               </h2>
