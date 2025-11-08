@@ -407,9 +407,9 @@ const Dashboard = ({
   };
 
   return (
-    <div style={{ padding: '20px', overflow: 'auto', height: '100%' }}>
+    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', gap: '20px' }}>
       {/* 헤더 */}
-      <div style={{ marginBottom: '30px' }}>
+      <div style={{ marginBottom: '0px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0 }}>대시보드</h1>
           <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff0000' }}>
@@ -429,9 +429,9 @@ const Dashboard = ({
         </p>
       </div>
 
-      {/* 중개업무 필터 - 5개 카드 */}
+      {/* 중개업무 필터 - 5개 카드 (고정 영역) */}
       {activeFilter === '중개업무' && (
-        <div className="dashboard-grid">
+        <div className="dashboard-grid" style={{ marginBottom: '0px' }}>
           {/* 오늘계약 */}
           <StatCard
             title="오늘계약"
