@@ -514,7 +514,7 @@ const Dashboard = ({
 
 
       {/* 오늘의 기록 & 미완료 기록 - 두 개의 패널 */}
-      {activeFilter === '중개업무' && contracts.length > 0 && (() => {
+      {activeFilter === '중개업무' && (() => {
         // 오늘 등록된 계약호실과 그들의 오늘 히스토리 필터링
         const today = new Date();
         const year = today.getFullYear();
