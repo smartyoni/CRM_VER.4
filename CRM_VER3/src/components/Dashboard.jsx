@@ -559,7 +559,8 @@ const Dashboard = ({
           }
         });
 
-        if (todayHistories.length === 0) return null;
+        // 오늘의 기록과 미완료 기록 중 하나라도 있으면 표시 (또는 계약호실 데이터가 있으면 항상 표시)
+        if (todayHistories.length === 0 && incompleteHistories.length === 0) return null;
 
         return (
           <div style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
