@@ -538,13 +538,19 @@ const Dashboard = ({
       {activeFilter === '중개업무' && contracts.length > 0 && (() => {
         // 오늘 등록된 계약호실과 그들의 오늘 히스토리 필터링
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayStr = today.toISOString().split('T')[0];
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
 
         const todayHistories = [];
         contracts.forEach(contract => {
           if (contract.historyCards && contract.historyCards.length > 0) {
-            const todayCard = contract.historyCards.find(card => card.date === todayStr);
+            const todayCard = contract.historyCards.find(card => {
+              // card.date가 YYYY-MM-DD 형식일 수도 있고 ISO 형식일 수도 있으므로 둘 다 처리
+              const cardDate = card.date.substring(0, 10);
+              return cardDate === todayStr;
+            });
             if (todayCard && todayCard.items && todayCard.items.length > 0) {
               todayCard.items.forEach(item => {
                 if (item.content) {
@@ -563,11 +569,11 @@ const Dashboard = ({
         if (todayHistories.length === 0) return null;
 
         return (
-          <div style={{ marginBottom: '30px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '2px solid #4CAF50', paddingBottom: '10px' }}>
+          <div style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', borderBottom: '2px solid #4CAF50', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
               📋 오늘의 기록
             </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {todayHistories.map((history, idx) => (
                 <div
                   key={idx}
