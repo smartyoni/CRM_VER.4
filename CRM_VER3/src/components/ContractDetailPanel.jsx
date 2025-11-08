@@ -54,9 +54,9 @@ const ContractDetailPanel = ({ selectedContract, isOpen, onClose, onEdit, onDele
     }
   }, [selectedContract?.id]);
 
-  // 새로운 계약을 선택했을 때만 탭을 초기화
+  // 새로운 계약을 선택했을 때 탭을 History로 설정
   useEffect(() => {
-    setActiveTab('기본정보');
+    setActiveTab('History');
   }, [selectedContract?.id]);
 
   // 연장관리 탭 진입 시 tempExpiryManagement 초기화
