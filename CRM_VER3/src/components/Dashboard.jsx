@@ -562,9 +562,9 @@ const Dashboard = ({
         if (todayHistories.length === 0) return null;
 
         return (
-          <div style={{ marginBottom: '30px', display: 'flex', gap: '15px', height: '400px', borderRadius: '8px' }}>
-            {/* 왼쪽 패널: 오늘의 기록 */}
-            <div style={{ flex: '0 0 50%', display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
+          <div style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {/* 오늘의 기록 카드 */}
+            <div style={{ display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', borderBottom: '2px solid #4CAF50', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
                 📋 오늘의 기록
               </h2>
@@ -606,8 +606,8 @@ const Dashboard = ({
               </div>
             </div>
 
-            {/* 오른쪽 패널: 미완료 기록 */}
-            <div style={{ flex: '0 0 50%', display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
+            {/* 미완료 기록 카드 */}
+            <div style={{ display: 'flex', flexDirection: 'column', height: '400px', borderRadius: '8px', backgroundColor: '#fff', border: '1px solid #e0e0e0' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', borderBottom: '2px solid #FF9800', paddingBottom: '10px', padding: '15px 20px 10px 20px', margin: '0' }}>
                 ⚠️ 미완료 기록
               </h2>
