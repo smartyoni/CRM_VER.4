@@ -679,7 +679,7 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                   todayCard.items.push({
                     id: `item_${Date.now()}`,
                     content: '',
-                    status: '임시저장',
+                    isCompleted: false,
                     createdAt: new Date().toISOString()
                   });
 
@@ -815,11 +815,30 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                                   <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                                     <button
                                       onClick={() => {
+                                        // 등록 버튼: 기능 준비 중
+                                      }}
+                                      style={{
+                                        padding: '4px 8px',
+                                        fontSize: '11px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#e3f2fd',
+                                        color: '#1565c0',
+                                        border: '1px solid #42a5f5',
+                                        borderRadius: '3px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      등록
+                                    </button>
+                                    <button
+                                      onClick={() => {
                                         const updatedCards = selectedContract.historyCards.map(c => {
                                           if (c.id === card.id) {
                                             return {
                                               ...c,
-                                              items: c.items.map(i => i.id === item.id ? { ...i, status: item.status === '등록' ? '완료' : '등록' } : i)
+                                              items: c.items.map(i => i.id === item.id ? { ...i, isCompleted: true } : i)
                                             };
                                           }
                                           return c;
@@ -830,16 +849,16 @@ ${alignWithFixedGap('합계', '  ' + totalWithVat.toLocaleString() + '만원')}
                                         padding: '4px 8px',
                                         fontSize: '11px',
                                         fontWeight: '600',
-                                        backgroundColor: item.status === '등록' ? '#c8e6c9' : '#e3f2fd',
-                                        color: item.status === '등록' ? '#2e7d32' : '#1565c0',
-                                        border: `1px solid ${item.status === '등록' ? '#66bb6a' : '#42a5f5'}`,
+                                        backgroundColor: '#c8e6c9',
+                                        color: '#2e7d32',
+                                        border: '1px solid #66bb6a',
                                         borderRadius: '3px',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
                                         whiteSpace: 'nowrap'
                                       }}
                                     >
-                                      {item.status === '등록' ? '✓ 완료' : '등록'}
+                                      ✓ 완료
                                     </button>
                                     <button
                                       onClick={() => {

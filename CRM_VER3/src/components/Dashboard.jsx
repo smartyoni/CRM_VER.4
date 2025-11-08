@@ -530,10 +530,10 @@ const Dashboard = ({
               const cardDate = card.date.substring(0, 10);
               return cardDate === todayStr;
             });
-            // '등록' 상태인 항목만 표시 (status === '등록')
+            // 완료되지 않은 항목만 표시 (isCompleted !== true)
             if (todayCard && todayCard.items && todayCard.items.length > 0) {
               todayCard.items.forEach(item => {
-                if (item.content && item.status === '등록') {
+                if (item.content && !item.isCompleted) {
                   todayHistories.push({
                     contractId: contract.id,
                     buildingName: contract.buildingName,
