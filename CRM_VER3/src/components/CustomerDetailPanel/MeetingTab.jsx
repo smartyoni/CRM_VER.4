@@ -470,8 +470,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
     const [expandedPropertyCards, setExpandedPropertyCards] = useState(new Set());
-    const [memoText, setMemoText] = useState(meeting.memo || '');
-    const memoTimeoutRef = useRef(null);
 
     // 매물 카드 아코디언 토글
     const togglePropertyCard = (propertyId) => {
@@ -484,25 +482,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         }
         return newSet;
       });
-    };
-
-    // 메모 변경 핸들러 (debounce 적용)
-    const handleMemoChange = (newMemo) => {
-      setMemoText(newMemo);
-
-      // 기존 타이머 제거
-      if (memoTimeoutRef.current) {
-        clearTimeout(memoTimeoutRef.current);
-      }
-
-      // 500ms 후 저장
-      memoTimeoutRef.current = setTimeout(() => {
-        const updatedMeeting = {
-          ...meeting,
-          memo: newMemo
-        };
-        onSaveMeeting(updatedMeeting);
-      }, 500);
     };
 
     // 순서 순으로 정렬 (원본 인덱스 보존)
@@ -851,7 +830,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     return (
       <div className="modal-overlay">
-        <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', maxHeight: window.innerWidth < 768 ? '100vh' : '85vh', height: window.innerWidth < 768 ? '100vh' : '85vh', width: window.innerWidth < 768 ? '100%' : 'auto', maxWidth: window.innerWidth < 768 ? '100vw' : window.innerWidth * 0.9, minWidth: window.innerWidth < 768 ? 'auto' : '1300px' }}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', maxHeight: window.innerWidth < 768 ? '100vh' : '85vh', height: window.innerWidth < 768 ? '100vh' : '85vh', width: window.innerWidth < 768 ? '100%' : 'auto', maxWidth: window.innerWidth < 768 ? '100vw' : window.innerWidth * 0.9, minWidth: window.innerWidth < 768 ? 'auto' : '800px' }}>
           <div className="modal-header" style={{ height: window.innerWidth < 768 ? '40px' : 'auto', padding: window.innerWidth < 768 ? '8px 15px' : '15px' }}>
             <h3 style={{ fontSize: window.innerWidth < 768 ? '14px' : 'inherit', margin: window.innerWidth < 768 ? '0' : 'inherit' }}>미팅 매물 - {formatDateTime(meeting.date)}</h3>
             <button className="btn-close" onClick={onClose}>×</button>
@@ -1214,24 +1193,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               </div>
             </div>
 
-            {/* 우측: 메모 영역 */}
-            <div style={{ flex: window.innerWidth < 768 ? '0.5' : '1', display: 'flex', flexDirection: 'column', padding: '0', backgroundColor: '#fafafa', minHeight: window.innerWidth < 768 ? 'auto' : 'auto' }}>
-              <textarea
-                value={memoText}
-                onChange={(e) => handleMemoChange(e.target.value)}
-                placeholder="이 미팅에 대한 메모를 작성하세요..."
-                style={{
-                  flex: 1,
-                  padding: '15px',
-                  border: '1px solid #000',
-                  borderRadius: '0',
-                  fontSize: '13px',
-                  fontFamily: 'inherit',
-                  resize: 'none',
-                  overflow: 'auto'
-                }}
-              />
-            </div>
           </div>
 
           <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', borderTop: '1px solid #e0e0e0', padding: '10px 15px' }}>
