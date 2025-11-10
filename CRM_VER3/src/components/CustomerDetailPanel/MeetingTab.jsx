@@ -1192,16 +1192,18 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               </div>
             )}
               </div>
-              {/* 좌측 푸터 (보고서 버튼) */}
-              <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                <button
-                  onClick={() => setShowReportModal(true)}
-                  className="btn-primary"
-                  style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: '#FF6B9D' }}
-                >
-                  📄 보고서
-                </button>
-              </div>
+              {/* 좌측 푸터 (보고서 버튼) - 데스크톱에서만 표시 */}
+              {window.innerWidth >= 768 && (
+                <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setShowReportModal(true)}
+                    className="btn-primary"
+                    style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: '#FF6B9D' }}
+                  >
+                    📄 보고서
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* 우측: 메모 영역 */}
@@ -1226,6 +1228,15 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           </div>
 
           <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', borderTop: '1px solid #e0e0e0', padding: '10px 15px' }}>
+            {window.innerWidth < 768 && (
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="btn-primary"
+                style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: '#FF6B9D' }}
+              >
+                📄 보고서
+              </button>
+            )}
             <button
               onClick={onClose}
               className="btn-secondary"
