@@ -926,13 +926,53 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '6px',
+                          gap: '8px',
                           padding: '6px 8px',
                           borderRadius: '4px',
                           marginBottom: '8px'
                         }}
                       >
                         <span>📋 매물정보</span>
+                        <input
+                          type="text"
+                          placeholder="지번"
+                          value={prop.jibun || ''}
+                          onChange={(e) => {
+                            const newProperties = [...meeting.properties];
+                            newProperties[originalIndex] = { ...newProperties[originalIndex], jibun: e.target.value };
+                            const updatedMeeting = { ...meeting, properties: newProperties };
+                            onSaveMeeting(updatedMeeting);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '4px 8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '3px',
+                            fontSize: '12px',
+                            maxWidth: '120px'
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            if (prop.jibun) {
+                              window.open(`https://map.naver.com/v5/search/${encodeURIComponent(prop.jibun)}`);
+                            } else {
+                              alert('지번을 입력해주세요.');
+                            }
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          🗺️ 지도
+                        </button>
                       </div>
 
                       {editingInfoIndex === originalIndex ? (
