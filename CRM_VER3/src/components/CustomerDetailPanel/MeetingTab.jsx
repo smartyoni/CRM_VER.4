@@ -836,9 +836,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             <h3 style={{ fontSize: window.innerWidth < 768 ? '14px' : 'inherit', margin: window.innerWidth < 768 ? '0' : 'inherit' }}>미팅 매물 - {formatDateTime(meeting.date)}</h3>
             <button className="btn-close" onClick={onClose}>×</button>
           </div>
-          <div style={{ display: 'flex', flex: 1, gap: '0', overflow: 'hidden', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
+          <div style={{ display: 'flex', flex: 1, gap: window.innerWidth < 768 ? '0' : '10px', overflow: 'hidden', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
             {/* 좌측: 매물 목록 */}
-            <div style={{ flex: window.innerWidth < 768 ? '2' : '2', display: 'flex', flexDirection: 'column', borderRight: window.innerWidth < 768 ? 'none' : '1px solid #e0e0e0', borderBottom: window.innerWidth < 768 ? '1px solid #e0e0e0' : 'none', overflow: 'hidden' }}>
+            <div style={{ flex: window.innerWidth < 768 ? '2' : '2', display: 'flex', flexDirection: 'column', borderRight: 'none', borderBottom: window.innerWidth < 768 ? '1px solid #e0e0e0' : 'none', overflow: 'hidden' }}>
               <div ref={scrollContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
             {sortedProperties.length > 0 ? (
               sortedProperties.map(({ prop, originalIndex }, index) => (
