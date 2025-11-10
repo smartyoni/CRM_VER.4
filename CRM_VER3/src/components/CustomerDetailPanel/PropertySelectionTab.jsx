@@ -63,7 +63,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
         return;
       }
 
-      // 매물선정 저장
+      // 미팅매물준비 저장
       const selectionToSave = {
         ...formData,
         id: formData.id || generateId(),
@@ -274,7 +274,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
         <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>매물선정 - {customerName ? customerName.slice(0, 30) : ''}</h3>
+              <h3>미팅매물준비 - {customerName ? customerName.slice(0, 30) : ''}</h3>
               <button className="btn-close" onClick={onCancel}>×</button>
             </div>
 
@@ -401,7 +401,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
         return;
       }
 
-      // 매물선정은 이미 저장됨
+      // 미팅매물준비는 이미 저장됨
       // 미팅 생성 모드로 전환
       onCreateMeetingFromSelection(selection.properties);
       onClose(); // 현재 모달 닫기
@@ -736,7 +736,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                   }
                 }}
               >
-                📅 미팅내역추가
+                📅 미팅기록추가
               </button>
             </div>
           </div>
@@ -764,7 +764,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
               className="btn-primary"
               style={{ padding: '8px 16px', fontSize: '14px' }}
             >
-              + 매물선정
+              + 미팅매물준비
             </button>
           )}
         </div>
@@ -816,7 +816,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
           </table>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-            등록된 매물선정이 없습니다.
+            등록된 미팅매물준비가 없습니다.
           </div>
         )}
 

@@ -29,12 +29,12 @@ const CustomerDetailPanel = ({
 
   const handleOpenActivityDetail = (activity) => {
     setSelectedActivityDetail(activity);
-    setActiveTab('활동 내역');
+    setActiveTab('활동기록');
   };
 
   const handleOpenMeetingDetail = (meeting) => {
     setSelectedMeetingDetail(meeting);
-    setActiveTab('미팅 내역');
+    setActiveTab('미팅기록');
   };
 
   // 고객이 변경될 때마다 탭을 기본정보로 리셋
@@ -68,12 +68,12 @@ const CustomerDetailPanel = ({
     onUpdateCustomer(updatedCustomer);
   };
 
-  // 매물선정에서 미팅 생성 핸들러
+  // 미팅매물준비에서 미팅 생성 핸들러
   const handleCreateMeetingFromSelection = (properties) => {
     // 매물에 visitTime: '' 추가
     const meetingProperties = properties.map(p => ({...p, visitTime: ''}));
     setPendingMeetingProperties(meetingProperties);
-    setActiveTab('미팅 내역');
+    setActiveTab('미팅기록');
   };
 
   return (
@@ -176,7 +176,7 @@ const CustomerDetailPanel = ({
               marginBottom: '15px',
               border: '1px solid #bbdefb'
             }}>
-              {['기본정보', '활동 내역', '미팅 내역', '매물선정'].map((tab, index) => (
+              {['기본정보', '활동기록', '미팅기록', '미팅매물준비'].map((tab, index) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -225,7 +225,7 @@ const CustomerDetailPanel = ({
                   onOpenMeetingDetail={handleOpenMeetingDetail}
                 />
               )}
-              {activeTab === '활동 내역' &&
+              {activeTab === '활동기록' &&
                 <ActivityTab
                     customerId={selectedCustomer.id}
                     activities={activities}
@@ -233,7 +233,7 @@ const CustomerDetailPanel = ({
                     onDeleteActivity={onDeleteActivity}
                     selectedActivityId={selectedActivityDetail?.id}
                 />}
-              {activeTab === '미팅 내역' &&
+              {activeTab === '미팅기록' &&
                 <MeetingTab
                     customerId={selectedCustomer.id}
                     customerName={selectedCustomer.name}
@@ -244,7 +244,7 @@ const CustomerDetailPanel = ({
                     onClearInitialProperties={() => setPendingMeetingProperties(null)}
                     selectedMeetingId={selectedMeetingDetail?.id}
                 />}
-              {activeTab === '매물선정' &&
+              {activeTab === '미팅매물준비' &&
                 <PropertySelectionTab
                     customerId={selectedCustomer.id}
                     customerName={selectedCustomer.name}

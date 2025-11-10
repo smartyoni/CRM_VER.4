@@ -290,7 +290,7 @@ function App() {
   };
 
   const handleDeletePropertySelection = async (propertySelectionId) => {
-    if (confirm('정말 이 매물선정을 삭제하시겠습니까?')) {
+    if (confirm('정말 이 미팅매물준비를 삭제하시겠습니까?')) {
       await deletePropertySelection(propertySelectionId);
     }
   };
