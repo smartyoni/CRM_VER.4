@@ -11,6 +11,14 @@ const Dashboard = ({
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
+
+  // 디버깅: contracts 데이터 확인
+  React.useEffect(() => {
+    if (activeFilter === '중개업무') {
+      console.log('Dashboard contracts:', contracts);
+      console.log('Contracts with historyCards:', contracts.filter(c => c.historyCards && c.historyCards.length > 0));
+    }
+  }, [contracts, activeFilter]);
   // 대시보드 통계 계산
   const stats = useMemo(() => {
     const today = new Date();
@@ -559,9 +567,7 @@ const Dashboard = ({
           }
         });
 
-        // 오늘의 기록과 미완료 기록 중 하나라도 있으면 표시 (또는 계약호실 데이터가 있으면 항상 표시)
-        if (todayHistories.length === 0 && incompleteHistories.length === 0) return null;
-
+        // 항상 패널 표시 (계약호실이 없어도 빈 상태로 표시)
         return (
           <div className="dashboard-history-container" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'row', gap: '15px', flexWrap: 'wrap' }}>
             {/* 오늘의 기록 카드 */}
