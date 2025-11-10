@@ -1215,7 +1215,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 style={{
                   flex: 1,
                   padding: '15px',
-                  border: 'none',
+                  border: '1px solid #000',
                   borderRadius: '0',
                   fontSize: '13px',
                   fontFamily: 'inherit',
