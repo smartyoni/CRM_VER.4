@@ -1215,6 +1215,13 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           </div>
 
           <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', borderTop: '1px solid #e0e0e0', padding: '10px 15px' }}>
+            <button
+              onClick={addProperty}
+              className="btn-primary"
+              style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: '#4CAF50', marginRight: 'auto' }}
+            >
+              ➕ 매물추가
+            </button>
             {window.innerWidth >= 768 && (
               <button
                 onClick={() => setShowReportModal(true)}
