@@ -1109,36 +1109,34 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       </div>
                     </div>
                   )}
-                  {expandedPropertyCards.has(prop.id) && (
-                    <div className="property-card-footer">
-                      <span className="property-detail">🏢 {prop.agency}</span>
-                      <span className="property-detail">
-                        📞 {prop.agencyPhone ? <a href={`sms:${prop.agencyPhone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{prop.agencyPhone}</a> : ''}
-                      </span>
-                      <span className="property-detail" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        🕐
-                        <input
-                          type="time"
-                          value={prop.visitTime || ''}
-                          onChange={(e) => {
-                            const newProperties = [...meeting.properties];
-                            newProperties[originalIndex] = {...newProperties[originalIndex], visitTime: e.target.value};
-                            const updatedMeeting = {...meeting, properties: newProperties};
-                            onSaveMeeting(updatedMeeting);
-                            setViewingMeeting(updatedMeeting);
-                          }}
-                          style={{
-                            border: '1px solid #e0e0e0',
-                            padding: '2px 5px',
-                            borderRadius: '3px',
-                            fontSize: '13px',
-                            cursor: 'pointer'
-                          }}
-                        />
-                        방문
-                      </span>
-                    </div>
-                  )}
+                  <div className="property-card-footer">
+                    <span className="property-detail">🏢 {prop.agency}</span>
+                    <span className="property-detail">
+                      📞 {prop.agencyPhone ? <a href={`sms:${prop.agencyPhone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{prop.agencyPhone}</a> : ''}
+                    </span>
+                    <span className="property-detail" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      🕐
+                      <input
+                        type="time"
+                        value={prop.visitTime || ''}
+                        onChange={(e) => {
+                          const newProperties = [...meeting.properties];
+                          newProperties[originalIndex] = {...newProperties[originalIndex], visitTime: e.target.value};
+                          const updatedMeeting = {...meeting, properties: newProperties};
+                          onSaveMeeting(updatedMeeting);
+                          setViewingMeeting(updatedMeeting);
+                        }}
+                        style={{
+                          border: '1px solid #e0e0e0',
+                          padding: '2px 5px',
+                          borderRadius: '3px',
+                          fontSize: '13px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      방문
+                    </span>
+                  </div>
                   {expandedPropertyCards.has(prop.id) && (
                     <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
                       <button
