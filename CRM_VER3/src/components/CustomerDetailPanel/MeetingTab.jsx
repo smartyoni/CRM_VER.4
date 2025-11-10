@@ -531,6 +531,28 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       }
     };
 
+    const addProperty = () => {
+      const newProperty = {
+        id: generateId(),
+        roomName: '',
+        visitTime: '',
+        agency: '',
+        agencyPhone: '',
+        info: '',
+        customerResponse: '',
+        photos: ['', ''],
+        status: PROPERTY_STATUSES[0],
+        order: (meeting.properties?.length || 0) + 1
+      };
+      const updatedProperties = [...(meeting.properties || []), newProperty];
+      const updatedMeeting = {
+        ...meeting,
+        properties: updatedProperties
+      };
+      onSaveMeeting(updatedMeeting);
+      setViewingMeeting(updatedMeeting);
+    };
+
     const handleInfoDoubleClick = (originalIndex) => {
       setEditingInfoIndex(originalIndex);
       setEditingInfoValue(meeting.properties[originalIndex].info || '');
