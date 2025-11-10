@@ -316,6 +316,9 @@ const Dashboard = ({
                   padding: '6px 0',
                   cursor: 'pointer',
                   transition: 'color 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = '#2196F3';
@@ -324,6 +327,7 @@ const Dashboard = ({
                   e.currentTarget.style.color = '#555';
                 }}
               >
+                <span style={{ fontWeight: 'bold', color: color, minWidth: '20px' }}>{idx + 1}</span>
                 {type === 'contract' || type === 'balance' ? (
                   <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
                 ) : type === 'customer' ? (
@@ -405,7 +409,10 @@ const Dashboard = ({
                   borderRadius: '6px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  border: '1px solid #e0e0e0'
+                  border: '1px solid #e0e0e0',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#e8f4f8';
@@ -416,15 +423,16 @@ const Dashboard = ({
                   e.currentTarget.style.borderColor = '#e0e0e0';
                 }}
               >
+                <span style={{ fontWeight: 'bold', color: '#2196F3', minWidth: '24px', marginTop: '2px' }}>{idx + 1}</span>
                 {type === 'contract' || type === 'balance' ? (
-                  <div style={{ fontSize: '13px', fontWeight: '500' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '500', flex: 1 }}>
                     <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')}</div>
                     <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
                       {type === 'contract' ? `계약일: ${formatDate(item.contractDate)}` : `잔금일: ${formatDate(item.balanceDate)}`}
                     </div>
                   </div>
                 ) : (
-                  <div style={{ fontSize: '13px', fontWeight: '500' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '500', flex: 1 }}>
                     <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'}</div>
                     <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
                       미팅일: {formatDate(item.date)} | {item.location || '장소 미정'}
