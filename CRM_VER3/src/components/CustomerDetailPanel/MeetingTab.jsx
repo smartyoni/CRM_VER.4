@@ -1256,7 +1256,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               <thead>
                 <tr>
                   <th>미팅일시</th>
-                  <th>매물명</th>
                 </tr>
               </thead>
               <tbody>
@@ -1272,20 +1271,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                         cursor: 'context-menu'
                       }}
                       onContextMenu={(e) => handleContextMenu(e, meeting)}
+                      onClick={() => setViewingMeeting(meeting)}
                     >
-                      <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit' }}>
+                      <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit', cursor: 'pointer' }}>
                         {formatMeetingDateTime(meeting.date, meeting.properties?.length || 0)}
-                      </td>
-                      <td
-                        onClick={() => setViewingMeeting(meeting)}
-                        style={{
-                          cursor: 'pointer',
-                          color: isTodayMeeting ? '#d32f2f' : 'var(--primary-blue)',
-                          textDecoration: 'underline',
-                          fontWeight: isTodayMeeting ? 'bold' : 'normal'
-                        }}
-                      >
-                        {formatPropertyNames(meeting.properties)}
                       </td>
                     </tr>
                   );
