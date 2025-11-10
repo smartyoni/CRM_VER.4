@@ -216,7 +216,7 @@ const Dashboard = ({
   };
 
   // 항목 클릭 핸들러 (카드 리스트 또는 모달에서)
-  const handleItemClick = (item, type) => {
+  const handleItemClick = (item, type, cardTitle) => {
     if (type === 'contract' || type === 'balance') {
       // 계약 데이터의 ID를 전달하여 상세패널 직접 열기
       onNavigate('계약호실', '전체', item.id, 'contract');
@@ -225,6 +225,25 @@ const Dashboard = ({
       // 고객 ID 전달하여 상세패널 직접 열기
       onNavigate('고객관리', '오늘미팅', item.customerId, 'customer');
       setModalOpen(false);
+    } else if (type === 'customer') {
+      // 고객 카드 타입 처리
+      if (cardTitle === '즐겨찾기' || cardTitle === '미활동') {
+        // 즐겨찾기, 미활동 → 고객상세패널 이동
+        onNavigate('고객', '전체', item.id, 'customer');
+        setModalOpen(false);
+      } else if (cardTitle === '활동기록') {
+        // 활동기록 → 해당 고객의 최신 활동기록으로 이동
+        const recentActivity = activities
+          .filter(a => a.customerId === item.id)
+          .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        if (recentActivity) {
+          onNavigate('고객', '활동기록', item.id, 'activity', recentActivity.id);
+        } else {
+          // 활동기록이 없으면 고객상세패널로 이동
+          onNavigate('고객', '전체', item.id, 'customer');
+        }
+        setModalOpen(false);
+      }
     }
   };
 
@@ -285,8 +304,12 @@ const Dashboard = ({
                 key={idx}
                 onClick={(e) => {
                   e.stopPropagation();
-                  // 카드의 리스트 항목 클릭 시 모달 팝업 열기
-                  openModal(type, title, items);
+                  // 카드의 리스트 항목 클릭 시 모달 팝업 열기 또는 직접 이동
+                  if (type === 'customer') {
+                    handleItemClick(item, type, title);
+                  } else {
+                    openModal(type, title, items);
+                  }
                 }}
                 style={{
                   color: '#555',
