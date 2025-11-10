@@ -491,10 +491,12 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
       // 500ms 후 저장
       memoTimeoutRef.current = setTimeout(() => {
-        onSaveMeeting({
+        const updatedMeeting = {
           ...meeting,
           memo: newMemo
-        });
+        };
+        onSaveMeeting(updatedMeeting);
+        setViewingMeeting(updatedMeeting);
       }, 500);
     };
 
