@@ -31,7 +31,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         setViewingMeeting(meeting);
       }
     }
-  }, [selectedMeetingId, meetings]);
+  }, [selectedMeetingId]);
 
   // 오늘 날짜 확인 함수
   const isToday = (dateString) => {
