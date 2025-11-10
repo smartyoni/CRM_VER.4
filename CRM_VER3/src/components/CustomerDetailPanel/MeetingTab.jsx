@@ -464,6 +464,8 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
     const [expandedPropertyCards, setExpandedPropertyCards] = useState(new Set());
+    const [memoText, setMemoText] = useState(meeting.memo || '');
+    const memoTimeoutRef = useRef(null);
 
     // 매물 카드 아코디언 토글
     const togglePropertyCard = (propertyId) => {
@@ -476,6 +478,24 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         }
         return newSet;
       });
+    };
+
+    // 메모 변경 핸들러 (debounce 적용)
+    const handleMemoChange = (newMemo) => {
+      setMemoText(newMemo);
+
+      // 기존 타이머 제거
+      if (memoTimeoutRef.current) {
+        clearTimeout(memoTimeoutRef.current);
+      }
+
+      // 500ms 후 저장
+      memoTimeoutRef.current = setTimeout(() => {
+        onSaveMeeting({
+          ...meeting,
+          memo: newMemo
+        });
+      }, 500);
     };
 
     // 순서 순으로 정렬 (원본 인덱스 보존)
@@ -811,12 +831,15 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     return (
       <div className="modal-overlay">
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', maxHeight: '85vh', height: '85vh' }}>
           <div className="modal-header">
             <h3>미팅 매물 - {formatDateTime(meeting.date)}</h3>
             <button className="btn-close" onClick={onClose}>×</button>
           </div>
-          <div ref={scrollContainerRef} style={{ maxHeight: '60vh', overflowY: 'auto', padding: '10px 0' }}>
+          <div style={{ display: 'flex', flex: 1, gap: '0', overflow: 'hidden' }}>
+            {/* 좌측: 매물 목록 */}
+            <div style={{ flex: '2', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e0e0e0', overflow: 'hidden' }}>
+              <div ref={scrollContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
             {sortedProperties.length > 0 ? (
               sortedProperties.map(({ prop, originalIndex }) => (
                 <div key={prop.id} className="property-card" style={{ marginBottom: '15px' }}>
@@ -1168,15 +1191,41 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 등록된 매물이 없습니다.
               </div>
             )}
+              </div>
+              {/* 좌측 푸터 (보고서 버튼) */}
+              <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="btn-primary"
+                  style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: '#FF6B9D' }}
+                >
+                  📄 보고서
+                </button>
+              </div>
+            </div>
+
+            {/* 우측: 메모 영역 */}
+            <div style={{ flex: '1', display: 'flex', flexDirection: 'column', padding: '15px', backgroundColor: '#fafafa' }}>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>📝 메모</div>
+              <textarea
+                value={memoText}
+                onChange={(e) => handleMemoChange(e.target.value)}
+                placeholder="이 미팅에 대한 메모를 작성하세요..."
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  resize: 'none',
+                  overflow: 'auto'
+                }}
+              />
+            </div>
           </div>
-          <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => setShowReportModal(true)}
-              className="btn-primary"
-              style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: '#FF6B9D' }}
-            >
-              📄 보고서
-            </button>
+
+          <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', borderTop: '1px solid #e0e0e0', padding: '10px 15px' }}>
             <button
               onClick={onClose}
               className="btn-secondary"
