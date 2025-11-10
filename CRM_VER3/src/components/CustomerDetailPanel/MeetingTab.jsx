@@ -78,7 +78,8 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     }
 
     const addProperty = () => {
-        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] };
+        const nextOrder = formData.properties.length + 1;
+        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0], order: nextOrder };
         setFormData({...formData, properties: [...formData.properties, newProperty]});
     }
 
@@ -104,7 +105,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyModal = ({ onClose, propertyToEdit, editIndex }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0], order: editIndex !== null ? editIndex + 1 : 1 }
       );
       const [source, setSource] = useState('TEN');
 
@@ -461,18 +462,19 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
 
-    // 방문시간 순으로 정렬 (원본 인덱스 보존)
+    // 순서 순으로 정렬 (원본 인덱스 보존)
     // photos 필드 초기화
-    const normalizedProperties = meeting.properties?.map(prop => ({
+    const normalizedProperties = meeting.properties?.map((prop, index) => ({
       ...prop,
+      order: prop.order !== undefined ? prop.order : index + 1,
       photos: prop.photos || ['', '']
     })) || [];
 
     const sortedProperties = normalizedProperties.map((prop, originalIndex) => ({ prop, originalIndex }))
       .sort((a, b) => {
-        if (!a.prop.visitTime) return 1;
-        if (!b.prop.visitTime) return -1;
-        return a.prop.visitTime.localeCompare(b.prop.visitTime);
+        const orderA = a.prop.order || 999;
+        const orderB = b.prop.order || 999;
+        return orderA - orderB;
       });
 
     const handlePropertyEdit = (propertyIndex) => {
@@ -804,20 +806,47 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <div key={prop.id} className="property-card" style={{ marginBottom: '15px' }}>
                   <div className="property-card-header">
                     <div className="property-room-name">🏠 {prop.roomName || '미지정'}</div>
-                    <select
-                      className={`property-status-badge status-${prop.status}`}
-                      value={prop.status}
-                      onChange={(e) => {
-                        const newProperties = [...meeting.properties];
-                        newProperties[originalIndex] = {...newProperties[originalIndex], status: e.target.value};
-                        const updatedMeeting = {...meeting, properties: newProperties};
-                        onSaveMeeting(updatedMeeting);
-                        setViewingMeeting(updatedMeeting);
-                      }}
-                      style={{ cursor: 'pointer', border: 'none', fontWeight: 'bold' }}
-                    >
-                      {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <select
+                        className="property-status-badge"
+                        value={prop.order || originalIndex + 1}
+                        onChange={(e) => {
+                          const newProperties = [...meeting.properties];
+                          newProperties[originalIndex] = {...newProperties[originalIndex], order: parseInt(e.target.value)};
+                          const updatedMeeting = {...meeting, properties: newProperties};
+                          onSaveMeeting(updatedMeeting);
+                          setViewingMeeting(updatedMeeting);
+                        }}
+                        style={{
+                          cursor: 'pointer',
+                          border: 'none',
+                          fontWeight: 'bold',
+                          backgroundColor: '#e0e0e0',
+                          color: '#333',
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                          <option key={num} value={num}>{num}</option>
+                        ))}
+                      </select>
+                      <select
+                        className={`property-status-badge status-${prop.status}`}
+                        value={prop.status}
+                        onChange={(e) => {
+                          const newProperties = [...meeting.properties];
+                          newProperties[originalIndex] = {...newProperties[originalIndex], status: e.target.value};
+                          const updatedMeeting = {...meeting, properties: newProperties};
+                          onSaveMeeting(updatedMeeting);
+                          setViewingMeeting(updatedMeeting);
+                        }}
+                        style={{ cursor: 'pointer', border: 'none', fontWeight: 'bold' }}
+                      >
+                        {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
                   </div>
                   <div className="property-card-body">
                     <div className="property-info-label">📋 매물정보</div>
