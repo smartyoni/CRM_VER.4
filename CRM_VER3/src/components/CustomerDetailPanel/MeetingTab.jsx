@@ -496,7 +496,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           memo: newMemo
         };
         onSaveMeeting(updatedMeeting);
-        setViewingMeeting(updatedMeeting);
       }, 500);
     };
 
@@ -528,8 +527,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           properties: updatedProperties
         };
         onSaveMeeting(updatedMeeting);
-        // viewingMeeting 상태도 업데이트
-        setViewingMeeting(updatedMeeting);
       }
     };
 
@@ -552,7 +549,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         properties: updatedProperties
       };
       onSaveMeeting(updatedMeeting);
-      setViewingMeeting(updatedMeeting);
     };
 
     const handleInfoDoubleClick = (originalIndex) => {
@@ -566,7 +562,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         newProperties[originalIndex] = { ...newProperties[originalIndex], info: editingInfoValue };
         const updatedMeeting = { ...meeting, properties: newProperties };
         onSaveMeeting(updatedMeeting);
-        setViewingMeeting(updatedMeeting);
         setEditingInfoIndex(null);
         setEditingInfoValue('');
       }
@@ -596,7 +591,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         newProperties[originalIndex] = { ...newProperties[originalIndex], customerResponse: editingResponseValue };
         const updatedMeeting = { ...meeting, properties: newProperties };
         onSaveMeeting(updatedMeeting);
-        setViewingMeeting(updatedMeeting);
         setEditingResponseIndex(null);
         setEditingResponseValue('');
       }
@@ -656,7 +650,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
           const updatedMeeting = { ...meeting, properties: newProperties };
           onSaveMeeting(updatedMeeting);
-          setViewingMeeting(updatedMeeting);
         };
         img.src = event.target?.result;
       };
@@ -670,7 +663,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
       const updatedMeeting = { ...meeting, properties: newProperties };
       onSaveMeeting(updatedMeeting);
-      setViewingMeeting(updatedMeeting);
     };
 
     const triggerPhotoUpload = (originalIndex) => {
@@ -710,8 +702,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         properties: newProperties
       };
       onSaveMeeting(updatedMeeting);
-      // viewingMeeting 상태도 업데이트
-      setViewingMeeting(updatedMeeting);
       setShowPropertyEditModal(false);
       setEditingPropertyIndex(null);
     };
