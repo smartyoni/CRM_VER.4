@@ -853,7 +853,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     return (
       <div className="modal-overlay">
-        <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', maxHeight: '85vh', height: '85vh', width: window.innerWidth < 768 ? '100%' : 'auto', maxWidth: window.innerWidth < 768 ? '100vw' : window.innerWidth * 0.9, minWidth: window.innerWidth < 768 ? 'auto' : '1300px' }}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', maxHeight: window.innerWidth < 768 ? '100vh' : '85vh', height: window.innerWidth < 768 ? '100vh' : '85vh', width: window.innerWidth < 768 ? '100%' : 'auto', maxWidth: window.innerWidth < 768 ? '100vw' : window.innerWidth * 0.9, minWidth: window.innerWidth < 768 ? 'auto' : '1300px' }}>
           <div className="modal-header" style={{ height: window.innerWidth < 768 ? '40px' : 'auto', padding: window.innerWidth < 768 ? '8px 15px' : '15px' }}>
             <h3 style={{ fontSize: window.innerWidth < 768 ? '14px' : 'inherit', margin: window.innerWidth < 768 ? '0' : 'inherit' }}>미팅 매물 - {formatDateTime(meeting.date)}</h3>
             <button className="btn-close" onClick={onClose}>×</button>
