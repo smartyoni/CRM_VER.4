@@ -23,15 +23,18 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     }
   }, [initialProperties, onClearInitialProperties]);
 
+  // meetings 배열의 현재 값을 캐싱 (Firebase 업데이트로 인한 빈번한 변경을 무시)
+  const cachedMeetings = useMemo(() => meetings, [selectedMeetingId]);
+
   // 외부에서 미팅이 선택되면 모달 자동 오픈
   useEffect(() => {
     if (selectedMeetingId) {
-      const meeting = meetings.find(m => m.id === selectedMeetingId);
+      const meeting = cachedMeetings.find(m => m.id === selectedMeetingId);
       if (meeting) {
         setViewingMeeting(meeting);
       }
     }
-  }, [selectedMeetingId]);
+  }, [selectedMeetingId, cachedMeetings]);
 
   // 오늘 날짜 확인 함수
   const isToday = (dateString) => {
