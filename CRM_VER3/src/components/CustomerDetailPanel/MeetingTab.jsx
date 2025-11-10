@@ -846,7 +846,17 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                         value={prop.status}
                         onChange={(e) => {
                           const newProperties = [...meeting.properties];
-                          newProperties[originalIndex] = {...newProperties[originalIndex], status: e.target.value};
+                          const newStatus = e.target.value;
+
+                          // 준비상태에 따라 순서 자동 변경
+                          let newOrder = prop.order;
+                          if (newStatus === '계약됨') {
+                            newOrder = 9;
+                          } else if (newStatus === '오늘못봄') {
+                            newOrder = 8;
+                          }
+
+                          newProperties[originalIndex] = {...newProperties[originalIndex], status: newStatus, order: newOrder};
                           const updatedMeeting = {...meeting, properties: newProperties};
                           onSaveMeeting(updatedMeeting);
                           setViewingMeeting(updatedMeeting);
