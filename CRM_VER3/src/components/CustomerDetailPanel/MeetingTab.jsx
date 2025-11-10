@@ -457,6 +457,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [editingInfoValue, setEditingInfoValue] = useState('');
     const [editingResponseIndex, setEditingResponseIndex] = useState(null);
     const [editingResponseValue, setEditingResponseValue] = useState('');
+    const scrollContainerRef = useRef(null);
     const [photoSourcePropertyIndex, setPhotoSourcePropertyIndex] = useState(null);
     const [showReportModal, setShowReportModal] = useState(false);
     const cameraInputRef = React.useRef(null);
@@ -800,7 +801,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             <h3>미팅 매물 - {formatDateTime(meeting.date)}</h3>
             <button className="btn-close" onClick={onClose}>×</button>
           </div>
-          <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '10px 0' }}>
+          <div ref={scrollContainerRef} style={{ maxHeight: '60vh', overflowY: 'auto', padding: '10px 0' }}>
             {sortedProperties.length > 0 ? (
               sortedProperties.map(({ prop, originalIndex }) => (
                 <div key={prop.id} className="property-card" style={{ marginBottom: '15px' }}>
@@ -811,11 +812,17 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                         className="property-status-badge"
                         value={prop.order || originalIndex + 1}
                         onChange={(e) => {
+                          const scrollPos = scrollContainerRef.current?.scrollTop;
                           const newProperties = [...meeting.properties];
                           newProperties[originalIndex] = {...newProperties[originalIndex], order: parseInt(e.target.value)};
                           const updatedMeeting = {...meeting, properties: newProperties};
                           onSaveMeeting(updatedMeeting);
                           setViewingMeeting(updatedMeeting);
+                          setTimeout(() => {
+                            if (scrollContainerRef.current) {
+                              scrollContainerRef.current.scrollTop = scrollPos;
+                            }
+                          }, 0);
                         }}
                         style={{
                           cursor: 'pointer',
@@ -836,11 +843,17 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                         className={`property-status-badge status-${prop.status}`}
                         value={prop.status}
                         onChange={(e) => {
+                          const scrollPos = scrollContainerRef.current?.scrollTop;
                           const newProperties = [...meeting.properties];
                           newProperties[originalIndex] = {...newProperties[originalIndex], status: e.target.value};
                           const updatedMeeting = {...meeting, properties: newProperties};
                           onSaveMeeting(updatedMeeting);
                           setViewingMeeting(updatedMeeting);
+                          setTimeout(() => {
+                            if (scrollContainerRef.current) {
+                              scrollContainerRef.current.scrollTop = scrollPos;
+                            }
+                          }, 0);
                         }}
                         style={{ cursor: 'pointer', border: 'none', fontWeight: 'bold' }}
                       >
