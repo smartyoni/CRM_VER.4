@@ -902,9 +902,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
                           // 준비상태에 따라 순서 자동 변경
                           let newOrder = prop.order;
-                          if (newStatus === '계약됨') {
+                          if (newStatus === '오늘못봄' || newStatus === '계약됨') {
                             newOrder = 9;
-                          } else if (newStatus === '오늘못봄') {
+                          } else if (newStatus === '현장방문완료' || newStatus === '안보기로함') {
                             newOrder = 8;
                           }
 
