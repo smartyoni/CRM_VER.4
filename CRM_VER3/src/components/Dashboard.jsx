@@ -229,7 +229,7 @@ const Dashboard = ({
       // 고객 카드 타입 처리
       if (cardTitle === '즐겨찾기' || cardTitle === '미활동') {
         // 즐겨찾기, 미활동 → 고객상세패널 이동
-        onNavigate('고객', '전체', item.id, 'customer');
+        onNavigate('고객관리', '전체', item.id, 'customer');
         setModalOpen(false);
       } else if (cardTitle === '활동기록') {
         // 활동기록 → 해당 고객의 최신 활동기록으로 이동
@@ -237,10 +237,10 @@ const Dashboard = ({
           .filter(a => a.customerId === item.id)
           .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
         if (recentActivity) {
-          onNavigate('고객', '활동기록', item.id, 'activity', recentActivity.id);
+          onNavigate('고객관리', '활동기록', item.id, 'activity', recentActivity.id);
         } else {
           // 활동기록이 없으면 고객상세패널로 이동
-          onNavigate('고객', '전체', item.id, 'customer');
+          onNavigate('고객관리', '전체', item.id, 'customer');
         }
         setModalOpen(false);
       }
