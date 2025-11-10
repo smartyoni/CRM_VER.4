@@ -471,7 +471,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const fileInputRef = React.useRef(null);
     const [expandedPropertyCards, setExpandedPropertyCards] = useState(new Set());
     const [jibunValues, setJibunValues] = useState({}); // 지번 입력값 임시 저장
-    const jibunTimeoutRef = useRef({}); // 지번별 타이머
 
     // 매물 카드 아코디언 토글
     const togglePropertyCard = (propertyId) => {
@@ -940,22 +939,16 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                           placeholder="지번"
                           value={jibunValues[prop.id] !== undefined ? jibunValues[prop.id] : (prop.jibun || '')}
                           onChange={(e) => {
+                            // 입력값을 임시 상태에만 저장 (저장 안함)
+                            setJibunValues(prev => ({ ...prev, [prop.id]: e.target.value }));
+                          }}
+                          onBlur={(e) => {
+                            // 입력 완료 시에만 저장
                             const newValue = e.target.value;
-                            // 입력값을 임시 상태에 저장 (UI 즉시 반영)
-                            setJibunValues(prev => ({ ...prev, [prop.id]: newValue }));
-
-                            // 기존 타이머 제거
-                            if (jibunTimeoutRef.current[prop.id]) {
-                              clearTimeout(jibunTimeoutRef.current[prop.id]);
-                            }
-
-                            // 800ms 후에 저장
-                            jibunTimeoutRef.current[prop.id] = setTimeout(() => {
-                              const newProperties = [...meeting.properties];
-                              newProperties[originalIndex] = { ...newProperties[originalIndex], jibun: newValue };
-                              const updatedMeeting = { ...meeting, properties: newProperties };
-                              onSaveMeeting(updatedMeeting);
-                            }, 800);
+                            const newProperties = [...meeting.properties];
+                            newProperties[originalIndex] = { ...newProperties[originalIndex], jibun: newValue };
+                            const updatedMeeting = { ...meeting, properties: newProperties };
+                            onSaveMeeting(updatedMeeting);
                           }}
                           style={{
                             flex: 1,
