@@ -303,6 +303,8 @@ const Dashboard = ({
               >
                 {type === 'contract' || type === 'balance' ? (
                   <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
+                ) : type === 'customer' ? (
+                  <div>{item.name || '알 수 없음'}</div>
                 ) : (
                   <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'} - {formatDate(item.date)}</div>
                 )}
@@ -519,7 +521,89 @@ const Dashboard = ({
         </div>
       )}
 
+      {/* 고객관리 필터 - 3개 카드 */}
+      {activeFilter === '고객관리' && (() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
+        // 1. 즐겨찾기: 즐겨찾기 된 고객을 접수일 최신순으로 5개
+        const favoriteCustomers = customers
+          .filter(c => c.isFavorite)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5);
+
+        // 2. 활동기록: 최신 활동기록순으로 5개의 고객
+        const customersWithActivity = customers
+          .map(c => {
+            const recentActivity = activities
+              .filter(a => a.customerId === c.id)
+              .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+            return {
+              ...c,
+              lastActivityDate: recentActivity ? new Date(recentActivity.date) : null
+            };
+          })
+          .filter(c => c.lastActivityDate)
+          .sort((a, b) => b.lastActivityDate - a.lastActivityDate)
+          .slice(0, 5);
+
+        // 3. 미활동: 활동기록이 오늘로부터 먼 순서대로 5개
+        const inactiveCustomers = customers
+          .map(c => {
+            const recentActivity = activities
+              .filter(a => a.customerId === c.id)
+              .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+            return {
+              ...c,
+              lastActivityDate: recentActivity ? new Date(recentActivity.date) : new Date(0)
+            };
+          })
+          .sort((a, b) => a.lastActivityDate - b.lastActivityDate)
+          .slice(0, 5);
+
+        return (
+          <div className="dashboard-grid">
+            {/* 즐겨찾기 */}
+            <StatCard
+              title="즐겨찾기"
+              number={customers.filter(c => c.isFavorite).length}
+              items={favoriteCustomers.map(c => ({
+                ...c,
+                displayName: c.name
+              }))}
+              color="#FF6B9D"
+              type="customer"
+              onClick={() => openModal('customer', '즐겨찾기', favoriteCustomers)}
+            />
+
+            {/* 활동기록 */}
+            <StatCard
+              title="활동기록"
+              number={customers.length}
+              items={customersWithActivity.map(c => ({
+                ...c,
+                displayName: c.name
+              }))}
+              color="#2196F3"
+              type="customer"
+              onClick={() => openModal('customer', '활동기록', customersWithActivity)}
+            />
+
+            {/* 미활동 */}
+            <StatCard
+              title="미활동"
+              number={customers.length}
+              items={inactiveCustomers.map(c => ({
+                ...c,
+                displayName: c.name
+              }))}
+              color="#FF9800"
+              type="customer"
+              onClick={() => openModal('customer', '미활동', inactiveCustomers)}
+            />
+          </div>
+        );
+      })()}
 
       {/* 오늘의 기록 & 미완료 기록 - 두 개의 패널 */}
       {activeFilter === '중개업무' && (() => {
