@@ -464,10 +464,24 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
     const [expandedPropertyInfo, setExpandedPropertyInfo] = useState(new Set());
+    const [expandedPropertyCards, setExpandedPropertyCards] = useState(new Set());
 
     // 매물정보 아코디언 토글
     const togglePropertyInfo = (propertyId) => {
       setExpandedPropertyInfo(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(propertyId)) {
+          newSet.delete(propertyId);
+        } else {
+          newSet.add(propertyId);
+        }
+        return newSet;
+      });
+    };
+
+    // 매물 카드 아코디언 토글
+    const togglePropertyCard = (propertyId) => {
+      setExpandedPropertyCards(prev => {
         const newSet = new Set(prev);
         if (newSet.has(propertyId)) {
           newSet.delete(propertyId);
@@ -820,9 +834,25 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             {sortedProperties.length > 0 ? (
               sortedProperties.map(({ prop, originalIndex }) => (
                 <div key={prop.id} className="property-card" style={{ marginBottom: '15px' }}>
-                  <div className="property-card-header">
+                  <div
+                    className="property-card-header"
+                    onClick={() => togglePropertyCard(prop.id)}
+                    style={{
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      paddingRight: '8px',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <span style={{ fontSize: '12px', color: '#999', minWidth: '16px' }}>
+                      {expandedPropertyCards.has(prop.id) ? '▼' : '▶'}
+                    </span>
                     <div className="property-room-name">🏠 {prop.roomName || '미지정'}</div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
                       <select
                         className="property-status-badge"
                         value={prop.order || originalIndex + 1}
@@ -881,191 +911,195 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       </select>
                     </div>
                   </div>
-                  <div className="property-card-body">
-                    <div
-                      className="property-info-label"
-                      onClick={() => togglePropertyInfo(prop.id)}
-                      style={{
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 8px',
-                        borderRadius: '4px',
-                        transition: 'background-color 0.2s',
-                        marginBottom: '8px',
-                        userSelect: 'none'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <span style={{ fontSize: '10px', color: '#999' }}>
-                        {expandedPropertyInfo.has(prop.id) ? '▼' : '▶'}
-                      </span>
-                      <span>📋 매물정보</span>
-                    </div>
-
-                    {expandedPropertyInfo.has(prop.id) && (
-                      <>
-                        {editingInfoIndex === originalIndex ? (
-                          <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
-                            <textarea
-                              value={editingInfoValue}
-                              onChange={(e) => setEditingInfoValue(e.target.value)}
-                              onKeyDown={(e) => handleInfoKeyDown(e, originalIndex)}
-                              onBlur={() => handleInfoSave(originalIndex)}
-                              autoFocus
-                              style={{
-                                width: '100%',
-                                minHeight: '200px',
-                                padding: '8px',
-                                border: '1px solid #FF6B9D',
-                                borderRadius: '4px',
-                                fontSize: '13px',
-                                fontFamily: 'inherit',
-                                resize: 'vertical'
-                              }}
-                            />
-                            <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
-                              <button
-                                onClick={() => handleInfoSave(originalIndex)}
-                                style={{
-                                  padding: '4px 12px',
-                                  backgroundColor: '#4CAF50',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '3px',
-                                  cursor: 'pointer',
-                                  fontSize: '12px'
-                                }}
-                              >
-                                ✓ 저장
-                              </button>
-                              <button
-                                onClick={handleInfoCancel}
-                                style={{
-                                  padding: '4px 12px',
-                                  backgroundColor: '#999',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '3px',
-                                  cursor: 'pointer',
-                                  fontSize: '12px'
-                                }}
-                              >
-                                ✕ 취소
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div
-                            className="property-info-content"
-                            onDoubleClick={() => handleInfoDoubleClick(originalIndex)}
-                            style={{
-                              padding: '8px',
-                              backgroundColor: '#f9f9f9',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              border: '1px solid transparent',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#f0f0f0';
-                              e.currentTarget.style.border = '1px solid #e0e0e0';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#f9f9f9';
-                              e.currentTarget.style.border = '1px solid transparent';
-                            }}
-                          >
-                            {prop.info || '(비어있음)'}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
-                    {editingResponseIndex === originalIndex ? (
-                      <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
-                        <textarea
-                          value={editingResponseValue}
-                          onChange={(e) => setEditingResponseValue(e.target.value)}
-                          onKeyDown={(e) => handleResponseKeyDown(e, originalIndex)}
-                          onBlur={() => handleResponseSave(originalIndex)}
-                          autoFocus
-                          style={{
-                            width: '100%',
-                            minHeight: '100px',
-                            padding: '8px',
-                            border: '1px solid #FF6B9D',
-                            borderRadius: '4px',
-                            fontSize: '13px',
-                            fontFamily: 'inherit',
-                            resize: 'vertical'
-                          }}
-                        />
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
-                          <button
-                            onClick={() => handleResponseSave(originalIndex)}
-                            style={{
-                              padding: '4px 12px',
-                              backgroundColor: '#4CAF50',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '3px',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                            }}
-                          >
-                            ✓ 저장
-                          </button>
-                          <button
-                            onClick={handleResponseCancel}
-                            style={{
-                              padding: '4px 12px',
-                              backgroundColor: '#999',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '3px',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                            }}
-                          >
-                            ✕ 취소
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
+                  {expandedPropertyCards.has(prop.id) && (
+                    <div className="property-card-body">
                       <div
-                        onDoubleClick={() => handleResponseDoubleClick(originalIndex)}
+                        className="property-info-label"
+                        onClick={() => togglePropertyInfo(prop.id)}
                         style={{
-                          padding: '8px',
-                          backgroundColor: '#f9f9f9',
-                          borderRadius: '4px',
                           cursor: 'pointer',
-                          border: '1px solid transparent',
-                          transition: 'all 0.2s ease',
-                          minHeight: '20px',
-                          fontSize: '13px',
-                          color: '#333',
-                          lineHeight: '1.5',
-                          whiteSpace: 'pre-wrap'
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 8px',
+                          borderRadius: '4px',
+                          transition: 'background-color 0.2s',
+                          marginBottom: '8px',
+                          userSelect: 'none'
                         }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f0f0f0';
-                          e.currentTarget.style.border = '1px solid #e0e0e0';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f9f9f9';
-                          e.currentTarget.style.border = '1px solid transparent';
-                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        {prop.customerResponse || '(클릭하여 고객반응 추가)'}
+                        <span style={{ fontSize: '10px', color: '#999' }}>
+                          {expandedPropertyInfo.has(prop.id) ? '▼' : '▶'}
+                        </span>
+                        <span>📋 매물정보</span>
                       </div>
-                    )}
-                  </div>
-                  {prop.photos && prop.photos.some(photo => photo) && (
+
+                      {expandedPropertyInfo.has(prop.id) && (
+                        <>
+                          {editingInfoIndex === originalIndex ? (
+                            <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
+                              <textarea
+                                value={editingInfoValue}
+                                onChange={(e) => setEditingInfoValue(e.target.value)}
+                                onKeyDown={(e) => handleInfoKeyDown(e, originalIndex)}
+                                onBlur={() => handleInfoSave(originalIndex)}
+                                autoFocus
+                                style={{
+                                  width: '100%',
+                                  minHeight: '200px',
+                                  padding: '8px',
+                                  border: '1px solid #FF6B9D',
+                                  borderRadius: '4px',
+                                  fontSize: '13px',
+                                  fontFamily: 'inherit',
+                                  resize: 'vertical'
+                                }}
+                              />
+                              <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                                <button
+                                  onClick={() => handleInfoSave(originalIndex)}
+                                  style={{
+                                    padding: '4px 12px',
+                                    backgroundColor: '#4CAF50',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '3px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px'
+                                  }}
+                                >
+                                  ✓ 저장
+                                </button>
+                                <button
+                                  onClick={handleInfoCancel}
+                                  style={{
+                                    padding: '4px 12px',
+                                    backgroundColor: '#999',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '3px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px'
+                                  }}
+                                >
+                                  ✕ 취소
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              className="property-info-content"
+                              onDoubleClick={() => handleInfoDoubleClick(originalIndex)}
+                              style={{
+                                padding: '8px',
+                                backgroundColor: '#f9f9f9',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                border: '1px solid transparent',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f0f0f0';
+                                e.currentTarget.style.border = '1px solid #e0e0e0';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f9f9f9';
+                                e.currentTarget.style.border = '1px solid transparent';
+                              }}
+                            >
+                              {prop.info || '(비어있음)'}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                  {expandedPropertyCards.has(prop.id) && (
+                    <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
+                      {editingResponseIndex === originalIndex ? (
+                        <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
+                          <textarea
+                            value={editingResponseValue}
+                            onChange={(e) => setEditingResponseValue(e.target.value)}
+                            onKeyDown={(e) => handleResponseKeyDown(e, originalIndex)}
+                            onBlur={() => handleResponseSave(originalIndex)}
+                            autoFocus
+                            style={{
+                              width: '100%',
+                              minHeight: '100px',
+                              padding: '8px',
+                              border: '1px solid #FF6B9D',
+                              borderRadius: '4px',
+                              fontSize: '13px',
+                              fontFamily: 'inherit',
+                              resize: 'vertical'
+                            }}
+                          />
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={() => handleResponseSave(originalIndex)}
+                              style={{
+                                padding: '4px 12px',
+                                backgroundColor: '#4CAF50',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              ✓ 저장
+                            </button>
+                            <button
+                              onClick={handleResponseCancel}
+                              style={{
+                                padding: '4px 12px',
+                                backgroundColor: '#999',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              ✕ 취소
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onDoubleClick={() => handleResponseDoubleClick(originalIndex)}
+                          style={{
+                            padding: '8px',
+                            backgroundColor: '#f9f9f9',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            border: '1px solid transparent',
+                            transition: 'all 0.2s ease',
+                            minHeight: '20px',
+                            fontSize: '13px',
+                            color: '#333',
+                            lineHeight: '1.5',
+                            whiteSpace: 'pre-wrap'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f0f0f0';
+                            e.currentTarget.style.border = '1px solid #e0e0e0';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f9f9f9';
+                            e.currentTarget.style.border = '1px solid transparent';
+                          }}
+                        >
+                          {prop.customerResponse || '(클릭하여 고객반응 추가)'}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {expandedPropertyCards.has(prop.id) && prop.photos && prop.photos.some(photo => photo) && (
                     <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
                       <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px', fontWeight: '600' }}>📷 사진</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -1102,56 +1136,60 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       </div>
                     </div>
                   )}
-                  <div className="property-card-footer">
-                    <span className="property-detail">🏢 {prop.agency}</span>
-                    <span className="property-detail">
-                      📞 {prop.agencyPhone ? <a href={`sms:${prop.agencyPhone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{prop.agencyPhone}</a> : ''}
-                    </span>
-                    <span className="property-detail" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      🕐
-                      <input
-                        type="time"
-                        value={prop.visitTime || ''}
-                        onChange={(e) => {
-                          const newProperties = [...meeting.properties];
-                          newProperties[originalIndex] = {...newProperties[originalIndex], visitTime: e.target.value};
-                          const updatedMeeting = {...meeting, properties: newProperties};
-                          onSaveMeeting(updatedMeeting);
-                          setViewingMeeting(updatedMeeting);
-                        }}
+                  {expandedPropertyCards.has(prop.id) && (
+                    <div className="property-card-footer">
+                      <span className="property-detail">🏢 {prop.agency}</span>
+                      <span className="property-detail">
+                        📞 {prop.agencyPhone ? <a href={`sms:${prop.agencyPhone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{prop.agencyPhone}</a> : ''}
+                      </span>
+                      <span className="property-detail" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        🕐
+                        <input
+                          type="time"
+                          value={prop.visitTime || ''}
+                          onChange={(e) => {
+                            const newProperties = [...meeting.properties];
+                            newProperties[originalIndex] = {...newProperties[originalIndex], visitTime: e.target.value};
+                            const updatedMeeting = {...meeting, properties: newProperties};
+                            onSaveMeeting(updatedMeeting);
+                            setViewingMeeting(updatedMeeting);
+                          }}
+                          style={{
+                            border: '1px solid #e0e0e0',
+                            padding: '2px 5px',
+                            borderRadius: '3px',
+                            fontSize: '13px',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        방문
+                      </span>
+                    </div>
+                  )}
+                  {expandedPropertyCards.has(prop.id) && (
+                    <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                      <button
+                        onClick={() => triggerPhotoUpload(originalIndex)}
                         style={{
-                          border: '1px solid #e0e0e0',
-                          padding: '2px 5px',
-                          borderRadius: '3px',
-                          fontSize: '13px',
-                          cursor: 'pointer'
+                          backgroundColor: '#FF9800',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
                         }}
-                      />
-                      방문
-                    </span>
-                  </div>
-                  <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                    <button
-                      onClick={() => triggerPhotoUpload(originalIndex)}
-                      style={{
-                        backgroundColor: '#FF9800',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                      title="사진 촬영/첨부"
-                    >
-                      📸 사진
-                    </button>
-                    <button onClick={() => handlePropertyEdit(originalIndex)} className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>수정</button>
-                    <button onClick={() => handlePropertyDelete(originalIndex)} className="btn-secondary" style={{ fontSize: '12px', padding: '6px 12px' }}>삭제</button>
-                  </div>
+                        title="사진 촬영/첨부"
+                      >
+                        📸 사진
+                      </button>
+                      <button onClick={() => handlePropertyEdit(originalIndex)} className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>수정</button>
+                      <button onClick={() => handlePropertyDelete(originalIndex)} className="btn-secondary" style={{ fontSize: '12px', padding: '6px 12px' }}>삭제</button>
+                    </div>
+                  )}
                 </div>
               ))
             ) : (
