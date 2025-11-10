@@ -1110,12 +1110,12 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                     </div>
                   )}
                   <div className="property-card-footer">
-                    <span className="property-detail">{prop.agency}</span>
+                    <span className="property-detail">• {prop.agency}</span>
                     <span className="property-detail">
-                      {prop.agencyPhone ? <a href={`sms:${prop.agencyPhone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{prop.agencyPhone}</a> : ''}
+                      • {prop.agencyPhone ? <a href={`sms:${prop.agencyPhone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{prop.agencyPhone}</a> : ''}
                     </span>
                     <span className="property-detail" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      🕐
+                      •
                       <input
                         type="time"
                         value={prop.visitTime || ''}
