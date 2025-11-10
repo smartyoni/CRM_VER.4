@@ -841,7 +841,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               <div ref={scrollContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
             {sortedProperties.length > 0 ? (
               sortedProperties.map(({ prop, originalIndex }, index) => (
-                <div key={prop.id} className="property-card" style={{ marginBottom: '15px', marginTop: window.innerWidth < 768 ? '15px' : (index === 0 ? '0' : '15px'), width: window.innerWidth < 768 ? 'auto' : '90%' }}>
+                <div key={prop.id} className="property-card" style={{ marginBottom: '15px', marginTop: window.innerWidth < 768 ? '15px' : (index === 0 ? '0' : '15px'), width: window.innerWidth < 768 ? 'auto' : '90%', marginLeft: window.innerWidth < 768 ? '0' : 'auto', marginRight: window.innerWidth < 768 ? '0' : 'auto' }}>
                   <div
                     className="property-card-header"
                     onClick={() => togglePropertyCard(prop.id)}
