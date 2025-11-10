@@ -327,7 +327,7 @@ const Dashboard = ({
                   e.currentTarget.style.color = '#555';
                 }}
               >
-                <span style={{ fontWeight: 'bold', color: '#000', minWidth: '20px' }}>{idx + 1}</span>
+                <span style={{ fontWeight: 'bold', color: '#000', minWidth: '20px' }}>{idx + 1}.</span>
                 {type === 'contract' || type === 'balance' ? (
                   <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
                 ) : type === 'customer' ? (
@@ -423,7 +423,7 @@ const Dashboard = ({
                   e.currentTarget.style.borderColor = '#e0e0e0';
                 }}
               >
-                <span style={{ fontWeight: 'bold', color: '#000', minWidth: '24px', marginTop: '2px' }}>{idx + 1}</span>
+                <span style={{ fontWeight: 'bold', color: '#000', minWidth: '24px', marginTop: '2px' }}>{idx + 1}.</span>
                 {type === 'contract' || type === 'balance' ? (
                   <div style={{ fontSize: '13px', fontWeight: '500', flex: 1 }}>
                     <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')}</div>
