@@ -838,7 +838,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           </div>
           <div style={{ display: 'flex', flex: 1, gap: '0', overflow: 'hidden', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
             {/* 좌측: 매물 목록 */}
-            <div style={{ flex: window.innerWidth < 768 ? '1' : '2', display: 'flex', flexDirection: 'column', borderRight: window.innerWidth < 768 ? 'none' : '1px solid #e0e0e0', borderBottom: window.innerWidth < 768 ? '1px solid #e0e0e0' : 'none', overflow: 'hidden' }}>
+            <div style={{ flex: window.innerWidth < 768 ? '2' : '2', display: 'flex', flexDirection: 'column', borderRight: window.innerWidth < 768 ? 'none' : '1px solid #e0e0e0', borderBottom: window.innerWidth < 768 ? '1px solid #e0e0e0' : 'none', overflow: 'hidden' }}>
               <div ref={scrollContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
             {sortedProperties.length > 0 ? (
               sortedProperties.map(({ prop, originalIndex }) => (
@@ -1205,7 +1205,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             </div>
 
             {/* 우측: 메모 영역 */}
-            <div style={{ flex: window.innerWidth < 768 ? '1' : '1', display: 'flex', flexDirection: 'column', padding: '15px', backgroundColor: '#fafafa', minHeight: window.innerWidth < 768 ? '200px' : 'auto' }}>
+            <div style={{ flex: window.innerWidth < 768 ? '0.5' : '1', display: 'flex', flexDirection: 'column', padding: '15px', backgroundColor: '#fafafa', minHeight: window.innerWidth < 768 ? 'auto' : 'auto' }}>
               <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>📝 메모</div>
               <textarea
                 value={memoText}
