@@ -226,8 +226,8 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
         return 3;
       }
 
-      if (status === '예정된업무') {
-        // 예정된업무 필터에 표시되는 카드의 개수: 3개 (계약예정, 잔금예정, 미팅예정)
+      if (status === '고객관리') {
+        // 고객관리 필터에 표시되는 카드의 개수: 3개 (계약예정, 잔금예정, 미팅예정)
         return 3;
       }
 
@@ -256,7 +256,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     : activeTab === '계약호실'
     ? ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'] // 계약호실 필터
     : activeTab === '대시보드'
-    ? ['중개업무', '중개보수', '예정된업무'] // 대시보드 메뉴 (확장 가능)
+    ? ['중개업무', '중개보수', '고객관리'] // 대시보드 메뉴 (확장 가능)
     : [];
 
   const handleFilterClick = (status) => {
