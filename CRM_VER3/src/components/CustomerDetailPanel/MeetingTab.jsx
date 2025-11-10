@@ -1207,17 +1207,16 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
             </div>
 
             {/* 우측: 메모 영역 */}
-            <div style={{ flex: window.innerWidth < 768 ? '0.5' : '1', display: 'flex', flexDirection: 'column', padding: '15px', backgroundColor: '#fafafa', minHeight: window.innerWidth < 768 ? 'auto' : 'auto' }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>📝 메모</div>
+            <div style={{ flex: window.innerWidth < 768 ? '0.5' : '1', display: 'flex', flexDirection: 'column', padding: '0', backgroundColor: '#fafafa', minHeight: window.innerWidth < 768 ? 'auto' : 'auto' }}>
               <textarea
                 value={memoText}
                 onChange={(e) => handleMemoChange(e.target.value)}
                 placeholder="이 미팅에 대한 메모를 작성하세요..."
                 style={{
                   flex: 1,
-                  padding: '10px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '4px',
+                  padding: '15px',
+                  border: 'none',
+                  borderRadius: '0',
                   fontSize: '13px',
                   fontFamily: 'inherit',
                   resize: 'none',
