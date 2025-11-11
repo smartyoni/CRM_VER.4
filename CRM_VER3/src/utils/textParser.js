@@ -465,12 +465,25 @@ const parseOriginalFormat = (rawText) => {
   const addressMatch = rawText.match(/소\s*재\s*지\s*(.+?)(?=공개여부|대\s*분|$)/);
 
   // 건물명 추출: "오피스텔" 또는 "건물,위치" 라벨 우선
+  // 중요: [단위:만원] 다음에 나오는 "오피스텔" 라벨만 찾기 (여러 개 있을 수 있음)
   let buildingName = '';
 
   // 라인 단위로 분석하여 라벨을 찾고 같은 라인의 값 또는 다음 라인의 값 추출
   const lines = rawText.split('\n');
 
+  // [단위:만원] 라인의 인덱스를 먼저 찾기
+  let unitLineIndex = -1;
   for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('[단위:만원]') || lines[i].includes('단위:만원')) {
+      unitLineIndex = i;
+      break;
+    }
+  }
+
+  // [단위:만원] 이후부터만 검색
+  const startIndex = unitLineIndex >= 0 ? unitLineIndex + 1 : 0;
+
+  for (let i = startIndex; i < lines.length; i++) {
     const line = lines[i];
 
     // "오피스텔" 라벨을 찾은 경우
