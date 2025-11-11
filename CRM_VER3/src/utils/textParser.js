@@ -1,7 +1,8 @@
 // 매물 정보 텍스트에서 건물호실명과 연락처를 자동으로 추출하는 함수
 
 /**
- * 매물 정보 텍스트에서 "건물,위치" 라벨 다음의 내용으로 호실명 추출
+ * 매물 정보 텍스트에서 호실명 추출
+ * "오피스텔", "건물,위치", "건물", "위치" 라벨 다음의 내용으로 추출
  * @param {string} text - 매물 정보 전체 텍스트
  * @returns {string} - 추출된 건물호실명
  */
@@ -10,19 +11,32 @@ export const extractPropertyName = (text) => {
 
   const lines = text.split('\n');
 
-  // "건물,위치" 라벨을 찾기
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes('건물,위치') || lines[i].includes('건물, 위치')) {
-      // 같은 라인에서 라벨 뒤의 내용 추출
-      const match = lines[i].match(/건물,?\s*위치\s+(.+?)(?:\s{2,}|$)/);
-      if (match) {
-        return match[1].trim();
-      }
-      // 같은 라인에서 못 찾으면 다음 라인에서 찾기
-      if (i + 1 < lines.length) {
-        const nextLine = lines[i + 1].trim();
-        if (nextLine && !nextLine.match(/^(주\s+소|연\s+면|분\s+양)/)) {
-          return nextLine;
+  // 여러 라벨을 찾기 (우선순위: 오피스텔 > 건물,위치 > 건물 > 위치)
+  const labels = [
+    /오피스텔/,
+    /건물,?\s*위치/,
+    /^건\s*물$/,
+    /^위\s*치$/
+  ];
+
+  for (const labelPattern of labels) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line.match(labelPattern)) {
+        // 같은 라인에서 라벨 뒤의 내용 추출
+        // 패턴: "라벨    값" 또는 "라벨값" 형태
+        const match = line.match(labelPattern.source + /\s+(.+?)(?:\s{2,}|동\s*\[|주\s*택|$)/.source);
+        if (match && match[1]) {
+          return match[1].trim();
+        }
+
+        // 같은 라인에서 못 찾으면 다음 라인에서 찾기
+        if (i + 1 < lines.length) {
+          const nextLine = lines[i + 1].trim();
+          if (nextLine && !nextLine.match(/^(주\s*소|주\s+택|연\s+면|분\s+양|동\s*\[|층|보\s+증)/)) {
+            return nextLine;
+          }
         }
       }
     }
