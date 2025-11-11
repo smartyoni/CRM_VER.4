@@ -220,15 +220,24 @@ export const extractJibun = (text) => {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (line.match(/^소\s*재\s*지/)) {
-      // 같은 라인에서 2개 이상의 공백으로 분리
-      const parts = line.split(/\s{2,}/);
-      if (parts.length > 1) {
-        // parts[0] = "소 재 지", parts[1] = "서울시 강서구 마곡동 784", parts[2] = "공개여부" 등
-        const address = parts[1].trim();
-        // 주소 형식이 맞는지 확인 (시/도 + 구/군 패턴)
-        if (address && !address.match(/^(공개|단위|동|주|건축)/)) {
-          return address;
+      // 탭이나 공백으로 분리
+      const parts = line.split(/\s+/);
+      // parts[0~2] = "소", "재", "지", parts[3] = "서울시", parts[4] = "강서구", parts[5] = "마곡동", parts[6] = "784", parts[7] = "공개여부"
+      // 라벨 부분("소 재 지") 제거하고, 주소 부분만 추출
+      const addressParts = parts.slice(3);
+
+      // 공개여부, 단위 등 다른 라벨이 나올 때까지만 추출
+      const addressValues = [];
+      for (const part of addressParts) {
+        if (part.match(/^(공개|단위|동|주|건축|공개여부)/)) {
+          break;
         }
+        addressValues.push(part);
+      }
+
+      const address = addressValues.join(' ').trim();
+      if (address && !address.match(/^(공개|단위|동|주|건축)/)) {
+        return address;
       }
     }
   }
@@ -507,18 +516,15 @@ const parseOriginalFormat = (rawText) => {
 
     // "오피스텔" 라벨을 찾은 경우 (라인 시작에서 찾기)
     if (trimmedLine.match(/^오피스텔/)) {
-      console.log('[DEBUG] 오피스텔 라벨 찾음:', trimmedLine);
-      // 같은 라인에서 2개 이상의 공백으로 분리된 다음 값 찾기
-      const parts = trimmedLine.split(/\s{2,}/);
-      console.log('[DEBUG] split 결과:', parts);
+      // 탭이나 2개 이상의 공백으로 분리된 다음 값 찾기
+      // 주의: split 할 때 탭(\t)도 포함해야 함
+      const parts = trimmedLine.split(/\s+/);
       if (parts.length > 1) {
-        // parts[0] = "오피스텔", parts[1] = "경동미르웰", parts[2] = "동 [저]" 등
-        // parts[1]에서 처음 스페이스 앞까지만 추출 (동 [저] 같은 다른 필드 제외)
-        const value = parts[1].split(/\s+/)[0].trim();
-        console.log('[DEBUG] 추출된 값:', value);
-        if (value && !value.match(/^(동|주|건축)/)) {
+        // parts[0] = "오피스텔", parts[1] = "경동미르웰", parts[2] = "동", parts[3] = "[층"...
+        // parts[1]만 가져오기 (단일 단어인 건물명)
+        const value = parts[1].trim();
+        if (value && !value.match(/^(\[|동|주|건축)/)) {
           buildingName = value;
-          console.log('[DEBUG] buildingName 설정됨:', buildingName);
           break;
         }
       }
@@ -526,10 +532,10 @@ const parseOriginalFormat = (rawText) => {
 
     // "건물,위치" 라벨을 찾은 경우
     if (trimmedLine.match(/^건물,?\s*위치/)) {
-      const parts = trimmedLine.split(/\s{2,}/);
+      const parts = trimmedLine.split(/\s+/);
       if (parts.length > 1) {
-        const value = parts[1].split(/\s+/)[0].trim();
-        if (value && !value.match(/^(동|주|건축)/)) {
+        const value = parts[1].trim();
+        if (value && !value.match(/^(\[|동|주|건축)/)) {
           buildingName = value;
           break;
         }
