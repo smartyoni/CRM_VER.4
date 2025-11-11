@@ -3,7 +3,6 @@ import BasicInfo from './BasicInfo';
 import BasicInfoSection from './BasicInfoSection';
 import ActivityTab from './ActivityTab';
 import MeetingTab from './MeetingTab';
-import PropertySelectionTab from './PropertySelectionTab';
 import { STATUSES, PROGRESS_STATUSES } from '../../constants';
 
 const CustomerDetailPanel = ({
@@ -17,10 +16,7 @@ const CustomerDetailPanel = ({
     onDeleteActivity,
     meetings,
     onSaveMeeting,
-    onDeleteMeeting,
-    propertySelections,
-    onSavePropertySelection,
-    onDeletePropertySelection
+    onDeleteMeeting
 }) => {
   const [activeTab, setActiveTab] = useState('기본정보');
   const [pendingMeetingProperties, setPendingMeetingProperties] = useState(null);
@@ -66,14 +62,6 @@ const CustomerDetailPanel = ({
       progress
     };
     onUpdateCustomer(updatedCustomer);
-  };
-
-  // 미팅매물준비에서 미팅 생성 핸들러
-  const handleCreateMeetingFromSelection = (properties) => {
-    // 매물에 visitTime: '' 추가
-    const meetingProperties = properties.map(p => ({...p, visitTime: ''}));
-    setPendingMeetingProperties(meetingProperties);
-    setActiveTab('미팅기록');
   };
 
   return (
@@ -176,7 +164,7 @@ const CustomerDetailPanel = ({
               marginBottom: '15px',
               border: '1px solid #bbdefb'
             }}>
-              {['기본정보', '활동기록', '미팅기록', '미팅매물준비'].map((tab, index) => (
+              {['기본정보', '활동기록', '미팅기록'].map((tab, index) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -243,16 +231,6 @@ const CustomerDetailPanel = ({
                     initialProperties={pendingMeetingProperties}
                     onClearInitialProperties={() => setPendingMeetingProperties(null)}
                     selectedMeetingId={selectedMeetingDetail?.id}
-                />}
-              {activeTab === '미팅매물준비' &&
-                <PropertySelectionTab
-                    customerId={selectedCustomer.id}
-                    customerName={selectedCustomer.name}
-                    propertySelections={propertySelections}
-                    onSavePropertySelection={onSavePropertySelection}
-                    onDeletePropertySelection={onDeletePropertySelection}
-                    onTabChange={setActiveTab}
-                    onCreateMeetingFromSelection={handleCreateMeetingFromSelection}
                 />}
             </div>
           </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PROPERTY_STATUSES } from '../../constants';
 import { generateId, formatDateTime } from '../../utils/helpers';
-import { parsePropertyDetails } from '../../utils/textParser';
+import { parsePropertyDetails, generateStructuredPropertyInfo } from '../../utils/textParser';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -128,6 +128,33 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         });
       };
 
+      const handleGenerateStructuredInfo = () => {
+        const rawInfo = propertyData.info;
+
+        // 1. 원본 → 정리본 변환
+        const structuredInfo = generateStructuredPropertyInfo(rawInfo);
+
+        if (!structuredInfo) {
+          alert('매물정보에서 필요한 데이터를 추출할 수 없습니다. 정보를 확인해주세요.');
+          return;
+        }
+
+        // 2. textarea에 정리본 표시
+        const updatedData = {
+          ...propertyData,
+          info: structuredInfo
+        };
+
+        // 3. 정리본에서 호실명, 부동산, 연락처 자동 추출
+        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(structuredInfo);
+
+        updatedData.roomName = propertyName || propertyData.roomName;
+        updatedData.agency = agencyName || propertyData.agency;
+        updatedData.agencyPhone = contactNumber || propertyData.agencyPhone;
+
+        setPropertyData(updatedData);
+      };
+
       const handlePropertySave = () => {
         if (editIndex !== null && editIndex !== undefined) {
           // 수정 모드
@@ -217,14 +244,35 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 </div>
                 <textarea
                   className="large"
-                  placeholder="매물 정보를 붙여넣으세요&#10;2번째 줄 → 호실명 자동입력&#10;7번째 줄 → 부동산 자동입력&#10;마지막 줄 → 연락처 자동입력"
+                  placeholder="매물 정보를 붙여넣으세요&#10;아래 '⚡ 매물정보 자동 생성' 버튼을 클릭하면&#10;호실명, 부동산, 연락처가 자동으로 입력됩니다"
                   value={propertyData.info}
                   onChange={handleInfoChange}
                 ></textarea>
+                <button
+                  type="button"
+                  onClick={handleGenerateStructuredInfo}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    backgroundColor: '#FF9800',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginTop: '10px',
+                    transition: 'all 0.2s',
+                    display: 'block'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#F57C00'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#FF9800'}
+                >
+                  ⚡ 매물정보 자동 생성
+                </button>
                 <p className="form-hint">
                   {source === 'TEN'
-                    ? '매물 정보를 붙여넣으면 2번째 줄이 호실명, 7번째 줄이 부동산, 마지막 줄이 연락처로 자동 입력됩니다.'
-                    : '매물 정보를 붙여넣으면 첫 줄이 호실명, 중개사 섹션의 부동산명, 전화 라벨 뒤의 연락처가 자동 입력됩니다.'}
+                    ? '매물 정보를 붙여넣고 아래 \'⚡ 매물정보 자동 생성\' 버튼을 클릭하면 호실명, 부동산, 연락처가 자동으로 입력됩니다.'
+                    : '매물 정보를 붙여넣고 아래 \'⚡ 매물정보 자동 생성\' 버튼을 클릭하면 호실명, 부동산, 연락처가 자동으로 입력됩니다.'}
                 </p>
               </div>
               <div className="form-group">
@@ -710,6 +758,33 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         });
       };
 
+      const handleGenerateStructuredInfo = () => {
+        const rawInfo = propertyData.info;
+
+        // 1. 원본 → 정리본 변환
+        const structuredInfo = generateStructuredPropertyInfo(rawInfo);
+
+        if (!structuredInfo) {
+          alert('매물정보에서 필요한 데이터를 추출할 수 없습니다. 정보를 확인해주세요.');
+          return;
+        }
+
+        // 2. textarea에 정리본 표시
+        const updatedData = {
+          ...propertyData,
+          info: structuredInfo
+        };
+
+        // 3. 정리본에서 호실명, 부동산, 연락처 자동 추출
+        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(structuredInfo);
+
+        updatedData.roomName = propertyName || propertyData.roomName;
+        updatedData.agency = agencyName || propertyData.agency;
+        updatedData.agencyPhone = contactNumber || propertyData.agencyPhone;
+
+        setPropertyData(updatedData);
+      };
+
       return (
         <div className="modal-overlay" style={{ zIndex: 1100 }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -786,14 +861,33 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 </div>
                 <textarea
                   className="large"
-                  placeholder="매물 정보를 붙여넣으세요&#10;2번째 줄 → 호실명 자동입력&#10;7번째 줄 → 부동산 자동입력&#10;마지막 줄 → 연락처 자동입력"
+                  placeholder="원본 매물정보를 붙여넣으세요&#10;아래 '⚡ 매물정보 자동 생성' 버튼을 클릭하면&#10;호실명, 부동산, 연락처가 자동으로 입력됩니다"
                   value={propertyData.info}
                   onChange={handleInfoChange}
                 ></textarea>
+                <button
+                  type="button"
+                  onClick={handleGenerateStructuredInfo}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    backgroundColor: '#FF9800',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginTop: '10px',
+                    transition: 'all 0.2s',
+                    display: 'block'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#F57C00'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#FF9800'}
+                >
+                  ⚡ 매물정보 자동 생성
+                </button>
                 <p className="form-hint">
-                  {source === 'TEN'
-                    ? '매물 정보를 붙여넣으면 2번째 줄이 호실명, 7번째 줄이 부동산, 마지막 줄이 연락처로 자동 입력됩니다.'
-                    : '매물 정보를 붙여넣으면 첫 줄이 호실명, 중개사 섹션의 부동산명, 전화 라벨 뒤의 연락처가 자동 입력됩니다.'}
+                  원본 매물정보를 붙여넣고 아래 '⚡ 매물정보 자동 생성' 버튼을 클릭하면 호실명, 부동산, 연락처가 자동으로 입력됩니다.
                 </p>
               </div>
               <div className="form-group">
