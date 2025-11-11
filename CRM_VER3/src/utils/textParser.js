@@ -1,18 +1,31 @@
 // 매물 정보 텍스트에서 건물호실명과 연락처를 자동으로 추출하는 함수
 
 /**
- * 매물 정보 텍스트의 2번째 줄에서 건물호실명 추출
+ * 매물 정보 텍스트에서 "건물,위치" 라벨 다음의 내용으로 호실명 추출
  * @param {string} text - 매물 정보 전체 텍스트
  * @returns {string} - 추출된 건물호실명
  */
 export const extractPropertyName = (text) => {
   if (!text) return '';
 
-  const lines = text.split('\n').filter(line => line.trim() !== '');
+  const lines = text.split('\n');
 
-  // 2번째 줄 반환 (인덱스 1)
-  if (lines.length >= 2) {
-    return lines[1].trim();
+  // "건물,위치" 라벨을 찾기
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('건물,위치') || lines[i].includes('건물, 위치')) {
+      // 같은 라인에서 라벨 뒤의 내용 추출
+      const match = lines[i].match(/건물,?\s*위치\s+(.+?)(?:\s{2,}|$)/);
+      if (match) {
+        return match[1].trim();
+      }
+      // 같은 라인에서 못 찾으면 다음 라인에서 찾기
+      if (i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        if (nextLine && !nextLine.match(/^(주\s+소|연\s+면|분\s+양)/)) {
+          return nextLine;
+        }
+      }
+    }
   }
 
   return '';
@@ -519,7 +532,9 @@ const parseOriginalFormat = (rawText) => {
 };
 
 /**
- * 정리본 포맷에서 지번 추출 ("소재지: 건물명(지번주소)" → 지번만 추출)
+ * 원본/정리본 포맷에서 지번 추출
+ * 원본: "소 재 지" 라벨 다음 내용
+ * 정리본: "소재지:" 라벨 다음의 지번 추출
  * @param {string} text - 매물 정보 전체 텍스트
  * @returns {string} - 추출된 지번
  */
@@ -528,7 +543,27 @@ export const extractJibun = (text) => {
 
   const lines = text.split('\n');
 
-  // 정리본 포맷에서 소재지 라인 찾기
+  // 1. 원본 포맷: "소 재 지" 라벨 찾기
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // "소 재 지" 또는 "소재지" 라벨 찾기
+    if (line.match(/소\s*재\s*지/) || line.includes('소재지')) {
+      // 같은 라인에서 라벨 뒤의 내용 추출
+      const match = line.match(/소\s*재\s*지\s+(.+?)(?:\s{2,}|공개여부|$)/);
+      if (match) {
+        return match[1].trim();
+      }
+      // 같은 라인에서 못 찾으면 다음 라인에서 찾기
+      if (i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        if (nextLine && !nextLine.match(/^(공개여부|공개|단위|건물|주소|연면|분양|보증)/)) {
+          return nextLine;
+        }
+      }
+    }
+  }
+
+  // 2. 정리본 포맷: "소재지:" 라벨에서 지번 추출
   for (const line of lines) {
     if (line.includes('소재지:')) {
       // "• 소재지: 건물명(지번주소)" 형식에서 괄호 안의 지번 추출
