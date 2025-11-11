@@ -470,7 +470,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
     const [expandedPropertyCards, setExpandedPropertyCards] = useState(new Set());
-    const [jibunValues, setJibunValues] = useState({}); // 지번 입력값 임시 저장
 
     // 매물 카드 아코디언 토글
     const togglePropertyCard = (propertyId) => {
@@ -925,61 +924,12 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       <div
                         className="property-info-label"
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
                           padding: '6px 8px',
                           borderRadius: '4px',
                           marginBottom: '8px'
                         }}
                       >
                         <span>📋 매물정보</span>
-                        <input
-                          type="text"
-                          placeholder="지번"
-                          value={jibunValues[prop.id] !== undefined ? jibunValues[prop.id] : (prop.jibun || '')}
-                          onChange={(e) => {
-                            // 입력값을 임시 상태에만 저장 (저장 안함)
-                            setJibunValues(prev => ({ ...prev, [prop.id]: e.target.value }));
-                          }}
-                          onBlur={(e) => {
-                            // 입력 완료 시에만 저장
-                            const newValue = e.target.value;
-                            const newProperties = [...meeting.properties];
-                            newProperties[originalIndex] = { ...newProperties[originalIndex], jibun: newValue };
-                            const updatedMeeting = { ...meeting, properties: newProperties };
-                            onSaveMeeting(updatedMeeting);
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: '4px 8px',
-                            border: '1px solid #ddd',
-                            borderRadius: '3px',
-                            fontSize: '12px',
-                            maxWidth: '120px'
-                          }}
-                        />
-                        <button
-                          onClick={() => {
-                            if (prop.jibun) {
-                              window.open(`https://map.naver.com/v5/search/${encodeURIComponent(prop.jibun)}`);
-                            } else {
-                              alert('지번을 입력해주세요.');
-                            }
-                          }}
-                          style={{
-                            padding: '4px 10px',
-                            backgroundColor: '#4CAF50',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          🗺️ 지도
-                        </button>
                       </div>
 
                       {editingInfoIndex === originalIndex ? (
