@@ -1246,6 +1246,41 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                   </div>
                   {expandedPropertyCards.has(prop.id) && (
                     <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                      {/* 좌측 정렬: 지번 정보 및 지도 버튼 */}
+                      <div style={{ marginRight: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {prop.jibun && (
+                          <>
+                            <span style={{ fontSize: '12px', color: '#555', fontWeight: '500' }}>
+                              📍 {prop.jibun}
+                            </span>
+                            <button
+                              onClick={() => {
+                                // 카카오맵 검색 URL로 열기
+                                const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(prop.jibun)}`;
+                                window.open(mapUrl, '_blank');
+                              }}
+                              title="카카오맵에서 보기"
+                              style={{
+                                backgroundColor: '#FEE500',
+                                color: '#333',
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '4px 10px',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}
+                            >
+                              🗺️ 지도
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* 우측 정렬: 액션 버튼 */}
                       <button
                         onClick={() => triggerPhotoUpload(originalIndex)}
                         style={{
