@@ -196,6 +196,38 @@ export const extractContactNumberNaver = (text) => {
 };
 
 /**
+ * 매물 정보 텍스트에서 지번(주소) 추출
+ * "소 재 지" 라벨 또는 정리본 포맷의 소재지에서 주소 부분 추출
+ * @param {string} text - 매물 정보 전체 텍스트
+ * @returns {string} - 추출된 지번(주소)
+ */
+export const extractJibun = (text) => {
+  if (!text) return '';
+
+  const lines = text.split('\n');
+
+  // 정리본 포맷 확인: 소재지: 건물명(주소) 형식
+  for (const line of lines) {
+    if (line.includes('소재지:')) {
+      const match = line.match(/소재지:\s*(.+?)\((.+?)\)/);
+      if (match && match[2]) {
+        return match[2].trim();
+      }
+    }
+  }
+
+  // 원본 포맷: "소 재 지" 라벨에서 추출
+  const addressMatch = text.match(/소\s*재\s*지\s*(.+?)(?=공개여부|대\s*분|$)/);
+  if (addressMatch) {
+    // 첫 번째 줄만 추출
+    const address = addressMatch[1].trim().split('\n')[0].trim();
+    return address;
+  }
+
+  return '';
+};
+
+/**
  * 매물 정보 텍스트 붙여넣기 시 자동으로 건물명, 부동산, 연락처 추출
  * 원본 포맷과 정리본 포맷 모두 지원
  * @param {string} text - 매물 정보 전체 텍스트
@@ -427,18 +459,38 @@ const parseOriginalFormat = (rawText) => {
   // 매물정보 헤더
   let propertyInfo = '🏠 매물정보';
 
-  // 1. 소재지: "물 건  명" + "소 재 지" → 건물명(지번주소)
+  // 1. 소재지: "오피스텔" 또는 "건물,위치" 라벨이 있으면 그곳에서 건물명 추출, 없으면 "물 건  명" 사용
+  // "소 재 지"에서 지번주소 추출
   let location = '정보없음';
-  const buildingNameMatch = rawText.match(/물\s*건\s*명\s*(.+?)(?=건축|$)/s);
   const addressMatch = rawText.match(/소\s*재\s*지\s*(.+?)(?=공개여부|대\s*분|$)/);
 
-  if (buildingNameMatch && addressMatch) {
-    const buildingName = buildingNameMatch[1].trim().split('\n')[0].trim();
-    const address = addressMatch[1].trim().split(/\s+/)[0];
+  // 건물명 추출: "오피스텔" 또는 "건물,위치" 라벨 우선
+  let buildingName = '';
+  const officetelMatch = rawText.match(/오피스텔\s+(.+?)(?:\s{2,}|$)/);
+  if (officetelMatch) {
+    buildingName = officetelMatch[1].trim().split(/\s{2,}/)[0];
+  } else {
+    const buildingLocMatch = rawText.match(/건물,?\s*위치\s+(.+?)(?:\s{2,}|$)/);
+    if (buildingLocMatch) {
+      buildingName = buildingLocMatch[1].trim().split(/\s{2,}/)[0];
+    } else {
+      // 둘 다 없으면 "물 건  명" 라벨에서 추출
+      const buildingNameMatchFallback = rawText.match(/물\s*건\s*명\s*(.+?)(?=건축|$)/s);
+      if (buildingNameMatchFallback) {
+        buildingName = buildingNameMatchFallback[1].trim().split('\n')[0].trim();
+      }
+    }
+  }
+
+  // 소재지 조합
+  if (addressMatch && buildingName) {
+    const address = addressMatch[1].trim().split('\n')[0].trim();
     location = `${buildingName}(${address})`;
-  } else if (buildingNameMatch) {
-    const buildingName = buildingNameMatch[1].trim().split('\n')[0].trim();
+  } else if (buildingName) {
     location = `${buildingName}`;
+  } else if (addressMatch) {
+    const address = addressMatch[1].trim().split('\n')[0].trim();
+    location = `${address}`;
   }
 
   // 2. 임대료: "매도금액" 또는 "보 증 금" + "월     세" → 보증금/월세
