@@ -466,19 +466,53 @@ const parseOriginalFormat = (rawText) => {
 
   // 건물명 추출: "오피스텔" 또는 "건물,위치" 라벨 우선
   let buildingName = '';
-  const officetelMatch = rawText.match(/오피스텔\s+(.+?)(?:\s{2,}|$)/);
-  if (officetelMatch) {
-    buildingName = officetelMatch[1].trim().split(/\s{2,}/)[0];
-  } else {
-    const buildingLocMatch = rawText.match(/건물,?\s*위치\s+(.+?)(?:\s{2,}|$)/);
-    if (buildingLocMatch) {
-      buildingName = buildingLocMatch[1].trim().split(/\s{2,}/)[0];
-    } else {
-      // 둘 다 없으면 "물 건  명" 라벨에서 추출
-      const buildingNameMatchFallback = rawText.match(/물\s*건\s*명\s*(.+?)(?=건축|$)/s);
-      if (buildingNameMatchFallback) {
-        buildingName = buildingNameMatchFallback[1].trim().split('\n')[0].trim();
+
+  // 라인 단위로 분석하여 라벨을 찾고 같은 라인의 값 또는 다음 라인의 값 추출
+  const lines = rawText.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // "오피스텔" 라벨을 찾은 경우
+    if (line.match(/^오피스텔/)) {
+      // 같은 라인에서 2개 이상의 공백으로 분리된 다음 값 찾기
+      const parts = line.split(/\s{2,}/);
+      if (parts.length > 1 && parts[0].trim().match(/^오피스텔/)) {
+        buildingName = parts[1].trim();
+        break;
       }
+      // 같은 라인에 값이 없으면 다음 라인에서 찾기
+      if (i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        if (nextLine && !nextLine.match(/^(소\s*재\s*지|주\s*소|건축|동\s*\[)/)) {
+          buildingName = nextLine;
+          break;
+        }
+      }
+    }
+
+    // "건물,위치" 라벨을 찾은 경우
+    if (line.match(/^건물,?\s*위치/)) {
+      const parts = line.split(/\s{2,}/);
+      if (parts.length > 1 && parts[0].trim().match(/^건물,?\s*위치/)) {
+        buildingName = parts[1].trim();
+        break;
+      }
+      if (i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        if (nextLine && !nextLine.match(/^(소\s*재\s*지|주\s*소|건축)/)) {
+          buildingName = nextLine;
+          break;
+        }
+      }
+    }
+  }
+
+  // 오피스텔이나 건물,위치를 못 찾으면 물 건 명에서 추출
+  if (!buildingName) {
+    const buildingNameMatchFallback = rawText.match(/물\s*건\s*명\s*(.+?)(?=건축|$)/s);
+    if (buildingNameMatchFallback) {
+      buildingName = buildingNameMatchFallback[1].trim().split('\n')[0].trim();
     }
   }
 
