@@ -283,16 +283,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <label>연락처</label>
                 <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.agencyPhone} onChange={(e) => setPropertyData({...propertyData, agencyPhone: e.target.value})} />
               </div>
-              <div className="form-group">
-                <label>방문시간</label>
-                <input type="time" value={propertyData.visitTime} onChange={(e) => setPropertyData({...propertyData, visitTime: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>준비상태</label>
-                <select value={propertyData.status} onChange={(e) => setPropertyData({...propertyData, status: e.target.value})}>
-                  {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>부동산</label>
                 <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
