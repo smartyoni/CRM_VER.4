@@ -529,15 +529,21 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const normalizedProperties = meeting.properties?.map((prop, index) => ({
       ...prop,
       order: prop.order !== undefined ? prop.order : index + 1,
-      photos: prop.photos || ['', '']
+      photos: prop.photos || ['', ''],
+      _originalIndex: index  // 정렬 전의 원본 인덱스 저장
     })) || [];
 
-    const sortedProperties = normalizedProperties.map((prop, originalIndex) => ({ prop, originalIndex }))
+    const sortedProperties = normalizedProperties
+      .map((prop, index) => ({ prop, index }))
       .sort((a, b) => {
         const orderA = a.prop.order || 999;
         const orderB = b.prop.order || 999;
         return orderA - orderB;
-      });
+      })
+      .map(({ prop, index }) => ({
+        prop,
+        originalIndex: prop._originalIndex  // 정렬 후에 원본 인덱스 복원
+      }));
 
     const handlePropertyEdit = (propertyIndex) => {
       setEditingPropertyIndex(propertyIndex);
