@@ -12,29 +12,35 @@ export const extractPropertyName = (text) => {
   const lines = text.split('\n');
 
   // 여러 라벨을 찾기 (우선순위: 오피스텔 > 건물,위치 > 건물 > 위치)
-  const labels = [
-    /오피스텔/,
-    /건물,?\s*위치/,
-    /^건\s*물$/,
-    /^위\s*치$/
+  const labelPatterns = [
+    { pattern: /오피스텔/, name: '오피스텔' },
+    { pattern: /건물,?\s*위치/, name: '건물,위치' },
+    { pattern: /^건\s*물$/, name: '건물' },
+    { pattern: /^위\s*치$/, name: '위치' }
   ];
 
-  for (const labelPattern of labels) {
+  for (const { pattern } of labelPatterns) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      if (line.match(labelPattern)) {
+      if (line.match(pattern)) {
         // 같은 라인에서 라벨 뒤의 내용 추출
-        // 패턴: "라벨    값" 또는 "라벨값" 형태
-        const match = line.match(labelPattern.source + /\s+(.+?)(?:\s{2,}|동\s*\[|주\s*택|$)/.source);
-        if (match && match[1]) {
-          return match[1].trim();
+        // 예: "오피스텔    경동미르웰    동 [저]" → "경동미르웰"
+        // 예: "건물,위치    xxx    주 택 형" → "xxx"
+        const parts = line.split(/\s{2,}/); // 2개 이상의 공백으로 분리
+
+        // 첫 번째 부분이 라벨을 포함하면, 두 번째 부분이 값
+        if (parts.length > 1 && parts[0].match(pattern)) {
+          const value = parts[1].trim();
+          if (value && !value.match(/^(동\s*\[|주\s*택|주\s*소|연\s+면|분\s+양|층|보\s+증)/)) {
+            return value;
+          }
         }
 
         // 같은 라인에서 못 찾으면 다음 라인에서 찾기
         if (i + 1 < lines.length) {
           const nextLine = lines[i + 1].trim();
-          if (nextLine && !nextLine.match(/^(주\s*소|주\s+택|연\s+면|분\s+양|동\s*\[|층|보\s+증)/)) {
+          if (nextLine && !nextLine.match(/^(주\s*소|주\s+택|연\s+면|분\s+양|동\s*\[|층|보\s+증|공개)/)) {
             return nextLine;
           }
         }
@@ -561,12 +567,19 @@ export const extractJibun = (text) => {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     // "소 재 지" 또는 "소재지" 라벨 찾기
-    if (line.match(/소\s*재\s*지/) || line.includes('소재지')) {
-      // 같은 라인에서 라벨 뒤의 내용 추출
-      const match = line.match(/소\s*재\s*지\s+(.+?)(?:\s{2,}|공개여부|$)/);
-      if (match) {
-        return match[1].trim();
+    if (line.match(/소\s*재\s*지/)) {
+      // 같은 라인에서 라벨 뒤의 내용 추출 (2개 이상의 공백으로 분리)
+      // 예: "소 재 지    서울시 강서구 마곡동 784    공개여부" → "서울시 강서구 마곡동 784"
+      const parts = line.split(/\s{2,}/);
+
+      // 첫 번째 부분이 "소 재 지"를 포함하면, 두 번째 부분이 지번
+      if (parts.length > 1 && parts[0].match(/소\s*재\s*지/)) {
+        const jibun = parts[1].trim();
+        if (jibun && !jibun.match(/^(공개여부|공개|단위|건물|주소)/)) {
+          return jibun;
+        }
       }
+
       // 같은 라인에서 못 찾으면 다음 라인에서 찾기
       if (i + 1 < lines.length) {
         const nextLine = lines[i + 1].trim();
