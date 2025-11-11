@@ -216,12 +216,21 @@ export const extractJibun = (text) => {
     }
   }
 
-  // 원본 포맷: "소 재 지" 라벨에서 추출
-  const addressMatch = text.match(/소\s*재\s*지\s*(.+?)(?=공개여부|대\s*분|$)/);
-  if (addressMatch) {
-    // 첫 번째 줄만 추출
-    const address = addressMatch[1].trim().split('\n')[0].trim();
-    return address;
+  // 원본 포맷: "소 재 지" 라벨에서 추출 (라인 단위로 처리)
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.match(/^소\s*재\s*지/)) {
+      // 같은 라인에서 2개 이상의 공백으로 분리
+      const parts = line.split(/\s{2,}/);
+      if (parts.length > 1) {
+        // parts[0] = "소 재 지", parts[1] = "서울시 강서구 마곡동 784", parts[2] = "공개여부" 등
+        const address = parts[1].trim();
+        // 주소 형식이 맞는지 확인 (시/도 + 구/군 패턴)
+        if (address && !address.match(/^(공개|단위|동|주|건축)/)) {
+          return address;
+        }
+      }
+    }
   }
 
   return '';
@@ -480,41 +489,44 @@ const parseOriginalFormat = (rawText) => {
     }
   }
 
-  // [단위:만원] 이후부터만 검색
+  // [단위:만원] 이후부터 "물 건 명"을 만날 때까지만 검색 (범위 제한)
   const startIndex = unitLineIndex >= 0 ? unitLineIndex + 1 : 0;
+  let endIndex = lines.length;
 
+  // "물 건 명" 라벨의 위치 찾기 (여기까지만 검색)
   for (let i = startIndex; i < lines.length; i++) {
-    const line = lines[i];
+    if (lines[i].match(/물\s*건\s*명/)) {
+      endIndex = i;
+      break;
+    }
+  }
 
-    // "오피스텔" 라벨을 찾은 경우
-    if (line.match(/^오피스텔/)) {
+  for (let i = startIndex; i < endIndex; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+
+    // "오피스텔" 라벨을 찾은 경우 (라인 시작에서 찾기)
+    if (trimmedLine.match(/^오피스텔/)) {
       // 같은 라인에서 2개 이상의 공백으로 분리된 다음 값 찾기
-      const parts = line.split(/\s{2,}/);
-      if (parts.length > 1 && parts[0].trim().match(/^오피스텔/)) {
-        buildingName = parts[1].trim();
-        break;
-      }
-      // 같은 라인에 값이 없으면 다음 라인에서 찾기
-      if (i + 1 < lines.length) {
-        const nextLine = lines[i + 1].trim();
-        if (nextLine && !nextLine.match(/^(소\s*재\s*지|주\s*소|건축|동\s*\[)/)) {
-          buildingName = nextLine;
+      const parts = trimmedLine.split(/\s{2,}/);
+      if (parts.length > 1) {
+        // parts[0] = "오피스텔", parts[1] = "경동미르웰", parts[2] = "동 [저]" 등
+        // parts[1]에서 처음 스페이스 앞까지만 추출 (동 [저] 같은 다른 필드 제외)
+        const value = parts[1].split(/\s+/)[0].trim();
+        if (value && !value.match(/^(동|주|건축)/)) {
+          buildingName = value;
           break;
         }
       }
     }
 
     // "건물,위치" 라벨을 찾은 경우
-    if (line.match(/^건물,?\s*위치/)) {
-      const parts = line.split(/\s{2,}/);
-      if (parts.length > 1 && parts[0].trim().match(/^건물,?\s*위치/)) {
-        buildingName = parts[1].trim();
-        break;
-      }
-      if (i + 1 < lines.length) {
-        const nextLine = lines[i + 1].trim();
-        if (nextLine && !nextLine.match(/^(소\s*재\s*지|주\s*소|건축)/)) {
-          buildingName = nextLine;
+    if (trimmedLine.match(/^건물,?\s*위치/)) {
+      const parts = trimmedLine.split(/\s{2,}/);
+      if (parts.length > 1) {
+        const value = parts[1].split(/\s+/)[0].trim();
+        if (value && !value.match(/^(동|주|건축)/)) {
+          buildingName = value;
           break;
         }
       }
