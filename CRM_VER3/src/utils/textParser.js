@@ -507,14 +507,18 @@ const parseOriginalFormat = (rawText) => {
 
     // "오피스텔" 라벨을 찾은 경우 (라인 시작에서 찾기)
     if (trimmedLine.match(/^오피스텔/)) {
+      console.log('[DEBUG] 오피스텔 라벨 찾음:', trimmedLine);
       // 같은 라인에서 2개 이상의 공백으로 분리된 다음 값 찾기
       const parts = trimmedLine.split(/\s{2,}/);
+      console.log('[DEBUG] split 결과:', parts);
       if (parts.length > 1) {
         // parts[0] = "오피스텔", parts[1] = "경동미르웰", parts[2] = "동 [저]" 등
         // parts[1]에서 처음 스페이스 앞까지만 추출 (동 [저] 같은 다른 필드 제외)
         const value = parts[1].split(/\s+/)[0].trim();
+        console.log('[DEBUG] 추출된 값:', value);
         if (value && !value.match(/^(동|주|건축)/)) {
           buildingName = value;
+          console.log('[DEBUG] buildingName 설정됨:', buildingName);
           break;
         }
       }
