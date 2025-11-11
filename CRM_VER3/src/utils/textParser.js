@@ -658,47 +658,6 @@ const parseOriginalFormat = (rawText) => {
  * @param {string} text - 매물 정보 전체 텍스트
  * @returns {string} - 추출된 지번
  */
-export const extractJibun = (text) => {
-  if (!text) return '';
-
-  const lines = text.split('\n');
-
-  // 1. 원본 포맷: "소 재 지" 라벨 찾기
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmedLine = line.trim();
-
-    // "소 재 지" 라벨 찾기 (라인 시작 부분에만)
-    if (trimmedLine.match(/^소\s*재\s*지/)) {
-      // 같은 라인에서 라벨 뒤의 내용 추출 (2개 이상의 공백으로 분리)
-      // 예: "소 재 지    서울시 강서구 마곡동 784    공개여부" → "서울시 강서구 마곡동 784"
-      const parts = trimmedLine.split(/\s{2,}/);
-
-      // 첫 번째 부분이 "소 재 지"를 포함하면, 두 번째 부분이 지번
-      if (parts.length > 1 && parts[0].match(/^소\s*재\s*지/)) {
-        const jibun = parts[1].trim();
-        // 임대료, 단위 등의 정보는 제외
-        if (jibun && !jibun.match(/^(공개여부|공개|단위|건물|주소|보증|월|임|만원)/)) {
-          return jibun; // ✅ 바로 반환 (다음 라인 로직 실행 안 함)
-        }
-      }
-    }
-  }
-
-  // 2. 정리본 포맷: "소재지:" 라벨에서 지번 추출
-  for (const line of lines) {
-    if (line.includes('소재지:')) {
-      // "• 소재지: 건물명(지번주소)" 형식에서 괄호 안의 지번 추출
-      const match = line.match(/소재지:\s*.+?\((.+?)\)/);
-      if (match) {
-        return match[1].trim();
-      }
-    }
-  }
-
-  return '';
-};
-
 /**
  * 원본 매물정보를 7개 항목으로 정리된 형식으로 변환
  * 자동으로 형식을 감지하여 적절한 파싱 함수 호출
