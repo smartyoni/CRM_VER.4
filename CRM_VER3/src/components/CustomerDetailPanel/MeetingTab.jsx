@@ -117,14 +117,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
       const handleInfoChange = (e) => {
         const info = e.target.value;
-        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(info, source);
 
         setPropertyData({
           ...propertyData,
-          info: info,
-          roomName: propertyName || propertyData.roomName,
-          agency: agencyName || propertyData.agency,
-          agencyPhone: contactNumber || propertyData.agencyPhone
+          info: info
         });
       };
 
@@ -743,14 +739,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
       const handleInfoChange = (e) => {
         const info = e.target.value;
-        const { propertyName, agencyName, contactNumber } = parsePropertyDetails(info, source);
 
         setPropertyData({
           ...propertyData,
-          info: info,
-          roomName: propertyName || propertyData.roomName,
-          agency: agencyName || propertyData.agency,
-          agencyPhone: contactNumber || propertyData.agencyPhone
+          info: info
         });
       };
 
