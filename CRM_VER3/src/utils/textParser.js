@@ -519,6 +519,30 @@ const parseOriginalFormat = (rawText) => {
 };
 
 /**
+ * 정리본 포맷에서 지번 추출 ("소재지: 건물명(지번주소)" → 지번만 추출)
+ * @param {string} text - 매물 정보 전체 텍스트
+ * @returns {string} - 추출된 지번
+ */
+export const extractJibun = (text) => {
+  if (!text) return '';
+
+  const lines = text.split('\n');
+
+  // 정리본 포맷에서 소재지 라인 찾기
+  for (const line of lines) {
+    if (line.includes('소재지:')) {
+      // "• 소재지: 건물명(지번주소)" 형식에서 괄호 안의 지번 추출
+      const match = line.match(/소재지:\s*.+?\((.+?)\)/);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+  }
+
+  return '';
+};
+
+/**
  * 원본 매물정보를 7개 항목으로 정리된 형식으로 변환
  * 자동으로 형식을 감지하여 적절한 파싱 함수 호출
  * @param {string} rawText - 원본 매물 정보 텍스트

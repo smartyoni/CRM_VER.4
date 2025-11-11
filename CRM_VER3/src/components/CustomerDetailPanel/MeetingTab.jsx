@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PROPERTY_STATUSES } from '../../constants';
 import { generateId, formatDateTime } from '../../utils/helpers';
-import { parsePropertyDetails, generateStructuredPropertyInfo } from '../../utils/textParser';
+import { parsePropertyDetails, generateStructuredPropertyInfo, extractJibun } from '../../utils/textParser';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -111,7 +111,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyModal = ({ onClose, propertyToEdit, editIndex }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0], order: editIndex !== null ? editIndex + 1 : 1 }
+        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', jibun: '', visitTime: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0], order: editIndex !== null ? editIndex + 1 : 1 }
       );
       const [source, setSource] = useState('TEN');
 
@@ -145,12 +145,14 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           info: structuredInfo
         };
 
-        // 3. 정리본에서 호실명, 부동산, 연락처 자동 추출
+        // 3. 정리본에서 호실명, 부동산, 연락처, 지번 자동 추출
         const { propertyName, agencyName, contactNumber } = parsePropertyDetails(structuredInfo);
+        const jibun = extractJibun(structuredInfo);
 
         updatedData.roomName = propertyName || propertyData.roomName;
         updatedData.agency = agencyName || propertyData.agency;
         updatedData.agencyPhone = contactNumber || propertyData.agencyPhone;
+        updatedData.jibun = jibun || propertyData.jibun;
 
         setPropertyData(updatedData);
       };
@@ -280,12 +282,16 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.roomName} onChange={(e) => setPropertyData({...propertyData, roomName: e.target.value})} />
               </div>
               <div className="form-group">
-                <label>연락처</label>
-                <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.agencyPhone} onChange={(e) => setPropertyData({...propertyData, agencyPhone: e.target.value})} />
+                <label>지번</label>
+                <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.jibun} onChange={(e) => setPropertyData({...propertyData, jibun: e.target.value})} />
               </div>
-              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+              <div className="form-group">
                 <label>부동산</label>
                 <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label>연락처</label>
+                <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.agencyPhone} onChange={(e) => setPropertyData({...propertyData, agencyPhone: e.target.value})} />
               </div>
             </div>
             <div className="modal-footer">
@@ -731,7 +737,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyEditModal = ({ propertyToEdit, editIndex, onClose }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', jibun: '', visitTime: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] }
       );
       const [source, setSource] = useState('TEN');
 
@@ -765,12 +771,14 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           info: structuredInfo
         };
 
-        // 3. 정리본에서 호실명, 부동산, 연락처 자동 추출
+        // 3. 정리본에서 호실명, 부동산, 연락처, 지번 자동 추출
         const { propertyName, agencyName, contactNumber } = parsePropertyDetails(structuredInfo);
+        const jibun = extractJibun(structuredInfo);
 
         updatedData.roomName = propertyName || propertyData.roomName;
         updatedData.agency = agencyName || propertyData.agency;
         updatedData.agencyPhone = contactNumber || propertyData.agencyPhone;
+        updatedData.jibun = jibun || propertyData.jibun;
 
         setPropertyData(updatedData);
       };
@@ -885,6 +893,14 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.roomName} onChange={(e) => setPropertyData({...propertyData, roomName: e.target.value})} />
               </div>
               <div className="form-group">
+                <label>지번</label>
+                <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.jibun} onChange={(e) => setPropertyData({...propertyData, jibun: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label>부동산</label>
+                <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
+              </div>
+              <div className="form-group">
                 <label>연락처</label>
                 <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.agencyPhone} onChange={(e) => setPropertyData({...propertyData, agencyPhone: e.target.value})} />
               </div>
@@ -897,10 +913,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <select value={propertyData.status} onChange={(e) => setPropertyData({...propertyData, status: e.target.value})}>
                   {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-              </div>
-              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label>부동산</label>
-                <input type="text" value={propertyData.agency} onChange={(e) => setPropertyData({...propertyData, agency: e.target.value})} />
               </div>
             </div>
             <div className="modal-footer">
