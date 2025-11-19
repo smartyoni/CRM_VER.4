@@ -368,3 +368,219 @@ export const parseContractCSV = (csvContent) => {
 const generateId = (counter = 0) => {
   return `${Date.now()}_${counter}_${Math.random().toString(36).substr(2, 9)}`;
 };
+
+// ========== 범용 CSV 파서 (동적 테이블용) ==========
+
+// 데이터 타입 추론 (샘플 값 기반)
+export const inferDataType = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return 'text';
+  }
+
+  const trimmedValue = String(value).trim();
+
+  // 날짜 판별 (YYYY-MM-DD, YYYY/MM/DD, MM/DD/YYYY 등)
+  if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(trimmedValue) ||
+      /^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(trimmedValue) ||
+      /^\d{4}\d{1,2}\d{1,2}$/.test(trimmedValue)) {
+    return 'date';
+  }
+
+  // 숫자 판별
+  if (!isNaN(trimmedValue) && trimmedValue !== '') {
+    return 'number';
+  }
+
+  return 'text';
+};
+
+// CSV 데이터를 객체 배열로 변환
+export const csvToObjects = (csvText) => {
+  const rows = parseCSVData(csvText);
+
+  if (rows.length === 0) {
+    return { headers: [], data: [] };
+  }
+
+  const headers = rows[0];
+  const data = rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((header, index) => {
+      obj[header] = row[index] || '';
+    });
+    return obj;
+  });
+
+  return { headers, data };
+};
+
+// CSV 파싱 헬퍼 (기존 parseCSVLine과 동일하게 작동)
+const parseCSVData = (csvText) => {
+  const lines = csvText.split('\n').filter(line => line.trim());
+  const rows = [];
+
+  lines.forEach(line => {
+    const cells = parseCSVLine(line);
+    rows.push(cells);
+  });
+
+  return rows;
+};
+
+// 컬럼 메타데이터 생성 (헤더와 데이터 샘플을 기반으로)
+export const generateColumnMetadata = (headers, dataRows) => {
+  return headers.map((header, index) => {
+    // Firestore 필드명 sanitize
+    const sanitizedHeader = header.replace(/\//g, '_').replace(/\\/g, '_');
+    let dataType = 'text';
+    let hasNull = false;
+
+    // 처음 10개 행의 데이터를 샘플링하여 타입 추론
+    for (let i = 0; i < Math.min(10, dataRows.length); i++) {
+      const value = dataRows[i][header];
+
+      if (value === null || value === undefined || value === '') {
+        hasNull = true;
+      } else {
+        const inferredType = inferDataType(value);
+        if (inferredType !== 'text') {
+          dataType = inferredType;
+          break;
+        }
+      }
+    }
+
+    return {
+      name: sanitizedHeader,
+      type: dataType,
+      required: !hasNull,
+      display: true
+    };
+  });
+};
+
+// 파일에서 CSV 텍스트 읽기
+export const readCSVFile = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const csvText = event.target.result;
+        resolve(csvText);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+
+    reader.readAsText(file, 'UTF-8');
+  });
+};
+
+// CSV 데이터를 테이블 행 데이터로 변환 (ID, 타임스탐프 추가)
+export const transformCSVDataToTableRows = (csvData) => {
+  return csvData.map((row, index) => {
+    // Sanitize field names to remove problematic characters for Firestore
+    const sanitizedRow = {};
+    Object.keys(row).forEach(key => {
+      // Firestore 필드명에서 "/" 제거
+      const sanitizedKey = key.replace(/\//g, '_').replace(/\\/g, '_');
+      sanitizedRow[sanitizedKey] = row[key];
+    });
+
+    return {
+      id: `row_${Date.now()}_${index}`,
+      ...sanitizedRow,
+      createdAt: new Date().toISOString()
+    };
+  });
+};
+
+// 전체 파이프라인: 파일 → CSV → 객체 배열 → 컬럼 메타데이터 + 데이터
+export const processCSVFile = async (file) => {
+  try {
+    const csvText = await readCSVFile(file);
+    const { headers, data } = csvToObjects(csvText);
+
+    if (headers.length === 0 || data.length === 0) {
+      throw new Error('CSV 파일이 비어있거나 유효하지 않습니다.');
+    }
+
+    const columns = generateColumnMetadata(headers, data);
+    const tableRows = transformCSVDataToTableRows(data);
+
+    return {
+      success: true,
+      columns,
+      data: tableRows,
+      rowCount: data.length
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// CSV 객체 배열을 CSV 문자열로 변환 (내보내기용)
+export const objectsToCSV = (objects, columns = null) => {
+  if (!objects || objects.length === 0) {
+    return '';
+  }
+
+  let headers = [];
+  if (columns) {
+    headers = columns.map(col => col.name);
+  } else {
+    headers = Object.keys(objects[0]).filter(key =>
+      key !== 'id' && key !== 'createdAt' && key !== 'updatedAt'
+    );
+  }
+
+  const headerRow = headers.map(escapeCSVField).join(',');
+
+  const dataRows = objects.map(obj => {
+    return headers.map(header => {
+      const value = obj[header];
+      return escapeCSVField(value);
+    }).join(',');
+  });
+
+  return [headerRow, ...dataRows].join('\n');
+};
+
+// CSV 필드 이스케이프 (따옴표 처리)
+const escapeCSVField = (value) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  const stringValue = String(value);
+
+  if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+    return `"${stringValue.replace(/"/g, '""')}"`;
+  }
+
+  return stringValue;
+};
+
+// CSV 파일 다운로드 (객체 배열)
+export const downloadCSV = (filename, objects, columns = null) => {
+  const csvContent = objectsToCSV(objects, columns);
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
