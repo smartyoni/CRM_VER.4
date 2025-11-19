@@ -1,13 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { BUILDING_LOCATIONS, BUILDING_TYPES } from '../constants';
 
-const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selectedBuildingId, activeFilter, onFilterChange, allBuildings, onCloseDetailPanel }) => {
+const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selectedBuildingId, onCloseDetailPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedBuilding: null });
-  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
-
-  // 필터 옵션 추출
-  const filterOptions = ['전체', ...new Set(allBuildings?.map(b => b.type).filter(Boolean) || [])];
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'desc' });
 
   const filteredBuildings = useMemo(() => {
     let filtered = buildings.filter(building =>
@@ -95,28 +91,6 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
   return (
     <div className="property-table-container" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '15px', padding: '20px' }}>
-      {/* 필터 드롭다운 */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <select
-          value={activeFilter}
-          onChange={(e) => onFilterChange(e.target.value)}
-          style={{
-            padding: '10px 12px',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: '#fff',
-            cursor: 'pointer'
-          }}
-        >
-          {filterOptions.map(option => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
-
       {/* 검색 바 */}
       <div style={{ position: 'relative' }}>
         <input
@@ -192,9 +166,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (selectedBuildingId === building.id) {
-                      e.currentTarget.style.backgroundColor = '#e3f2fd';
-                    } else {
+                    if (selectedBuildingId !== building.id) {
                       e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f5f5f5';
                     }
                   }}
@@ -234,69 +206,77 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
       {/* Context Menu */}
       {contextMenu.visible && (
-        <div
-          className="context-menu"
-          onClick={handleCloseContextMenu}
-          onContextMenu={(e) => e.preventDefault()}
-          style={{
-            position: 'fixed',
-            top: contextMenu.y,
-            left: contextMenu.x,
-            backgroundColor: '#fff',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            zIndex: 1000,
-            minWidth: '120px'
-          }}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(contextMenu.selectedBuilding);
-              handleCloseContextMenu();
-            }}
+        <>
+          <div
             style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              cursor: 'pointer',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: '#333',
-              transition: 'background-color 0.2s'
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 998
             }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-          >
-            수정
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(contextMenu.selectedBuilding);
-              handleCloseContextMenu();
-            }}
+            onClick={handleCloseContextMenu}
+          />
+          <div
             style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              cursor: 'pointer',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: '#f44336',
-              transition: 'background-color 0.2s'
+              position: 'fixed',
+              top: contextMenu.y,
+              left: contextMenu.x,
+              backgroundColor: '#fff',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              zIndex: 999,
+              minWidth: '120px'
             }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
           >
-            삭제
-          </button>
-        </div>
+            <button
+              onClick={() => {
+                onEdit(contextMenu.selectedBuilding);
+                handleCloseContextMenu();
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                textAlign: 'left',
+                fontSize: '14px',
+                color: '#333',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              수정
+            </button>
+            <button
+              onClick={() => {
+                onDelete(contextMenu.selectedBuilding);
+                handleCloseContextMenu();
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                textAlign: 'left',
+                fontSize: '14px',
+                color: '#d32f2f',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#ffebee'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              삭제
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

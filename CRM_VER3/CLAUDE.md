@@ -62,31 +62,42 @@
   - 각 기능의 활성 필터는 독립적으로 저장 (상태 변수 분리)
   - 탭 전환 시 이전 필터 상태 유지
 
-### 원칙 3: 테이블뷰 형식은 고객목록 테이블뷰를 기준
-- **헤더 스타일**:
-  - 배경색: `#4CAF50` (녹색)
-  - 글자색: `white`
-  - 폰트 굵기: `bold`
-  - 패딩: `12px`
-  - CSS 클래스: `.customer-table thead th`
+### 원칙 3: 테이블뷰 형식은 모든 기능에서 동일하게 통일 (2025-11-19 표준화 완료)
 
-- **셀 스타일**:
-  - 기본 폰트 크기: `14px` (CSS에서 상속)
-  - 패딩: `12px`
-  - 테두리: `1px solid #e0e0e0`
-  - CSS 클래스: `.customer-table td`
+#### 헤더 스타일
+- 배경색: `#689f38` (다크 라임 그린 - 검정이 섞인 녹색)
+- 글자색: `white`
+- 폰트 굵기: `bold`
+- 패딩: `12px`
+- CSS 클래스: `.customer-table thead th`
+- **적용 대상**: CustomerTable, PropertyTable, BuildingTable, ContractTable, DynamicTableView
 
-- **행 색상 (교차색상)**:
-  - 짝수 행: `#ffffff` (흰색)
-  - 홀수 행: `#f5f5f5` (밝은 회색)
-  - 선택된 행: `#e3f2fd` (밝은 파란색)
-  - 호버 상태: `#dcfce7` (연한 초록색)
+#### 셀 스타일
+- 기본 폰트 크기: `14px` (CSS에서 상속)
+- 패딩: `12px`
+- 테두리: `1px solid #e0e0e0`
+- CSS 클래스: `.customer-table td`
 
-- **테이블 기능**:
-  - 검색바: 상단에 위치, 초기화 버튼 포함
-  - 정렬: 헤더 클릭 시 정렬 (▲/▼ 표시)
-  - 컨텍스트 메뉴: 우클릭 시 수정/삭제 옵션
-  - 빈 상태: `"{searchTerm ? '검색 결과가 없습니다' : '등록된 {Entity}가 없습니다'}"`
+#### 행 색상 (교차색상)
+- 짝수 행: `#ffffff` (흰색)
+- 홀수 행: `#f5f5f5` (밝은 회색)
+- 선택된 행: `#e3f2fd` (밝은 파란색)
+- 호버 상태: `#dcfce7` (연한 초록색)
+
+#### 테이블 기능 (필수)
+- **검색바**: 상단에 위치, 초기화 버튼 포함
+  - 드롭다운 필터 없음 (매물장, 건물정보에서 제거됨)
+  - 필터는 좌측 사이드바(FilterSidebar)에서만 관리
+- **정렬**: 헤더 클릭 시 정렬 가능
+  - 기본 정렬 방향: `desc` (최신순)
+  - 정렬 아이콘: `▲` (오름차순) / `▼` (내림차순)
+  - TableHeader 컴포넌트로 구현 (flex layout, gap: 4px)
+- **컨텍스트 메뉴**: 우클릭 시 수정/삭제 옵션
+  - 백드롭 포함 (zIndex: 998)
+  - 메뉴 zIndex: 999
+  - 버튼 기반 구현 (padding: 10px 16px)
+  - 호버 색상: 수정(#f5f5f5), 삭제(#ffebee)
+- **빈 상태**: `"{searchTerm ? '검색 결과가 없습니다' : '등록된 {Entity}가 없습니다'}"`
 
 - **구현 예시**:
   ```javascript
@@ -162,32 +173,188 @@
   - 데이터 실시간 반영: 수정/삭제 후 패널 자동 업데이트
   - 목록과 패널 동기화: 한쪽이 변경되면 다른 쪽도 자동 갱신
 
-## 기능별 구현 체크리스트
+## 새로운 테이블 추가 시 체크리스트 (표준화 가이드)
 
-새로운 기능 추가 시 다음을 확인하세요:
+### 테이블 컴포넌트 작성 규칙
 
-- [ ] **파일 구조**
-  - [ ] `{Entity}Table.jsx` 생성
-  - [ ] `{Entity}Modal.jsx` 생성
-  - [ ] `{Entity}DetailPanel.jsx` 생성 (필요 시)
-  - [ ] `constants.js`에 필수 상수 추가
+새로운 기능의 테이블을 추가할 때 아래 표준화된 형식을 따르세요:
 
-- [ ] **App.jsx 연결**
-  - [ ] 상태 변수: `[items, setItems]`, `[selectedId, setSelectedId]`, `[isModalOpen, setIsModalOpen]`
-  - [ ] Firebase 구독: `subscribeTo{Entities}` 함수
-  - [ ] 핸들러: `handleSelect`, `handleOpenModal`, `handleCloseModal`, `handleSave`, `handleDelete`
-  - [ ] 탭 추가: FilterSidebar와 main content 영역
+#### 1. 파일 구조
+- [ ] `{Entity}Table.jsx` 생성
+- [ ] `{Entity}Modal.jsx` 생성
+- [ ] `{Entity}DetailPanel.jsx` 생성 (필요 시)
+- [ ] `constants.js`에 필수 상수 추가
 
-- [ ] **UI 일관성**
-  - [ ] 테이블 헤더: CSS `.customer-table` 클래스 사용
-  - [ ] 테이블 색상: 고객목록과 동일
-  - [ ] 검색바: 초기화 버튼 포함
-  - [ ] 상세 패널: 오른쪽 슬라이드 구조
+#### 2. {Entity}Table.jsx 구현 (필수 사항)
 
-- [ ] **필터 관리**
-  - [ ] FilterSidebar에 해당 기능 필터 추가
-  - [ ] 필터 상태 변수 분리 (다른 기능에 영향 안 줌)
-  - [ ] 필터 레이아웃: 고객목록의 필터 구조 참고
+**Props:**
+```javascript
+const {EntityName}Table = ({
+  items,                    // 데이터 배열
+  onSelectItem,            // 행 클릭 핸들러
+  onEdit,                  // 수정 핸들러
+  onDelete,                // 삭제 핸들러
+  selectedItemId,          // 선택된 항목 ID
+  onCloseDetailPanel       // 상세패널 닫기
+}) => {
+  // ...
+}
+```
+
+**필수 State:**
+```javascript
+const [searchTerm, setSearchTerm] = useState('');
+const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedItem: null });
+const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' }); // 기본값: desc
+```
+
+**필수 구조:**
+```javascript
+// 1. useMemo를 사용한 필터링 및 정렬
+const filteredItems = useMemo(() => {
+  let filtered = items.filter(item => /* 검색 조건 */);
+
+  const sorted = [...filtered].sort((a, b) => {
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+
+    // null/undefined 처리
+    if (aValue == null && bValue == null) return 0;
+    if (aValue == null) return 1;
+    if (bValue == null) return -1;
+
+    // 타입별 비교 (날짜, 숫자, 문자열)
+    // ...
+
+    return sortConfig.direction === 'asc' ? 비교값 : -비교값;
+  });
+
+  return sorted;
+}, [items, searchTerm, sortConfig]);
+
+// 2. TableHeader 컴포넌트
+const TableHeader = ({ label, sortKey }) => (
+  <th onClick={() => handleSort(sortKey)} style={{...}}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      {label}
+      {sortConfig.key === sortKey && (
+        <span style={{ fontSize: '12px' }}>
+          {sortConfig.direction === 'asc' ? '▲' : '▼'}
+        </span>
+      )}
+    </div>
+  </th>
+);
+
+// 3. 컨텍스트 메뉴 (우클릭)
+const handleContextMenu = (e, item) => {
+  e.preventDefault();
+  setContextMenu({ visible: true, x: e.clientX, y: e.clientY, selectedItem: item });
+};
+
+// 4. 정렬 핸들러
+const handleSort = (key) => {
+  setSortConfig(prev => ({
+    key,
+    direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
+  }));
+};
+```
+
+**필수 렌더링 구조:**
+```javascript
+return (
+  <div className="property-table-container" style={{...}}>
+    {/* 검색 바 - 드롭다운 없음 */}
+    <div style={{ position: 'relative' }}>
+      <input placeholder="..." value={searchTerm} onChange={...} />
+      {searchTerm && <button onClick={() => setSearchTerm('')}>✕</button>}
+    </div>
+
+    {/* 테이블 */}
+    <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
+      {filteredItems.length > 0 ? (
+        <table className="customer-table" style={{ width: '100%' }}>
+          <thead>
+            <tr>
+              <TableHeader label="..." sortKey="..." />
+              {/* 각 컬럼에 대해 반복 */}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredItems.map((item, index) => (
+              <tr
+                key={item.id}
+                onClick={() => onSelectItem(item)}
+                onContextMenu={(e) => handleContextMenu(e, item)}
+                style={{
+                  backgroundColor: selectedItemId === item.id ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f5f5f5'),
+                  cursor: 'pointer',
+                  borderBottom: '1px solid #e0e0e0',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedItemId !== item.id) {
+                    e.currentTarget.style.backgroundColor = '#dcfce7';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedItemId !== item.id) {
+                    e.currentTarget.style.backgroundColor = (index % 2 === 0 ? '#ffffff' : '#f5f5f5');
+                  }
+                }}
+              >
+                <td style={{ padding: '12px' }}>...</td>
+                {/* 각 셀에 대해 반복 */}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+          {searchTerm ? '검색 결과가 없습니다' : '등록된 {Entity}가 없습니다'}
+        </div>
+      )}
+    </div>
+
+    {/* 컨텍스트 메뉴 */}
+    {contextMenu.visible && (
+      <>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }}
+             onClick={() => setContextMenu({ visible: false, ... })} />
+        <div style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x,
+                      backgroundColor: '#fff', border: '1px solid #ddd', zIndex: 999, ... }}>
+          <button onClick={() => { onEdit(...); ... }}>수정</button>
+          <button onClick={() => { onDelete(...); ... }} style={{ color: '#d32f2f' }}>삭제</button>
+        </div>
+      </>
+    )}
+  </div>
+);
+```
+
+#### 3. App.jsx 연결
+- [ ] 상태 변수: `[items, setItems]`, `[selectedId, setSelectedId]`, `[isModalOpen, setIsModalOpen]`
+- [ ] Firebase 구독: `subscribeTo{Entities}` 함수
+- [ ] 핸들러: `handleSelect`, `handleOpenModal`, `handleCloseModal`, `handleSave`, `handleDelete`
+- [ ] 탭 추가: FilterSidebar와 main content 영역에 새 탭 추가
+- [ ] {Entity}Table props: **필터링 상태 변수 제거** (필터는 사이드바에서만 관리)
+
+#### 4. FilterSidebar 연결 (필요 시)
+- [ ] activeTab 조건에 새 탭 추가
+- [ ] 필터 목록 추가 (getStatusCount 함수 확장)
+- [ ] 필터 상태 변수 분리 (다른 기능에 영향 안 줌)
+- [ ] **매물장, 건물정보는 필터 없음** (검색바만 있음)
+
+#### 5. CSS 스타일
+- [ ] 테이블 클래스: `class="customer-table"` 사용
+- [ ] 헤더 배경색: CSS `.customer-table thead th`에서 `#689f38` 자동 적용
+- [ ] 커스텀 색상 필요 시: 인라인 스타일 사용
+
+#### 6. DetailPanel 구현
+- [ ] 우측 슬라이드 패널 구조
+- [ ] 기본정보, 활동, 메모 등 탭 구성
+- [ ] 수정/삭제 액션 버튼 포함
 
 ## CSV 임포트 기능
 
@@ -572,4 +739,4 @@ const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
 
 ## 확인 날짜
 - 작성: 2025-10-20
-- 최종 업데이트: 2025-11-04 (새로운 기능 개발 UI/UX 원칙 추가, CSV 임포트 기능 추가, 계약호실 기능 추가)
+- 최종 업데이트: 2025-11-19 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성)

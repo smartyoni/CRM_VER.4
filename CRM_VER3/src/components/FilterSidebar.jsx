@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { STATUSES, BUILDING_TYPES, CONTRACT_PROGRESS_STATUSES } from '../constants';
+import { STATUSES, CONTRACT_PROGRESS_STATUSES } from '../constants';
 
 const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, buildings, contracts, isMobileOpen, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -81,16 +81,6 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       }
 
       return customers.filter(c => c.status === status).length;
-    } else if (activeTab === '매물장') {
-      // 매물장 필터 (구분별)
-      if (status === '전체') return properties.length;
-      // 해당 구분의 매물 개수
-      return properties.filter(p => p.category === status).length;
-    } else if (activeTab === '건물정보') {
-      // 건물정보 필터 (유형별)
-      if (status === '전체') return buildings.length;
-      // 유형으로 필터링
-      return buildings.filter(b => b.type === status).length;
     } else if (activeTab === '계약호실') {
       // 계약호실 필터
       const today = new Date();
@@ -216,16 +206,6 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      if (status === '중개업무') {
-        // 중개업무 필터에 표시되는 카드의 개수: 6개
-        return 6;
-      }
-
-      if (status === '중개보수') {
-        // 중개보수 필터에 표시되는 카드의 개수: 3개 (전월입금, 금월입금, 다음달입금)
-        return 3;
-      }
-
       if (status === '고객관리') {
         // 고객관리 필터에 표시되는 카드의 개수: 3개 (계약예정, 잔금예정, 미팅예정)
         return 3;
@@ -235,28 +215,13 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     }
   };
 
-  // 매물 구분 목록 추출 (중복 제거, 정렬)
-  const getPropertyCategories = () => {
-    const categories = new Set(properties.map(p => p.category).filter(Boolean));
-    return ['전체', ...Array.from(categories).sort()];
-  };
-
-  // 건물정보 필터 목록 (유형별)
-  const getBuildingFilters = () => {
-    return ['전체', ...BUILDING_TYPES];
-  };
-
   // activeTab에 따라 다른 필터 목록 표시
   const allStatuses = activeTab === '고객관리'
     ? ['전체', '오늘활동', '오늘미팅', '미팅일확정', '즐겨찾기', '답장대기', '보류']
-    : activeTab === '매물장'
-    ? getPropertyCategories() // 매물장 필터 (구분별 동적 생성)
-    : activeTab === '건물정보'
-    ? getBuildingFilters() // 건물정보 필터 (위치 + 유형)
     : activeTab === '계약호실'
     ? ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'] // 계약호실 필터
     : activeTab === '대시보드'
-    ? ['중개업무', '중개보수', '고객관리'] // 대시보드 메뉴 (확장 가능)
+    ? ['고객관리'] // 대시보드 메뉴
     : [];
 
   const handleFilterClick = (status) => {

@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
 
-const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selectedPropertyId, activeFilter, onFilterChange, allProperties, onCloseDetailPanel }) => {
+const PropertyTable = ({
+  properties,
+  onSelectProperty,
+  onEdit,
+  onDelete,
+  selectedPropertyId,
+  onCloseDetailPanel
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedProperty: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
-
-  // 필터 옵션 추출
-  const filterOptions = ['전체', ...new Set(allProperties?.map(p => p.category).filter(Boolean) || [])];
-  const propertyTypeOptions = ['전체', ...new Set(allProperties?.map(p => p.propertyType).filter(Boolean) || [])];
 
   const filteredProperties = useMemo(() => {
     let filtered = properties.filter(property =>
@@ -26,14 +29,14 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
       if (aValue == null) return 1;
       if (bValue == null) return -1;
 
-      // 숫자 비교 (금액, 보증금, 월세)
+      // 숫자 비교
       if (sortConfig.key === 'price' || sortConfig.key === 'deposit' || sortConfig.key === 'monthlyRent') {
         const numA = Number(aValue) || 0;
         const numB = Number(bValue) || 0;
         return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
       }
 
-      // 날짜 비교 (접수일, 입주일)
+      // 날짜 비교
       if (sortConfig.key === 'createdAt' || sortConfig.key === 'moveInDate') {
         const dateA = new Date(aValue);
         const dateB = new Date(bValue);
@@ -54,7 +57,7 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
 
   const handleContextMenu = (e, property) => {
     e.preventDefault();
-    setContextMenu({ visible: true, x: e.pageX, y: e.pageY, selectedProperty: property });
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, selectedProperty: property });
   };
 
   const handleCloseContextMenu = () => {
@@ -64,21 +67,21 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
   const handleEdit = () => {
     if (contextMenu.selectedProperty) {
       onEdit(contextMenu.selectedProperty);
+      handleCloseContextMenu();
     }
-    handleCloseContextMenu();
   };
 
   const handleDelete = () => {
-    if (contextMenu.selectedProperty) {
+    if (contextMenu.selectedProperty && confirm('이 매물을 삭제하겠습니까?')) {
       onDelete(contextMenu.selectedProperty);
+      handleCloseContextMenu();
     }
-    handleCloseContextMenu();
   };
 
   const handleSort = (key) => {
-    setSortConfig(prevConfig => ({
+    setSortConfig(prev => ({
       key,
-      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+      direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
     }));
   };
 
@@ -91,147 +94,41 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
     return `${Number(price).toLocaleString()}`;
   };
 
-  // 접수일에 따른 배경색 결정
-  const getBackgroundColor = (createdAt, isSelected) => {
-    // 선택된 행은 기존 색상 유지
-    if (isSelected) return '#e3f2fd';
-
-    if (!createdAt) return 'transparent';
-
-    const createdDate = new Date(createdAt);
-    const today = new Date();
-
-    // 연월 비교
-    const createdYear = createdDate.getFullYear();
-    const createdMonth = createdDate.getMonth();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-
-    // 월의 차이 계산
-    const monthDiff = (currentYear - createdYear) * 12 + (currentMonth - createdMonth);
-
-    if (monthDiff === 0) {
-      // 당월: 핑크색
-      return '#ffebee';
-    } else if (monthDiff === 1) {
-      // 전월: 파란색
-      return '#e3f2fd';
-    } else if (monthDiff >= 2 && monthDiff <= 4) {
-      // 2~4개월 전: 노란색
-      return '#fff9c4';
-    } else {
-      // 나머지 (5개월 이상): 기본색
-      return 'transparent';
-    }
-  };
-
-  // 즐겨찾기 토글 핸들러
-  const handleFavorite = () => {
-    if (contextMenu.selectedProperty) {
-      onEdit(contextMenu.selectedProperty); // 수정 모달에서 즐겨찾기 토글 가능하도록
-    }
-    handleCloseContextMenu();
-  };
-
-  // 접수일을 M월D일 형식으로 포맷
-  const formatCreatedDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}월${day}일`;
-  };
-
-  // 접수일 기준 배경색
-  const getDateBasedColor = (createdAt) => {
-    const today = new Date();
-    const createdDate = new Date(createdAt);
-
-    const createdYear = createdDate.getFullYear();
-    const createdMonth = createdDate.getMonth();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-
-    const monthDiff = (currentYear - createdYear) * 12 + (currentMonth - createdMonth);
-
-    if (monthDiff === 0) {
-      return 'rgba(255, 193, 7, 0.12)'; // 당월: 노란색
-    } else if (monthDiff === 1) {
-      return 'rgba(33, 150, 243, 0.12)'; // 전월: 파란색
-    } else if (monthDiff >= 2 && monthDiff <= 4) {
-      return 'rgba(156, 39, 176, 0.12)'; // 2~4개월: 보라색
-    } else {
-      return 'transparent'; // 5개월 이상
-    }
-  };
-
-  // 날짜별로 rowSpan 계산
-  const getDateRowSpan = (property, index) => {
-    if (index > 0) {
-      const prevProperty = filteredProperties[index - 1];
-      if (formatCreatedDate(property.createdAt) === formatCreatedDate(prevProperty.createdAt)) {
-        return 0; // 같은 날짜면 렌더링 안 함
-      }
-    }
-
-    const currentDate = formatCreatedDate(property.createdAt);
-    let count = 1;
-    for (let i = index + 1; i < filteredProperties.length; i++) {
-      if (formatCreatedDate(filteredProperties[i].createdAt) === currentDate) {
-        count++;
-      } else {
-        break;
-      }
-    }
-    return count;
-  };
-
-  // 특정 날짜에 추가된 매물 수
-  const getPropertyCountByDate = (dateString) => {
-    const formattedDate = formatCreatedDate(dateString);
-    return filteredProperties.filter(p => formatCreatedDate(p.createdAt) === formattedDate).length;
-  };
-
-  const SortHeader = ({ column, label }) => (
+  // TableHeader 컴포넌트
+  const TableHeader = ({ column, label }) => (
     <th
       onClick={() => handleSort(column)}
-      style={{ cursor: 'pointer', userSelect: 'none', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}
+      style={{
+        cursor: 'pointer',
+        userSelect: 'none',
+        padding: '12px',
+        whiteSpace: 'nowrap',
+        textAlign: 'left',
+        fontWeight: '600'
+      }}
     >
-      {label}
-      {sortConfig.key === column && (
-        <span style={{ marginLeft: '8px' }}>
-          {sortConfig.direction === 'asc' ? '▲' : '▼'}
-        </span>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {label}
+        {sortConfig.key === column && (
+          <span style={{ fontSize: '12px' }}>
+            {sortConfig.direction === 'asc' ? '▲' : '▼'}
+          </span>
+        )}
+      </div>
     </th>
   );
 
   return (
-    <div className="property-table-wrapper" style={{ padding: '15px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* 필터 드롭다운 */}
-      <div style={{ marginBottom: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <select
-          value={activeFilter}
-          onChange={(e) => onFilterChange(e.target.value)}
-          style={{
-            padding: '10px 12px',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: '#fff',
-            cursor: 'pointer'
-          }}
-        >
-          {filterOptions.map(option => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
-
+    <div className="property-table-container" style={{
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+      padding: '20px'
+    }}>
       {/* 검색 바 */}
-      <div style={{ marginBottom: '15px', position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
         <input
           type="text"
           placeholder="건물명, 소유자명, 번호로 검색..."
@@ -274,77 +171,84 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
         )}
       </div>
 
-{/* 테이블 */}
-      <div style={{ flex: 1, overflowX: 'auto', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
+      {/* 테이블 */}
+      <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredProperties.length > 0 ? (
-          <table className="customer-table" onClick={handleCloseContextMenu} style={{ fontSize: 'inherit', tableLayout: 'auto', minWidth: '1000px' }}>
+          <table className="customer-table" style={{ width: '100%' }}>
             <thead>
               <tr>
-                <SortHeader column="createdAt" label="접수일" />
-                <SortHeader column="propertyType" label="매물유형" />
-                <SortHeader column="category" label="구분" />
-                <th style={{ width: '200px' }}>매물명</th>
-                <SortHeader column="deposit" label="보증금" />
-                <SortHeader column="monthlyRent" label="월세" />
-                <SortHeader column="moveInDate" label="입주일" />
-                <SortHeader column="ownerName" label="소유자" />
-                <SortHeader column="ownerPhone" label="소유자번호" />
-                <SortHeader column="tenantPhone" label="점주번호" />
+                <TableHeader column="createdAt" label="접수일" />
+                <TableHeader column="propertyType" label="매물유형" />
+                <TableHeader column="category" label="구분" />
+                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                  매물명
+                </th>
+                <TableHeader column="deposit" label="보증금" />
+                <TableHeader column="monthlyRent" label="월세" />
+                <TableHeader column="moveInDate" label="입주일" />
+                <TableHeader column="ownerName" label="소유자" />
+                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                  소유자번호
+                </th>
+                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                  점주번호
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredProperties.map((property, index) => {
-                const rowSpan = getDateRowSpan(property, index);
-                return (
+              {filteredProperties.map((property, index) => (
                 <tr
                   key={property.id}
                   onClick={() => onSelectProperty(property)}
                   onContextMenu={(e) => handleContextMenu(e, property)}
                   style={{
+                    backgroundColor: selectedPropertyId === property.id
+                      ? '#e3f2fd'
+                      : index % 2 === 0 ? '#ffffff' : '#f5f5f5',
                     cursor: 'pointer',
-                    backgroundColor: getDateBasedColor(property.createdAt),
-                    fontWeight: selectedPropertyId === property.id ? 'bold' : 'normal'
+                    borderBottom: '1px solid #e0e0e0',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedPropertyId !== property.id) {
+                      e.currentTarget.style.backgroundColor = '#dcfce7';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedPropertyId !== property.id) {
+                      e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f5f5f5';
+                    }
                   }}
                 >
-                  {rowSpan > 0 && (
-                    <td
-                      rowSpan={rowSpan}
-                      style={{
-                        padding: '12px',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                        fontWeight: '500',
-                        fontSize: '13px',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {formatCreatedDate(property.createdAt)}({getPropertyCountByDate(property.createdAt)}건)
-                    </td>
-                  )}
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.propertyType || '-'}</td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.category || '-'}</td>
-                  <td style={{ padding: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{getPropertyName(property)}</td>
-                  <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>{formatPrice(property.deposit || property.price)}</td>
-                  <td style={{ padding: '12px', textAlign: 'right', whiteSpace: 'nowrap' }}>{formatPrice(property.monthlyRent)}</td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{property.ownerName || '-'}</td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '12px' }}>
+                    {new Date(property.createdAt).toLocaleDateString('ko-KR', {
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </td>
+                  <td style={{ padding: '12px' }}>{property.propertyType || '-'}</td>
+                  <td style={{ padding: '12px' }}>{property.category || '-'}</td>
+                  <td style={{ padding: '12px', fontWeight: 'bold' }}>{getPropertyName(property)}</td>
+                  <td style={{ padding: '12px', textAlign: 'right' }}>{formatPrice(property.deposit || property.price)}</td>
+                  <td style={{ padding: '12px', textAlign: 'right' }}>{formatPrice(property.monthlyRent)}</td>
+                  <td style={{ padding: '12px' }}>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
+                  <td style={{ padding: '12px' }}>{property.ownerName || '-'}</td>
+                  <td style={{ padding: '12px' }}>
                     {property.ownerPhone ? (
-                      <a href={`sms:${property.ownerPhone}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
+                      <a href={`sms:${property.ownerPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {property.ownerPhone}
                       </a>
                     ) : '-'}
                   </td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '12px' }}>
                     {property.tenantPhone ? (
-                      <a href={`sms:${property.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
+                      <a href={`sms:${property.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {property.tenantPhone}
                       </a>
                     ) : '-'}
                   </td>
                 </tr>
-              );
-              })}
+              ))}
             </tbody>
           </table>
         ) : (
@@ -356,57 +260,71 @@ const PropertyTable = ({ properties, onSelectProperty, onEdit, onDelete, selecte
 
       {/* 컨텍스트 메뉴 */}
       {contextMenu.visible && (
-        <div
-          style={{
-            position: 'fixed',
-            top: contextMenu.y,
-            left: contextMenu.x,
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '5px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            zIndex: 100,
-            padding: 0
-          }}
-        >
-          <ul style={{ listStyle: 'none', margin: 0, padding: '5px' }}>
-            <li
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 998
+            }}
+            onClick={handleCloseContextMenu}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: contextMenu.y,
+              left: contextMenu.x,
+              backgroundColor: '#fff',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              zIndex: 999,
+              minWidth: '120px'
+            }}
+          >
+            <button
               onClick={handleEdit}
               style={{
-                padding: '8px 16px',
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
                 cursor: 'pointer',
-                borderBottom: '1px solid #f0f0f0'
+                fontSize: '14px',
+                color: '#333',
+                transition: 'background-color 0.2s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
             >
               수정
-            </li>
-            <li
+            </button>
+            <button
               onClick={handleDelete}
               style={{
-                padding: '8px 16px',
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
                 cursor: 'pointer',
-                color: '#e74c3c'
+                fontSize: '14px',
+                color: '#d32f2f',
+                transition: 'background-color 0.2s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#ffebee'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
             >
               삭제
-            </li>
-            <li
-              onClick={handleCloseContextMenu}
-              style={{
-                padding: '8px 16px',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              취소
-            </li>
-          </ul>
-        </div>
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

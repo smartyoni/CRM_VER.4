@@ -95,8 +95,6 @@ function App() {
   const [editingBuilding, setEditingBuilding] = useState(null);
   const [editingContract, setEditingContract] = useState(null);
   const [activeCustomerFilter, setActiveCustomerFilter] = useState('전체');
-  const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
-  const [activeBuildingFilter, setActiveBuildingFilter] = useState('전체');
   const [activeContractFilter, setActiveContractFilter] = useState('전체');
   const [activeDashboardFilter, setActiveDashboardFilter] = useState('고객관리');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
@@ -830,22 +828,6 @@ function App() {
     return filtered;
   })();
 
-  // 매물 필터링 (구분별)
-  const filteredProperties = (() => {
-    if (activePropertyFilter === '전체') {
-      return properties;
-    }
-    return properties.filter(p => p.category === activePropertyFilter);
-  })();
-
-  // 건물 필터링 (유형별)
-  const filteredBuildings = (() => {
-    if (activeBuildingFilter === '전체') {
-      return buildings;
-    }
-    // 유형으로 필터링
-    return buildings.filter(b => b.type === activeBuildingFilter);
-  })();
 
   // 계약호실 필터링
   const filteredContracts = (() => {
@@ -988,8 +970,6 @@ function App() {
           activeTab={activeTab}
           activeFilter={
             activeTab === '고객관리' ? activeCustomerFilter :
-            activeTab === '매물장' ? activePropertyFilter :
-            activeTab === '건물정보' ? activeBuildingFilter :
             activeTab === '계약호실' ? activeContractFilter :
             activeTab === '대시보드' ? activeDashboardFilter :
             ''
@@ -1127,26 +1107,20 @@ function App() {
               />
             ) : activeTab === '매물장' ? (
               <PropertyTable
-                properties={filteredProperties}
+                properties={properties}
                 onSelectProperty={handleSelectProperty}
                 onEdit={handleOpenPropertyModal}
                 onDelete={handleDeleteProperty}
                 selectedPropertyId={selectedPropertyId}
-                activeFilter={activePropertyFilter}
-                onFilterChange={handleFilterChange}
-                allProperties={properties}
                 onCloseDetailPanel={handleCloseDetailPanel}
               />
             ) : activeTab === '건물정보' ? (
               <BuildingTable
-                buildings={filteredBuildings}
+                buildings={buildings}
                 onSelectBuilding={handleSelectBuilding}
                 onEdit={handleOpenBuildingModal}
                 onDelete={handleDeleteBuilding}
                 selectedBuildingId={selectedBuildingId}
-                activeFilter={activeBuildingFilter}
-                onFilterChange={handleFilterChange}
-                allBuildings={buildings}
                 onCloseDetailPanel={handleCloseDetailPanel}
               />
             ) : dynamicTables.some(t => t.id === activeTab) ? (
