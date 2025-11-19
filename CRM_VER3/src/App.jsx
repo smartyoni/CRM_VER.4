@@ -12,10 +12,12 @@ import ContractModal from './components/ContractModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
 import PropertyDetailPanel from './components/PropertyDetailPanel';
 import BuildingDetailPanel from './components/BuildingDetailPanel';
-import ContractDetailPanel from './components/ContractDetailPanel';
 import PropertyImporter from './components/PropertyImporter';
 import BuildingImporter from './components/BuildingImporter';
 import ContractImporter from './components/ContractImporter';
+import DynamicTableView from './components/DynamicTable/DynamicTableView';
+import TableCreator from './components/DynamicTable/TableCreator';
+import DynamicCSVImporter from './components/DynamicTable/DynamicCSVImporter';
 import {
   subscribeToCustomers,
   subscribeToActivities,
@@ -43,6 +45,15 @@ import {
   deleteContract,
   removeDuplicateBuildings
 } from './utils/storage';
+import {
+  subscribeToTables,
+  saveTable,
+  deleteTable,
+  subscribeToTableData,
+  saveTableRow,
+  saveTableRows,
+  deleteTableRow
+} from './utils/dynamicTableStorage';
 
 // Mock data for initial setup
 const initialCustomers = [
@@ -87,14 +98,21 @@ function App() {
   const [activePropertyFilter, setActivePropertyFilter] = useState('전체');
   const [activeBuildingFilter, setActiveBuildingFilter] = useState('전체');
   const [activeContractFilter, setActiveContractFilter] = useState('전체');
-  const [activeDashboardFilter, setActiveDashboardFilter] = useState('중개업무');
+  const [activeDashboardFilter, setActiveDashboardFilter] = useState('고객관리');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객관리', '매물장', '건물정보'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
   const [isContractImporterOpen, setIsContractImporterOpen] = useState(false);
+  const [dynamicTables, setDynamicTables] = useState([]);
+  const [dynamicTableData, setDynamicTableData] = useState({}); // { tableId: [rows] }
+  const [selectedDynamicTableId, setSelectedDynamicTableId] = useState(null);
+  const [selectedDynamicRowId, setSelectedDynamicRowId] = useState(null);
+  const [isTableCreatorOpen, setIsTableCreatorOpen] = useState(false);
+  const [isCSVImporterOpen, setIsCSVImporterOpen] = useState(false);
   const restoreInputRef = useRef(null);
+  const dynamicTableUnsubscribes = useRef({});
 
   useEffect(() => {
     // Realtime subscriptions for Firestore
@@ -126,6 +144,27 @@ function App() {
       setContracts(contracts);
     });
 
+    // 동적 테이블 메타데이터 구독
+    const unsubscribeTables = subscribeToTables((tables) => {
+      setDynamicTables(tables);
+
+      // 각 테이블의 데이터 구독 설정
+      tables.forEach(table => {
+        // 기존 구독 해제
+        if (dynamicTableUnsubscribes.current[table.id]) {
+          dynamicTableUnsubscribes.current[table.id]();
+        }
+
+        // 새로운 구독 설정
+        dynamicTableUnsubscribes.current[table.id] = subscribeToTableData(table.id, (data) => {
+          setDynamicTableData(prev => ({
+            ...prev,
+            [table.id]: data
+          }));
+        });
+      });
+    });
+
     // Cleanup subscriptions on unmount
     return () => {
       unsubscribeCustomers();
@@ -135,6 +174,12 @@ function App() {
       unsubscribeProperties();
       unsubscribeBuildings();
       unsubscribeContracts();
+      unsubscribeTables();
+
+      // 동적 테이블 데이터 구독 모두 해제
+      Object.values(dynamicTableUnsubscribes.current).forEach(unsub => {
+        if (unsub) unsub();
+      });
     };
   }, []);
 
@@ -212,7 +257,7 @@ function App() {
     } else if (activeTab === '계약호실') {
       setActiveContractFilter(filter);
     } else if (activeTab === '대시보드') {
-      setActiveDashboardFilter(filter);
+      setActiveDashboardFilter(filter); // 현재는 고객관리 필터만 사용
     }
   };
 
@@ -394,6 +439,78 @@ function App() {
     setSelectedPropertyId(null);
     setSelectedBuildingId(null);
     setSelectedContractId(null);
+    setSelectedDynamicRowId(null);
+  };
+
+  // ========== 동적 테이블 핸들러 ==========
+
+  const handleCreateDynamicTable = async (tableData, mode) => {
+    try {
+      if (mode === 'manual') {
+        // 수동 정의 테이블 생성
+        const tableId = await saveTable(tableData);
+        setIsTableCreatorOpen(false);
+        alert(`"${tableData.name}" 테이블이 생성되었습니다.`);
+      } else if (mode === 'csv') {
+        // CSV 임포트로 전환
+        setIsTableCreatorOpen(false);
+        setIsCSVImporterOpen(true);
+      }
+    } catch (error) {
+      alert(`테이블 생성 실패: ${error.message}`);
+    }
+  };
+
+  const handleImportCSVTable = async (tableData, rowsData) => {
+    try {
+      // 1. 테이블 메타데이터 저장
+      const tableId = await saveTable(tableData);
+
+      // 2. 데이터 행 저장
+      await saveTableRows(tableId, rowsData);
+
+      setIsCSVImporterOpen(false);
+      alert(`"${tableData.name}" 테이블이 생성되고 ${rowsData.length}개의 행이 임포트되었습니다.`);
+    } catch (error) {
+      alert(`테이블 임포트 실패: ${error.message}`);
+    }
+  };
+
+  const handleSelectDynamicRow = (row) => {
+    if (selectedDynamicRowId === row.id) {
+      setSelectedDynamicRowId(null);
+    } else {
+      setSelectedDynamicRowId(row.id);
+    }
+  };
+
+  const handleDeleteDynamicTable = async (tableId) => {
+    if (!confirm('이 테이블과 모든 데이터를 삭제하겠습니까?')) {
+      return;
+    }
+
+    try {
+      await deleteTable(tableId);
+      setSelectedDynamicTableId(null);
+      alert('테이블이 삭제되었습니다.');
+    } catch (error) {
+      alert(`테이블 삭제 실패: ${error.message}`);
+    }
+  };
+
+  const handleDeleteDynamicRow = async (row) => {
+    if (!confirm('이 행을 삭제하겠습니까?')) {
+      return;
+    }
+
+    try {
+      await deleteTableRow(selectedDynamicTableId, row.id);
+      if (selectedDynamicRowId === row.id) {
+        setSelectedDynamicRowId(null);
+      }
+    } catch (error) {
+      alert(`행 삭제 실패: ${error.message}`);
+    }
   };
 
   const handleSaveContract = async (contractData) => {
@@ -948,6 +1065,17 @@ function App() {
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
                 </>
+              ) : dynamicTables.some(t => t.id === activeTab) ? (
+                <>
+                  <button onClick={() => setIsTableCreatorOpen(true)} className="btn-primary">+ 행 추가</button>
+                  <button
+                    onClick={() => handleDeleteDynamicTable(activeTab)}
+                    className="btn-danger"
+                    style={{ backgroundColor: '#d32f2f', color: 'white', border: 'none' }}
+                  >
+                    테이블 삭제
+                  </button>
+                </>
               ) : (
                 <>
                   <button onClick={() => handleOpenContractModal()} className="btn-primary">+ 계약호실 추가</button>
@@ -1021,6 +1149,16 @@ function App() {
                 allBuildings={buildings}
                 onCloseDetailPanel={handleCloseDetailPanel}
               />
+            ) : dynamicTables.some(t => t.id === activeTab) ? (
+              <DynamicTableView
+                tableData={dynamicTableData[activeTab] || []}
+                tableMetadata={dynamicTables.find(t => t.id === activeTab)}
+                onSelectRow={handleSelectDynamicRow}
+                onEdit={() => {}}
+                onDelete={handleDeleteDynamicRow}
+                selectedRowId={selectedDynamicRowId}
+                onCloseDetailPanel={handleCloseDetailPanel}
+              />
             ) : (
               <ContractTable
                 contracts={filteredContracts}
@@ -1069,27 +1207,6 @@ function App() {
           className="tab-button"
         >
           📊 대시보드
-        </button>
-        <button
-          onClick={() => setActiveTab('계약호실')}
-          style={{
-            padding: '12px 24px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: '#000',
-            border: 'none',
-            backgroundColor: activeTab === '계약호실' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
-            borderBottom: activeTab === '계약호실' ? '4px solid #9C27B0' : '4px solid transparent',
-            borderRadius: activeTab === '계약호실' ? '8px 8px 0 0' : '0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
-            WebkitAppearance: 'none',
-            appearance: 'none'
-          }}
-          className="tab-button"
-        >
-          📄 계약호실
         </button>
         <button
           onClick={() => setActiveTab('고객관리')}
@@ -1153,6 +1270,54 @@ function App() {
           className="tab-button"
         >
           🏢 건물정보
+        </button>
+
+        {/* 동적 테이블 탭들 */}
+        {dynamicTables.map(table => (
+          <button
+            key={table.id}
+            onClick={() => setActiveTab(table.id)}
+            style={{
+              padding: '12px 24px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: '#000',
+              border: 'none',
+              backgroundColor: activeTab === table.id ? 'rgba(76, 175, 80, 0.12)' : 'transparent',
+              borderBottom: activeTab === table.id ? '4px solid #4CAF50' : '4px solid transparent',
+              borderRadius: activeTab === table.id ? '8px 8px 0 0' : '0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: activeTab === table.id ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+              WebkitAppearance: 'none',
+              appearance: 'none'
+            }}
+            className="tab-button"
+          >
+            {table.icon} {table.name}
+          </button>
+        ))}
+
+        {/* 테이블 추가 버튼 */}
+        <button
+          onClick={() => setIsTableCreatorOpen(true)}
+          style={{
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: '#4CAF50',
+            border: 'none',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            WebkitAppearance: 'none',
+            appearance: 'none'
+          }}
+          className="tab-button"
+          onMouseEnter={(e) => e.target.style.color = '#45a049'}
+          onMouseLeave={(e) => e.target.style.color = '#4CAF50'}
+        >
+          + 테이블 추가
         </button>
       </div>
 
@@ -1225,18 +1390,6 @@ function App() {
         </>
       )}
 
-      {activeTab === '계약호실' && (
-        <>
-          {/* ContractImporter */}
-          {isContractImporterOpen && (
-            <ContractImporter
-              onImport={handleImportContracts}
-              onClose={() => setIsContractImporterOpen(false)}
-            />
-          )}
-        </>
-      )}
-
       {activeTab === '건물정보' && (
         <>
           {/* BuildingDetailPanel */}
@@ -1258,29 +1411,19 @@ function App() {
         </>
       )}
 
-      {activeTab === '계약호실' && (
-        <>
-          {/* ContractDetailPanel */}
-          <ContractDetailPanel
-            selectedContract={selectedContract}
-            isOpen={!!selectedContractId}
-            onClose={() => setSelectedContractId(null)}
-            onEdit={handleOpenContractModal}
-            onDelete={handleDeleteContract}
-            onUpdateContract={handleSaveContract}
-            buildings={buildings}
-          />
+      {/* TableCreator Modal */}
+      <TableCreator
+        isOpen={isTableCreatorOpen}
+        onClose={() => setIsTableCreatorOpen(false)}
+        onCreateTable={handleCreateDynamicTable}
+      />
 
-          {/* ContractModal */}
-          <ContractModal
-            isOpen={isContractModalOpen}
-            onClose={handleCloseContractModal}
-            onSave={handleSaveContract}
-            editData={editingContract}
-            buildings={buildings}
-          />
-        </>
-      )}
+      {/* DynamicCSVImporter Modal */}
+      <DynamicCSVImporter
+        isOpen={isCSVImporterOpen}
+        onClose={() => setIsCSVImporterOpen(false)}
+        onImport={handleImportCSVTable}
+      />
     </div>
   );
 }
