@@ -140,29 +140,51 @@ const DynamicTableView = ({
           <table className="customer-table" style={{ width: '100%' }}>
             <thead>
               <tr>
-                {displayColumns.map(col => (
-                  <th
-                    key={col.name}
-                    onClick={() => handleSort(col.name)}
-                    style={{
-                      cursor: 'pointer',
-                      userSelect: 'none',
-                      padding: '12px',
-                      whiteSpace: 'nowrap',
-                      textAlign: 'left',
-                      fontWeight: '600'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      {col.name}
-                      {sortColumn === col.name && (
-                        <span style={{ fontSize: '12px' }}>
-                          {sortOrder === 'asc' ? '▲' : '▼'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                ))}
+                {displayColumns.map((col, colIndex) => {
+                  const isLastColumn = colIndex === displayColumns.length - 1;
+                  let columnClass = '';
+
+                  // 컬럼 타입별 클래스 지정
+                  if (col.type === 'date') {
+                    columnClass = 'col-date-standard';
+                  } else if (col.type === 'number') {
+                    columnClass = 'col-number-standard';
+                  } else if (col.label && col.label.includes('번호')) {
+                    columnClass = 'col-phone-standard';
+                  } else {
+                    columnClass = 'col-text-standard';
+                  }
+
+                  // 마지막 컬럼은 col-expand 추가
+                  if (isLastColumn) {
+                    columnClass += ' col-expand';
+                  }
+
+                  return (
+                    <th
+                      key={col.name}
+                      className={columnClass}
+                      onClick={() => handleSort(col.name)}
+                      style={{
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        padding: '12px',
+                        whiteSpace: 'nowrap',
+                        textAlign: 'left',
+                        fontWeight: '600'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {col.label || col.name}
+                        {sortColumn === col.name && (
+                          <span style={{ fontSize: '12px' }}>
+                            {sortOrder === 'asc' ? '▲' : '▼'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -187,11 +209,32 @@ const DynamicTableView = ({
                     }
                   }}
                 >
-                  {displayColumns.map(col => (
-                    <td key={`${row.id}-${col.name}`}>
-                      {renderCellValue(row[col.name], col.type)}
-                    </td>
-                  ))}
+                  {displayColumns.map((col, colIndex) => {
+                    const isLastColumn = colIndex === displayColumns.length - 1;
+                    let columnClass = '';
+
+                    // 컬럼 타입별 클래스 지정
+                    if (col.type === 'date') {
+                      columnClass = 'col-date-standard';
+                    } else if (col.type === 'number') {
+                      columnClass = 'col-number-standard';
+                    } else if (col.label && col.label.includes('번호')) {
+                      columnClass = 'col-phone-standard';
+                    } else {
+                      columnClass = 'col-text-standard';
+                    }
+
+                    // 마지막 컬럼은 col-expand 추가
+                    if (isLastColumn) {
+                      columnClass += ' col-expand';
+                    }
+
+                    return (
+                      <td key={`${row.id}-${colIndex}`} className={columnClass} style={{ padding: '12px' }}>
+                        {renderCellValue(row[col.name], col.type)}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

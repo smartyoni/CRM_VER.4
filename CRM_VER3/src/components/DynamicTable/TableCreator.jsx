@@ -4,14 +4,14 @@ const TableCreator = ({ isOpen, onClose, onCreateTable }) => {
   const [mode, setMode] = useState(null); // 'manual', 'csv', null
   const [tableName, setTableName] = useState('');
   const [columns, setColumns] = useState([
-    { name: '', type: 'text', required: false, display: true }
+    { name: `col_${Date.now()}_0`, type: 'text', required: false, display: true }
   ]);
   const [errors, setErrors] = useState({});
 
   if (!isOpen) return null;
 
   const handleAddColumn = () => {
-    setColumns([...columns, { name: '', type: 'text', required: false, display: true }]);
+    setColumns([...columns, { name: `col_${Date.now()}_${columns.length}`, type: 'text', required: false, display: true }]);
   };
 
   const handleRemoveColumn = (index) => {
@@ -31,16 +31,9 @@ const TableCreator = ({ isOpen, onClose, onCreateTable }) => {
       newErrors.tableName = '테이블명은 필수입니다.';
     }
 
-    const validColumns = columns.filter(col => col.name.trim());
-    if (validColumns.length === 0) {
+    if (columns.length === 0) {
       newErrors.columns = '최소 1개의 컬럼이 필요합니다.';
     }
-
-    validColumns.forEach((col, index) => {
-      if (!col.name.trim()) {
-        newErrors[`column_${index}_name`] = '컬럼명은 필수입니다.';
-      }
-    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -49,11 +42,11 @@ const TableCreator = ({ isOpen, onClose, onCreateTable }) => {
   const handleCreateManualTable = () => {
     if (!validateManualTable()) return;
 
-    const validColumns = columns.filter(col => col.name.trim());
     const tableData = {
       name: tableName.trim(),
-      columns: validColumns.map(col => ({
-        name: col.name.trim(),
+      columns: columns.map(col => ({
+        name: col.name,  // 내부 식별자 (데이터 저장용)
+        label: tableName.trim(),  // 헤더에 표시할 라벨 (테이블명)
         type: col.type,
         required: col.required,
         display: col.display
@@ -69,7 +62,7 @@ const TableCreator = ({ isOpen, onClose, onCreateTable }) => {
 
   const resetForm = () => {
     setTableName('');
-    setColumns([{ name: '', type: 'text', required: false, display: true }]);
+    setColumns([{ name: `col_${Date.now()}_0`, type: 'text', required: false, display: true }]);
     setErrors({});
     setMode(null);
   };
@@ -214,7 +207,7 @@ const TableCreator = ({ isOpen, onClose, onCreateTable }) => {
             {/* 컬럼 정의 */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
-                컬럼 정의 *
+                컬럼 정의 * (컬럼명은 "{tableName || '테이블명'}"으로 자동 설정됨)
               </label>
               {errors.columns && (
                 <div style={{ color: '#d32f2f', fontSize: '12px', marginBottom: '10px' }}>
@@ -226,23 +219,21 @@ const TableCreator = ({ isOpen, onClose, onCreateTable }) => {
                   <div>
                     <input
                       type="text"
-                      value={col.name}
-                      onChange={(e) => handleColumnChange(index, 'name', e.target.value)}
-                      placeholder="컬럼명"
+                      value={tableName || '(테이블명)'}
+                      disabled
+                      placeholder="테이블명이 자동으로 적용됩니다"
                       style={{
                         width: '100%',
                         padding: '8px',
-                        border: `1px solid ${errors[`column_${index}_name`] ? '#d32f2f' : '#e0e0e0'}`,
+                        border: '1px solid #e0e0e0',
                         borderRadius: '4px',
                         boxSizing: 'border-box',
-                        fontSize: '13px'
+                        fontSize: '13px',
+                        backgroundColor: '#f5f5f5',
+                        color: '#666',
+                        cursor: 'not-allowed'
                       }}
                     />
-                    {errors[`column_${index}_name`] && (
-                      <div style={{ color: '#d32f2f', fontSize: '11px', marginTop: '3px' }}>
-                        {errors[`column_${index}_name`]}
-                      </div>
-                    )}
                   </div>
                   <select
                     value={col.type}

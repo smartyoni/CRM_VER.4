@@ -68,17 +68,10 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
     }));
   };
 
-  const TableHeader = ({ label, sortKey }) => (
+  const TableHeader = ({ label, sortKey, className }) => (
     <th
+      className={className}
       onClick={() => handleSort(sortKey)}
-      style={{
-        cursor: 'pointer',
-        userSelect: 'none',
-        padding: '12px',
-        whiteSpace: 'nowrap',
-        textAlign: 'left',
-        fontWeight: '600'
-      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {label}
@@ -140,12 +133,12 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
           <table className="customer-table building-table" style={{ width: '100%', tableLayout: 'auto', borderCollapse: 'collapse', minWidth: '700px' }}>
             <thead>
               <tr>
-                <TableHeader label="건물명" sortKey="name" />
-                <TableHeader label="지번" sortKey="address" />
+                <TableHeader label="건물명" sortKey="name" className="col-text-standard" />
+                <TableHeader label="지번" sortKey="address" className="col-text-standard" />
                 <TableHeader label="공동현관비번" sortKey="entrance" />
                 <TableHeader label="층수" sortKey="floors" />
                 <TableHeader label="주차" sortKey="parking" />
-                <TableHeader label="관리실번호" sortKey="office" />
+                <TableHeader label="관리실번호" sortKey="office" className="col-phone-standard col-expand" />
               </tr>
             </thead>
             <tbody>
@@ -171,22 +164,22 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                     }
                   }}
                 >
-                  <td className="building-fixed-width" style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td className="col-text-standard">
                     {building.name || '-'}
                   </td>
-                  <td className="building-fixed-width" style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td className="col-text-standard">
                     {building.address || '-'}
                   </td>
-                  <td className="building-entrance-width" style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td className="col-text-standard">
                     {building.entrance || '-'}
                   </td>
-                  <td style={{ padding: '12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <td className="col-number-standard">
                     {building.floors || '-'}
                   </td>
-                  <td style={{ padding: '12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <td className="col-number-standard">
                     {building.parking || '-'}
                   </td>
-                  <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                  <td className="col-phone-standard col-expand">
                     {building.office ? (
                       <a href={`sms:${building.office}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
                         {building.office}

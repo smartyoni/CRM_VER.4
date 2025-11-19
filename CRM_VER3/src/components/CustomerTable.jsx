@@ -82,8 +82,9 @@ const CustomerTable = ({
   };
 
   // TableHeader 컴포넌트
-  const TableHeader = ({ label, sortKey }) => (
+  const TableHeader = ({ label, sortKey, className }) => (
     <th
+      className={className}
       onClick={() => handleSort(sortKey)}
       style={{
         cursor: 'pointer',
@@ -164,12 +165,12 @@ const CustomerTable = ({
           <table className="customer-table" style={{ width: '100%' }}>
             <thead>
               <tr>
-                <TableHeader label="접수일" sortKey="createdAt" />
-                <TableHeader label="고객명" sortKey="name" />
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader label="접수일" sortKey="createdAt" className="col-date-standard" />
+                <TableHeader label="고객명" sortKey="name" className="col-text-standard" />
+                <th className="col-phone-standard" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   연락처
                 </th>
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <th className="col-expand" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   활동내용
                 </th>
               </tr>
@@ -199,19 +200,19 @@ const CustomerTable = ({
                     }
                   }}
                 >
-                  <td style={{ padding: '12px' }}>
+                  <td className="col-date-standard" style={{ padding: '12px' }}>
                     {new Date(customer.createdAt).toLocaleDateString('ko-KR', {
                       month: 'short',
                       day: 'numeric'
                     })}
                   </td>
-                  <td style={{ padding: '12px' }}>{customer.name}</td>
-                  <td style={{ padding: '12px' }}>
+                  <td className="col-text-standard" style={{ padding: '12px' }}>{customer.name}</td>
+                  <td className="col-phone-standard" style={{ padding: '12px' }}>
                     <a href={`sms:${customer.phone}`} style={{ textDecoration: 'none', color: '#2196F3' }}>
                       {customer.phone}
                     </a>
                   </td>
-                  <td style={{ padding: '12px', fontSize: '13px', color: '#666' }}>
+                  <td className="col-expand" style={{ padding: '12px', fontSize: '13px', color: '#666' }}>
                     {customer.memo || '-'}
                   </td>
                 </tr>

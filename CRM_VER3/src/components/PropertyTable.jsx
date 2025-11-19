@@ -95,17 +95,10 @@ const PropertyTable = ({
   };
 
   // TableHeader 컴포넌트
-  const TableHeader = ({ column, label }) => (
+  const TableHeader = ({ column, label, className }) => (
     <th
+      className={className}
       onClick={() => handleSort(column)}
-      style={{
-        cursor: 'pointer',
-        userSelect: 'none',
-        padding: '12px',
-        whiteSpace: 'nowrap',
-        textAlign: 'left',
-        fontWeight: '600'
-      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {label}
@@ -177,20 +170,20 @@ const PropertyTable = ({
           <table className="customer-table" style={{ width: '100%' }}>
             <thead>
               <tr>
-                <TableHeader column="createdAt" label="접수일" />
-                <TableHeader column="propertyType" label="매물유형" />
+                <TableHeader column="createdAt" label="접수일" className="col-date-standard" />
+                <TableHeader column="propertyType" label="매물유형" className="col-text-standard" />
                 <TableHeader column="category" label="구분" />
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <th className="col-text-standard">
                   매물명
                 </th>
-                <TableHeader column="deposit" label="보증금" />
-                <TableHeader column="monthlyRent" label="월세" />
-                <TableHeader column="moveInDate" label="입주일" />
-                <TableHeader column="ownerName" label="소유자" />
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader column="deposit" label="보증금" className="col-number-standard" />
+                <TableHeader column="monthlyRent" label="월세" className="col-number-standard" />
+                <TableHeader column="moveInDate" label="입주일" className="col-date-standard" />
+                <TableHeader column="ownerName" label="소유자" className="col-text-standard" />
+                <th className="col-phone-standard">
                   소유자번호
                 </th>
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <th className="col-phone-standard col-expand">
                   점주번호
                 </th>
               </tr>
@@ -220,27 +213,27 @@ const PropertyTable = ({
                     }
                   }}
                 >
-                  <td style={{ padding: '12px' }}>
+                  <td className="col-date-standard">
                     {new Date(property.createdAt).toLocaleDateString('ko-KR', {
                       month: 'short',
                       day: 'numeric'
                     })}
                   </td>
-                  <td style={{ padding: '12px' }}>{property.propertyType || '-'}</td>
-                  <td style={{ padding: '12px' }}>{property.category || '-'}</td>
-                  <td style={{ padding: '12px', fontWeight: 'bold' }}>{getPropertyName(property)}</td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>{formatPrice(property.deposit || property.price)}</td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>{formatPrice(property.monthlyRent)}</td>
-                  <td style={{ padding: '12px' }}>{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
-                  <td style={{ padding: '12px' }}>{property.ownerName || '-'}</td>
-                  <td style={{ padding: '12px' }}>
+                  <td className="col-text-standard">{property.propertyType || '-'}</td>
+                  <td>{property.category || '-'}</td>
+                  <td className="col-text-standard" style={{ fontWeight: 'bold' }}>{getPropertyName(property)}</td>
+                  <td className="col-number-standard">{formatPrice(property.deposit || property.price)}</td>
+                  <td className="col-number-standard">{formatPrice(property.monthlyRent)}</td>
+                  <td className="col-date-standard">{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
+                  <td className="col-text-standard">{property.ownerName || '-'}</td>
+                  <td className="col-phone-standard">
                     {property.ownerPhone ? (
                       <a href={`sms:${property.ownerPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {property.ownerPhone}
                       </a>
                     ) : '-'}
                   </td>
-                  <td style={{ padding: '12px' }}>
+                  <td className="col-phone-standard col-expand">
                     {property.tenantPhone ? (
                       <a href={`sms:${property.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {property.tenantPhone}

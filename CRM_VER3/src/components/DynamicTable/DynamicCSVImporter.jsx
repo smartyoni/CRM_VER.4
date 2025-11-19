@@ -65,7 +65,7 @@ const DynamicCSVImporter = ({ isOpen, onClose, onImport }) => {
 
     const tableData = {
       name: tableName.trim(),
-      columns: processedData.columns,
+      columns: processedData.columns,  // CSV의 원래 컬럼 구조 유지 (label은 CSV 헤더명 사용)
       icon: '📊',
       color: '#2196F3',
       createdAt: new Date().toISOString()

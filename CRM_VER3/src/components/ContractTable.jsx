@@ -99,8 +99,9 @@ const ContractTable = ({
   };
 
   // TableHeader 컴포넌트
-  const TableHeader = ({ column, label }) => (
+  const TableHeader = ({ column, label, className }) => (
     <th
+      className={className}
       onClick={() => handleSort(column)}
       style={{
         cursor: 'pointer',
@@ -182,23 +183,23 @@ const ContractTable = ({
             <thead>
               <tr>
                 <TableHeader column="progressStatus" label="진행상황" />
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <th className="col-text-standard" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   계약호실명
                 </th>
-                <TableHeader column="contractDate" label="계약서작성일" />
-                <TableHeader column="balanceDate" label="잔금일" />
-                <TableHeader column="expiryDate" label="만기일" />
-                <TableHeader column="landlordName" label="임대인이름" />
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader column="contractDate" label="계약서작성일" className="col-date-standard" />
+                <TableHeader column="balanceDate" label="잔금일" className="col-date-standard" />
+                <TableHeader column="expiryDate" label="만기일" className="col-date-standard" />
+                <TableHeader column="landlordName" label="임대인이름" className="col-text-standard" />
+                <th className="col-phone-standard" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   임대인번호
                 </th>
-                <TableHeader column="tenantName" label="임차인이름" />
-                <th style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader column="tenantName" label="임차인이름" className="col-text-standard" />
+                <th className="col-phone-standard" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   임차인번호
                 </th>
-                <TableHeader column="remainderPaymentDate" label="입금일" />
-                <TableHeader column="brokerageFee" label="중개보수(원)" />
-                <TableHeader column="feeStatus" label="입금상태" />
+                <TableHeader column="remainderPaymentDate" label="입금일" className="col-date-standard" />
+                <TableHeader column="brokerageFee" label="중개보수(원)" className="col-number-standard" />
+                <TableHeader column="feeStatus" label="입금상태" className="col-expand" />
               </tr>
             </thead>
             <tbody>
@@ -227,35 +228,35 @@ const ContractTable = ({
                   }}
                 >
                   <td style={{ padding: '12px' }}>{contract.progressStatus || '-'}</td>
-                  <td style={{ padding: '12px', fontWeight: 'bold' }}>
+                  <td className="col-text-standard" style={{ padding: '12px', fontWeight: 'bold' }}>
                     {contract.buildingName && contract.roomName
                       ? `${contract.buildingName} ${contract.roomName}`
                       : '-'}
                   </td>
-                  <td style={{ padding: '12px' }}>{formatDate(contract.contractDate)}</td>
-                  <td style={{ padding: '12px' }}>{formatDate(contract.balanceDate)}</td>
-                  <td style={{ padding: '12px' }}>{formatDate(contract.expiryDate)}</td>
-                  <td style={{ padding: '12px' }}>{contract.landlordName || '-'}</td>
-                  <td style={{ padding: '12px' }}>
+                  <td className="col-date-standard" style={{ padding: '12px' }}>{formatDate(contract.contractDate)}</td>
+                  <td className="col-date-standard" style={{ padding: '12px' }}>{formatDate(contract.balanceDate)}</td>
+                  <td className="col-date-standard" style={{ padding: '12px' }}>{formatDate(contract.expiryDate)}</td>
+                  <td className="col-text-standard" style={{ padding: '12px' }}>{contract.landlordName || '-'}</td>
+                  <td className="col-phone-standard" style={{ padding: '12px' }}>
                     {contract.landlordPhone ? (
                       <a href={`sms:${contract.landlordPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {contract.landlordPhone}
                       </a>
                     ) : '-'}
                   </td>
-                  <td style={{ padding: '12px' }}>{contract.tenantName || '-'}</td>
-                  <td style={{ padding: '12px' }}>
+                  <td className="col-text-standard" style={{ padding: '12px' }}>{contract.tenantName || '-'}</td>
+                  <td className="col-phone-standard" style={{ padding: '12px' }}>
                     {contract.tenantPhone ? (
                       <a href={`sms:${contract.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {contract.tenantPhone}
                       </a>
                     ) : '-'}
                   </td>
-                  <td style={{ padding: '12px' }}>{formatDate(contract.remainderPaymentDate)}</td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>
+                  <td className="col-date-standard" style={{ padding: '12px' }}>{formatDate(contract.remainderPaymentDate)}</td>
+                  <td className="col-number-standard" style={{ padding: '12px', textAlign: 'right' }}>
                     {contract.brokerageFee ? Number(contract.brokerageFee).toLocaleString() : '-'}
                   </td>
-                  <td style={{ padding: '12px' }}>{contract.feeStatus || '-'}</td>
+                  <td className="col-expand" style={{ padding: '12px' }}>{contract.feeStatus || '-'}</td>
                 </tr>
               ))}
             </tbody>

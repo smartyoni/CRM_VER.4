@@ -12,6 +12,7 @@ import ContractModal from './components/ContractModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
 import PropertyDetailPanel from './components/PropertyDetailPanel';
 import BuildingDetailPanel from './components/BuildingDetailPanel';
+import ContractDetailPanel from './components/ContractDetailPanel';
 import PropertyImporter from './components/PropertyImporter';
 import BuildingImporter from './components/BuildingImporter';
 import ContractImporter from './components/ContractImporter';
@@ -1005,7 +1006,7 @@ function App() {
                       <span style={{ fontSize: 'calc(1em - 4px)', color: '#ff0000', marginLeft: '20px' }}>{`${year}년 ${month}월 ${date}일 ${hours}:${minutes}`}</span>
                     </>
                   );
-                })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : '계약호실'}
+                })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : activeTab === '계약호실' ? '계약호실' : dynamicTables.find(t => t.id === activeTab)?.name || 'Unknown'}
               </h1>
               {activeTab === '대시보드' && (
                 <span style={{ fontSize: '11px', color: '#999' }}>
@@ -1382,6 +1383,35 @@ function App() {
             onSave={handleSaveBuilding}
             building={editingBuilding}
           />
+        </>
+      )}
+
+      {activeTab === '계약호실' && (
+        <>
+          {/* ContractDetailPanel */}
+          <ContractDetailPanel
+            selectedContract={selectedContract}
+            onClose={() => setSelectedContractId(null)}
+            onEditContract={handleOpenContractModal}
+            onUpdateContract={handleSaveContract}
+            onDeleteContract={handleDeleteContract}
+          />
+
+          {/* ContractModal */}
+          <ContractModal
+            isOpen={isContractModalOpen}
+            onClose={handleCloseContractModal}
+            onSave={handleSaveContract}
+            editData={editingContract}
+          />
+
+          {/* ContractImporter */}
+          {isContractImporterOpen && (
+            <ContractImporter
+              onImport={handleImportContracts}
+              onClose={() => setIsContractImporterOpen(false)}
+            />
+          )}
         </>
       )}
 

@@ -180,6 +180,8 @@ button {
   font-weight: bold;
   position: sticky;
   top: 0;
+  cursor: pointer;
+  user-select: none;
 }
 
 .customer-table thead th[style*="cursor: pointer"]:hover {
@@ -216,6 +218,36 @@ button {
 .customer-table .customer-name:hover, .customer-table .preferred-area:hover {
     color: var(--purple-hover);
     cursor: pointer;
+}
+
+/* --- Table Column Width Standards --- */
+/* 일반 컬럼 (한글 13글자 기준) - 텍스트, 날짜, 숫자 모두 적용 */
+.col-text-standard,
+.col-date-standard,
+.col-number-standard {
+    width: 13ch;
+    max-width: 13ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 숫자/금액 컬럼 추가 스타일 */
+.col-number-standard {
+    text-align: right;
+}
+
+/* 전화번호 컬럼 (핸드폰 번호 010-1234-5678 기준) */
+.col-phone-standard {
+    width: 14ch;
+    max-width: 14ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 마지막 컬럼 (화면 너비를 채우도록) */
+.col-expand {
+    width: auto;
+    min-width: 100px;
 }
 
 /* --- Customer Detail Panel --- */
