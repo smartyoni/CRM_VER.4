@@ -36,12 +36,13 @@ const BookmarkBar = ({
   };
 
   // 북마크 우클릭: 컨텍스트 메뉴
-  const handleBookmarkRightClick = (e, bookmark) => {
+  const handleBookmarkRightClick = (e, bookmark, sectionNum) => {
     e.preventDefault();
     setSelectedBookmark(bookmark);
     setContextMenu({
       x: e.clientX,
-      y: e.clientY
+      y: e.clientY,
+      targetSection: sectionNum
     });
   };
 
@@ -198,7 +199,7 @@ const BookmarkBar = ({
                 <button
                   key={bookmark.id}
                   onClick={() => handleBookmarkClick(bookmark)}
-                  onContextMenu={(e) => handleBookmarkRightClick(e, bookmark)}
+                  onContextMenu={(e) => handleBookmarkRightClick(e, bookmark, sectionNum)}
                   title={bookmark.url}
                   style={{
                     padding: '6px 8px',
