@@ -511,10 +511,14 @@ const DynamicTableView = ({
                     padding: '12px',
                     whiteSpace: 'nowrap',
                     textAlign: 'left',
-                    fontWeight: '600',
-                    width: columnWidths[col.name],
-                    minWidth: '50px'
+                    fontWeight: '600'
                   };
+
+                  // 마지막 컬럼이 아닐 때만 width 적용
+                  if (!isLastColumn) {
+                    columnStyle.width = columnWidths[col.name];
+                    columnStyle.minWidth = '50px';
+                  }
 
                   // 컬럼 타입별 클래스 지정
                   if (col.type === 'date') {
@@ -555,7 +559,7 @@ const DynamicTableView = ({
                           </span>
                         )}
                       </div>
-                      <ResizeHandle columnId={col.name} currentWidth={columnWidths[col.name]} />
+                      {!isLastColumn && <ResizeHandle columnId={col.name} currentWidth={columnWidths[col.name]} />}
                     </th>
                   );
                 })}
@@ -587,11 +591,15 @@ const DynamicTableView = ({
                     const isLastColumn = colIndex === displayColumns.length - 1;
                     let columnClass = '';
                     let columnStyle = {
-                      padding: '12px',
-                      width: columnWidths[col.name],
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
+                      padding: '12px'
                     };
+
+                    // 마지막 컬럼이 아닐 때만 width 적용
+                    if (!isLastColumn) {
+                      columnStyle.width = columnWidths[col.name];
+                      columnStyle.overflow = 'hidden';
+                      columnStyle.textOverflow = 'ellipsis';
+                    }
 
                     // 컬럼 타입별 클래스 지정
                     if (col.type === 'date') {

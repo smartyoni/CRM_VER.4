@@ -171,7 +171,9 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                   주차
                   <ResizeHandle columnId="parking" currentWidth={columnWidths['parking']} />
                 </th>
-                <TableHeader label="관리실번호" sortKey="office" className="col-phone-standard col-expand" columnId="office" />
+                <th className="col-phone-standard col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                  관리실번호
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -212,7 +214,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                   <td className="col-number-standard">
                     {building.parking || '-'}
                   </td>
-                  <td className="col-phone-standard col-expand">
+                  <td className="col-phone-standard col-expand" style={{ padding: '12px' }}>
                     {building.office ? (
                       <a href={`sms:${building.office}`} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>
                         {building.office}

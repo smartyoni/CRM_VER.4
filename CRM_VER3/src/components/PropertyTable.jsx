@@ -216,9 +216,8 @@ const PropertyTable = ({
                   소유자번호
                   <ResizeHandle columnId="ownerPhone" currentWidth={columnWidths['ownerPhone']} />
                 </th>
-                <th className="col-phone-standard col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['tenantPhone'], minWidth: '50px' }}>
+                <th className="col-phone-standard col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   점주번호
-                  <ResizeHandle columnId="tenantPhone" currentWidth={columnWidths['tenantPhone']} />
                 </th>
               </tr>
             </thead>
@@ -267,7 +266,7 @@ const PropertyTable = ({
                       </a>
                     ) : '-'}
                   </td>
-                  <td className="col-phone-standard col-expand">
+                  <td className="col-phone-standard col-expand" style={{ padding: '12px' }}>
                     {property.tenantPhone ? (
                       <a href={`sms:${property.tenantPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {property.tenantPhone}

@@ -185,9 +185,8 @@ const CustomerTable = ({
                   연락처
                   <ResizeHandle columnId="phone" currentWidth={columnWidths['phone']} />
                 </th>
-                <th className="col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['memo'], minWidth: '50px' }}>
+                <th className="col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   활동내용
-                  <ResizeHandle columnId="memo" currentWidth={columnWidths['memo']} />
                 </th>
               </tr>
             </thead>
@@ -228,7 +227,7 @@ const CustomerTable = ({
                       {customer.phone}
                     </a>
                   </td>
-                  <td className="col-expand" style={{ padding: '12px', fontSize: '13px', color: '#666', width: columnWidths['memo'], overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <td className="col-expand" style={{ padding: '12px', fontSize: '13px', color: '#666' }}>
                     {customer.memo || '-'}
                   </td>
                 </tr>

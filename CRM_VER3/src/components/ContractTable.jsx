@@ -224,7 +224,9 @@ const ContractTable = ({
                 </th>
                 <TableHeader column="remainderPaymentDate" label="입금일" className="col-date-standard" columnId="remainderPaymentDate" />
                 <TableHeader column="brokerageFee" label="중개보수(원)" className="col-number-standard" columnId="brokerageFee" />
-                <TableHeader column="feeStatus" label="입금상태" className="col-expand" columnId="feeStatus" />
+                <th className="col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                  입금상태
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -281,7 +283,7 @@ const ContractTable = ({
                   <td className="col-number-standard" style={{ padding: '12px', textAlign: 'right' }}>
                     {contract.brokerageFee ? Number(contract.brokerageFee).toLocaleString() : '-'}
                   </td>
-                  <td className="col-expand" style={{ padding: '12px' }}>{contract.feeStatus || '-'}</td>
+                  <td className="col-expand" style={{ padding: '12px', fontSize: '13px', color: '#666' }}>{contract.feeStatus || '-'}</td>
                 </tr>
               ))}
             </tbody>
