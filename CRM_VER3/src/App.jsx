@@ -505,7 +505,7 @@ function App() {
     }
 
     try {
-      await deleteTableRow(selectedDynamicTableId, row.id);
+      await deleteTableRow(activeTab, row.id);
       if (selectedDynamicRowId === row.id) {
         setSelectedDynamicRowId(null);
       }
