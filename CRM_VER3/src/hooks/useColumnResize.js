@@ -40,16 +40,20 @@ export const useColumnResize = (tableId, defaultColumns) => {
       }
     }
 
-    // 해시값이 다르면 (컬럼 구조가 변경됨) 새 defaultColumns 기반 초기화
-    if (savedHash !== currentHash) {
-      localStorage.setItem(hashKey, currentHash);
-    }
-
-    // 기본값 반환
-    return defaultColumns.reduce((acc, col) => {
+    // 새 기본값 계산
+    const newWidths = defaultColumns.reduce((acc, col) => {
       acc[col.id] = col.width;
       return acc;
     }, {});
+
+    // 해시값이 다르면 (컬럼 구조가 변경됨) 새 값을 localStorage에 저장
+    if (savedHash !== currentHash) {
+      localStorage.setItem(hashKey, currentHash);
+      localStorage.setItem(widthsKey, JSON.stringify(newWidths));
+    }
+
+    // 기본값 반환
+    return newWidths;
   });
 
   const [resizingColumn, setResizingColumn] = useState(null);
