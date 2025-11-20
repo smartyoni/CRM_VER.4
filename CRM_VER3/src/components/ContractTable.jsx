@@ -16,18 +16,18 @@ const ContractTable = ({
 
   // 컬럼 리사이징 (12개 컬럼)
   const defaultColumns = [
-    { id: 'progressStatus', width: 100 },
-    { id: 'buildingName', width: 150 },
-    { id: 'contractDate', width: 130 },
-    { id: 'balanceDate', width: 130 },
-    { id: 'expiryDate', width: 130 },
-    { id: 'landlordName', width: 150 },
-    { id: 'landlordPhone', width: 140 },
-    { id: 'tenantName', width: 150 },
-    { id: 'tenantPhone', width: 140 },
-    { id: 'remainderPaymentDate', width: 130 },
-    { id: 'brokerageFee', width: 130 },
-    { id: 'feeStatus', width: 150 }
+    { id: 'progressStatus', width: 300 },
+    { id: 'buildingName', width: 300 },
+    { id: 'contractDate', width: 300 },
+    { id: 'balanceDate', width: 300 },
+    { id: 'expiryDate', width: 300 },
+    { id: 'landlordName', width: 300 },
+    { id: 'landlordPhone', width: 150 },
+    { id: 'tenantName', width: 300 },
+    { id: 'tenantPhone', width: 150 },
+    { id: 'remainderPaymentDate', width: 300 },
+    { id: 'brokerageFee', width: 300 },
+    { id: 'feeStatus', width: 300 }
   ];
   const { columnWidths, ResizeHandle } = useColumnResize('contract', defaultColumns);
 

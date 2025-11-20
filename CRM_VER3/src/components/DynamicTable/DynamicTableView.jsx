@@ -33,12 +33,18 @@ const DynamicTableView = ({
   const columns = tableMetadata.columns || [];
   const displayColumns = columns.filter(col => col.display !== false);
 
-  // 동적으로 defaultColumns 생성
+  // 동적으로 defaultColumns 생성 (전화번호 컬럼은 150px, 나머지는 300px)
   const defaultColumns = useMemo(() => {
-    return columns.map(col => ({
-      id: col.name,
-      width: col.width || 130
-    }));
+    return columns.map(col => {
+      const colName = col.name.toLowerCase();
+      const colLabel = (col.label || '').toLowerCase();
+      const isPhoneColumn = colName.includes('번호') || colLabel.includes('번호');
+
+      return {
+        id: col.name,
+        width: col.width || (isPhoneColumn ? 150 : 300)
+      };
+    });
   }, [tableMetadata?.id]);
 
   // 컬럼 리사이징

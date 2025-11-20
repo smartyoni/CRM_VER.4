@@ -19,9 +19,9 @@ const CustomerTable = ({
 
   // 컬럼 리사이징
   const defaultColumns = [
-    { id: 'createdAt', width: 120 },
-    { id: 'name', width: 150 },
-    { id: 'phone', width: 140 },
+    { id: 'createdAt', width: 300 },
+    { id: 'name', width: 300 },
+    { id: 'phone', width: 150 },
     { id: 'memo', width: 300 }
   ];
   const { columnWidths, ResizeHandle } = useColumnResize('customer', defaultColumns);
