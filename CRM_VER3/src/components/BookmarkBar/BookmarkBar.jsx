@@ -38,6 +38,7 @@ const BookmarkBar = ({
   // 북마크 우클릭: 컨텍스트 메뉴
   const handleBookmarkRightClick = (e, bookmark, sectionNum) => {
     e.preventDefault();
+    e.stopPropagation();
     setSelectedBookmark(bookmark);
     setContextMenu({
       x: e.clientX,
@@ -254,6 +255,7 @@ const BookmarkBar = ({
             onClick={() => setContextMenu(null)}
           />
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
               position: 'fixed',
               top: contextMenu.y,
