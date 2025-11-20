@@ -206,7 +206,7 @@ const BookmarkBar = ({
                     color: '#000',
                     border: '1px solid #ccc',
                     borderRadius: '4px',
-                    fontSize: '10px',
+                    fontSize: '12px',
                     fontWeight: '600',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
