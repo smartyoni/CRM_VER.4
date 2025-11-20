@@ -18,6 +18,9 @@ const DynamicTableView = ({
   const [editingValues, setEditingValues] = useState({});
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoValue, setMemoValue] = useState('');
+  const [checklistItems, setChecklistItems] = useState([]);
+  const [newChecklistText, setNewChecklistText] = useState('');
+  const [isAddingChecklist, setIsAddingChecklist] = useState(false);
 
   if (!tableMetadata) {
     return (
@@ -141,13 +144,16 @@ const DynamicTableView = ({
   // 선택된 행 찾기
   const selectedRow = tableData.find(row => row.id === selectedRowId);
 
-  // selectedRow가 변경될 때 editingValues와 memoValue 초기화
+  // selectedRow가 변경될 때 editingValues, memoValue, checklistItems 초기화
   React.useEffect(() => {
     if (selectedRow) {
       setEditingValues({ ...selectedRow });
       setMemoValue(selectedRow.memo || '');
+      setChecklistItems(selectedRow.checklists || []);
       setIsEditing(false);
       setIsEditingMemo(false);
+      setIsAddingChecklist(false);
+      setNewChecklistText('');
     }
   }, [selectedRow?.id]);
 
@@ -193,6 +199,58 @@ const DynamicTableView = ({
       onEdit({ ...selectedRow, memo: memoValue });
       setIsEditingMemo(false);
     }
+  };
+
+  // 체크리스트 항목 추가
+  const handleAddChecklistItem = () => {
+    if (newChecklistText.trim()) {
+      const now = new Date();
+      const createdAt = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      const newItem = {
+        id: `checklist_${Date.now()}_${Math.random()}`,
+        text: newChecklistText.trim(),
+        completed: false,
+        createdAt
+      };
+
+      const updatedChecklists = [...checklistItems, newItem];
+      setChecklistItems(updatedChecklists);
+      setNewChecklistText('');
+
+      if (selectedRow) {
+        onEdit({ ...selectedRow, checklists: updatedChecklists });
+      }
+    }
+  };
+
+  // 체크리스트 항목 완료 토글
+  const handleToggleChecklistItem = (id) => {
+    const updatedChecklists = checklistItems.map(item =>
+      item.id === id ? { ...item, completed: !item.completed } : item
+    );
+    setChecklistItems(updatedChecklists);
+
+    if (selectedRow) {
+      onEdit({ ...selectedRow, checklists: updatedChecklists });
+    }
+  };
+
+  // 체크리스트 항목 삭제
+  const handleDeleteChecklistItem = (id) => {
+    const updatedChecklists = checklistItems.filter(item => item.id !== id);
+    setChecklistItems(updatedChecklists);
+
+    if (selectedRow) {
+      onEdit({ ...selectedRow, checklists: updatedChecklists });
+    }
+  };
+
+  // 체크리스트 완료율 계산
+  const getChecklistProgress = () => {
+    if (checklistItems.length === 0) return 0;
+    const completed = checklistItems.filter(item => item.completed).length;
+    return Math.round((completed / checklistItems.length) * 100);
   };
 
   return (
@@ -382,6 +440,145 @@ const DynamicTableView = ({
                   {selectedRow.memo || '메모가 없습니다 (더블클릭하여 편집)'}
                 </div>
               )}
+            </section>
+
+            {/* 체크리스트 섹션 */}
+            <section>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '10px'
+              }}>
+                <h4 style={{
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#666',
+                  margin: 0,
+                  paddingBottom: '8px',
+                  borderBottom: '2px solid #9C27B0',
+                  flex: 1
+                }}>
+                  ✅ 체크리스트
+                </h4>
+                {checklistItems.length > 0 && (
+                  <span style={{
+                    fontSize: '12px',
+                    color: '#999',
+                    marginLeft: '10px',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {checklistItems.filter(item => item.completed).length}/{checklistItems.length}
+                  </span>
+                )}
+              </div>
+
+              {/* 체크리스트 항목 목록 */}
+              {checklistItems.length > 0 && (
+                <div style={{
+                  marginBottom: '15px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  fontSize: '13px'
+                }}>
+                  {checklistItems.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                        padding: '8px 10px',
+                        backgroundColor: '#fafafa',
+                        borderRadius: '4px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fafafa'}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={item.completed}
+                        onChange={() => handleToggleChecklistItem(item.id)}
+                        style={{
+                          marginTop: '3px',
+                          cursor: 'pointer',
+                          accentColor: '#9C27B0'
+                        }}
+                      />
+                      <span style={{
+                        flex: 1,
+                        color: item.completed ? '#999' : '#333',
+                        textDecoration: item.completed ? 'line-through' : 'none',
+                        wordBreak: 'break-word'
+                      }}>
+                        {item.text}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteChecklistItem(item.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#d32f2f',
+                          cursor: 'pointer',
+                          padding: '0 5px',
+                          fontSize: '14px',
+                          minWidth: '24px',
+                          padding: '2px 6px'
+                        }}
+                        title="삭제"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 신규 항목 입력 */}
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                fontSize: '13px'
+              }}>
+                <input
+                  type="text"
+                  value={newChecklistText}
+                  onChange={(e) => setNewChecklistText(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddChecklistItem();
+                    }
+                  }}
+                  placeholder="새 항목 입력 (Enter로 추가)"
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '4px',
+                    fontSize: '13px',
+                    fontFamily: 'inherit',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <button
+                  onClick={handleAddChecklistItem}
+                  disabled={!newChecklistText.trim()}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: newChecklistText.trim() ? '#9C27B0' : '#ddd',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: newChecklistText.trim() ? 'pointer' : 'not-allowed',
+                    fontSize: '13px',
+                    fontWeight: '600'
+                  }}
+                >
+                  +
+                </button>
+              </div>
             </section>
           </div>
 
