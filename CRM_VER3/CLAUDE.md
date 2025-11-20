@@ -774,31 +774,50 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
 
 #### 시간 기반 컬럼 자동 입력 메커니즘
 
-행을 추가할 때 다음 컬럼들이 자동으로 현재 시간으로 입력됩니다:
+**모달이 열릴 때 자동 초기화되는 방식:**
 
-| 컬럼명 | 형식 | 예시 | 설명 |
-|--------|------|------|------|
-| `createdAt`, `created_at` | `YYYY-MM-DD` | `2025-11-20` | 접수일 (날짜만) |
-| `recordedAt`, `recorded_at` | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 기록일시 (시간과 분까지) |
-| `loggedAt`, `logged_at` | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 로그 시간 (시간과 분까지) |
-| `기록일시` (한글) | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 한글 컬럼명 지원 |
+행 추가 모달(`DynamicRowModal`)이 열릴 때, 시간 기반 컬럼이 자동으로 현재 시간으로 채워집니다:
 
-**자동 입력 감지 방식:**
+| 감지 방식 | 형식 | 예시 | 설명 |
+|----------|------|------|------|
+| **한글 키워드** | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | "기록", "일시", "로그" 등 포함 |
+| **영문 정확 매칭** | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | recordedAt, loggedAt 등 |
 
-1. **정확한 컬럼명 매칭** (우선순위 1)
-   - 컬럼명: `createdAt`, `created_at` (접수일 - 날짜만)
-   - 컬럼명: `recordedAt`, `recorded_at`, `loggedAt`, `logged_at` (기록일시 - 날짜+시간)
+**자동 입력 감지 로직:**
 
-2. **키워드 기반 감지** (우선순위 2, 한글 지원)
-   - 컬럼명이나 라벨에 다음 키워드 포함:
-     - `기록`, `로그`, `기록일시`, `recordtime`, `record_time`
-   - type이 `text` 또는 undefined인 경우만 적용
-   - 자동 입력: `YYYY-MM-DD HH:MM` 형식
+```javascript
+// DynamicRowModal.jsx의 useEffect
+useEffect(() => {
+  if (isOpen && tableMetadata) {
+    const autoInitialData = {};
+    const now = new Date();
+    // ... 현재 시간 포맷팅 (YYYY-MM-DD HH:MM)
 
-**자동 입력 조건:**
-- 사용자가 이미 값을 입력한 경우는 자동 입력 스킵 (사용자 입력 우선)
-- 모든 동적 테이블에 공통 적용
-- 대소문자 구분 안 함
+    displayColumns.forEach(col => {
+      const colName = col.name.toLowerCase();
+      const colLabel = (col.label || '').toLowerCase();
+
+      // 감지 키워드: "기록", "일시", "로그"
+      if ((colName.includes('기록') || colLabel.includes('기록') ||
+           colName.includes('일시') || colLabel.includes('일시') ||
+           colName.includes('로그') || colLabel.includes('로그')) &&
+          (col.type === 'text' || !col.type)) {
+        // 자동으로 현재 시간 입력
+        autoInitialData[col.name] = timeString;  // "2025-11-20 14:35"
+      }
+    });
+
+    setFormData(autoInitialData);  // formData에 자동으로 채워짐
+  }
+}, [isOpen, tableMetadata]);
+```
+
+**자동 입력 특징:**
+- **타이밍**: 모달이 열릴 때 (isOpen이 true가 될 때)
+- **감지 대상**: 컬럼명이나 라벨에 "기록", "일시", "로그" 등의 키워드 포함
+- **형식**: `YYYY-MM-DD HH:MM` (월 일 시 분, 초 제외)
+- **수정 가능**: 입력 필드에서 사용자가 값을 수정 가능
+- **모든 테이블 적용**: 동적 테이블에 공통 적용
 
 #### 동적 필드 생성
 
@@ -1629,4 +1648,4 @@ const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
 
 ## 확인 날짜
 - 작성: 2025-10-20
-- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일, DynamicRowModal 기록일시 자동입력 기능 구현, 한글 컬럼명 지원으로 개선)
+- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일, DynamicRowModal 기록일시 자동입력 기능 구현 (useEffect로 모달 열때 자동 초기화), 한글 컬럼명 지원으로 개선)
