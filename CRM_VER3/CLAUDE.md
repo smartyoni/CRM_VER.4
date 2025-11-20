@@ -733,11 +733,37 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
 
   // 저장 핸들러
   const handleSave = () => {
+    // 시간 기반 컬럼 자동 입력
+    const autoFilledData = { ...formData };
+
+    // 컬럼 메타데이터를 순회하며 시간 기반 컬럼 감지 및 자동 입력
+    displayColumns.forEach(col => {
+      const colName = col.name.toLowerCase();
+
+      // 접수일 패턴: createdAt, created_at (날짜만 YYYY-MM-DD)
+      if ((colName === 'createdat' || colName === 'created_at') && !autoFilledData[col.name]) {
+        const now = new Date();
+        autoFilledData[col.name] = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      }
+
+      // 기록일시 패턴: recordedAt, recorded_at, loggedAt, logged_at (날짜+시간 YYYY-MM-DD HH:MM)
+      if ((colName === 'recordedat' || colName === 'recorded_at' ||
+           colName === 'loggedat' || colName === 'logged_at') && !autoFilledData[col.name]) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        autoFilledData[col.name] = `${year}-${month}-${date} ${hours}:${minutes}`; // YYYY-MM-DD HH:MM
+      }
+    });
+
     // ID와 createdAt은 자동 생성
     const newRow = {
       id: `row_${Date.now()}`,
       createdAt: new Date().toISOString(),
-      ...formData
+      ...autoFilledData  // 자동으로 입력된 필드 포함
     };
 
     onSave(newRow);
@@ -745,6 +771,21 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
   };
 };
 ```
+
+#### 시간 기반 컬럼 자동 입력 메커니즘
+
+행을 추가할 때 다음 컬럼들이 자동으로 현재 시간으로 입력됩니다:
+
+| 컬럼명 | 형식 | 예시 | 설명 |
+|--------|------|------|------|
+| `createdAt`, `created_at` | `YYYY-MM-DD` | `2025-11-20` | 접수일 (날짜만) |
+| `recordedAt`, `recorded_at` | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 기록일시 (시간과 분까지) |
+| `loggedAt`, `logged_at` | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 로그 시간 (시간과 분까지) |
+
+**자동 입력 조건:**
+- 컬럼명이 위의 패턴과 일치해야 함 (대소문자 구분 안 함)
+- 사용자가 이미 값을 입력한 경우는 자동 입력 스킵
+- 모든 동적 테이블에 공통 적용
 
 #### 동적 필드 생성
 
@@ -1575,4 +1616,4 @@ const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
 
 ## 확인 날짜
 - 작성: 2025-10-20
-- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일)
+- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일, DynamicRowModal 기록일시 자동입력 기능 구현)
