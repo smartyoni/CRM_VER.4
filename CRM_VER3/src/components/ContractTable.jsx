@@ -117,17 +117,20 @@ const ContractTable = ({
   };
 
   // TableHeader 컴포넌트
-  const TableHeader = ({ column, label, className }) => (
+  const TableHeader = ({ column, label, className, columnId }) => (
     <th
       className={className}
       onClick={() => handleSort(column)}
       style={{
+        position: 'relative',
         cursor: 'pointer',
         userSelect: 'none',
         padding: '12px',
         whiteSpace: 'nowrap',
         textAlign: 'left',
-        fontWeight: '600'
+        fontWeight: '600',
+        width: columnWidths[columnId],
+        minWidth: '50px'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -138,6 +141,7 @@ const ContractTable = ({
           </span>
         )}
       </div>
+      <ResizeHandle columnId={columnId} currentWidth={columnWidths[columnId]} />
     </th>
   );
 
@@ -197,27 +201,30 @@ const ContractTable = ({
       {/* 테이블 */}
       <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredContracts.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%' }}>
+          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <TableHeader column="progressStatus" label="진행상황" />
-                <th className="col-text-standard" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader column="progressStatus" label="진행상황" columnId="progressStatus" />
+                <th className="col-text-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['buildingName'], minWidth: '50px' }}>
                   계약호실명
+                  <ResizeHandle columnId="buildingName" currentWidth={columnWidths['buildingName']} />
                 </th>
-                <TableHeader column="contractDate" label="계약서작성일" className="col-date-standard" />
-                <TableHeader column="balanceDate" label="잔금일" className="col-date-standard" />
-                <TableHeader column="expiryDate" label="만기일" className="col-date-standard" />
-                <TableHeader column="landlordName" label="임대인이름" className="col-text-standard" />
-                <th className="col-phone-standard" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader column="contractDate" label="계약서작성일" className="col-date-standard" columnId="contractDate" />
+                <TableHeader column="balanceDate" label="잔금일" className="col-date-standard" columnId="balanceDate" />
+                <TableHeader column="expiryDate" label="만기일" className="col-date-standard" columnId="expiryDate" />
+                <TableHeader column="landlordName" label="임대인이름" className="col-text-standard" columnId="landlordName" />
+                <th className="col-phone-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['landlordPhone'], minWidth: '50px' }}>
                   임대인번호
+                  <ResizeHandle columnId="landlordPhone" currentWidth={columnWidths['landlordPhone']} />
                 </th>
-                <TableHeader column="tenantName" label="임차인이름" className="col-text-standard" />
-                <th className="col-phone-standard" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader column="tenantName" label="임차인이름" className="col-text-standard" columnId="tenantName" />
+                <th className="col-phone-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['tenantPhone'], minWidth: '50px' }}>
                   임차인번호
+                  <ResizeHandle columnId="tenantPhone" currentWidth={columnWidths['tenantPhone']} />
                 </th>
-                <TableHeader column="remainderPaymentDate" label="입금일" className="col-date-standard" />
-                <TableHeader column="brokerageFee" label="중개보수(원)" className="col-number-standard" />
-                <TableHeader column="feeStatus" label="입금상태" className="col-expand" />
+                <TableHeader column="remainderPaymentDate" label="입금일" className="col-date-standard" columnId="remainderPaymentDate" />
+                <TableHeader column="brokerageFee" label="중개보수(원)" className="col-number-standard" columnId="brokerageFee" />
+                <TableHeader column="feeStatus" label="입금상태" className="col-expand" columnId="feeStatus" />
               </tr>
             </thead>
             <tbody>

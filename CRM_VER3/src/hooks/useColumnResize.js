@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, React } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 /**
  * 테이블 컬럼 리사이징 커스텀 훅
@@ -72,34 +72,32 @@ export const useColumnResize = (tableId, defaultColumns) => {
   }, [resizingColumn, tableId]);
 
   // 리사이즈 핸들 컴포넌트
-  const ResizeHandle = ({ columnId, currentWidth }) => {
-    return (
-      <div
-        onMouseDown={(e) => handleMouseDown(e, columnId, currentWidth)}
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: '5px',
-          cursor: 'col-resize',
-          backgroundColor: resizingColumn === columnId ? '#2196F3' : 'transparent',
-          zIndex: 10,
-          transition: 'background-color 0.2s'
-        }}
-        onMouseEnter={(e) => {
-          if (!resizingColumn) {
-            e.currentTarget.style.backgroundColor = '#bdbdbd';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!resizingColumn) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
-      />
-    );
-  };
+  const ResizeHandle = React.memo(({ columnId, currentWidth }) => {
+    return React.createElement('div', {
+      onMouseDown: (e) => handleMouseDown(e, columnId, currentWidth),
+      style: {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: '5px',
+        cursor: 'col-resize',
+        backgroundColor: resizingColumn === columnId ? '#2196F3' : 'transparent',
+        zIndex: 10,
+        transition: 'background-color 0.2s'
+      },
+      onMouseEnter: (e) => {
+        if (!resizingColumn) {
+          e.currentTarget.style.backgroundColor = '#bdbdbd';
+        }
+      },
+      onMouseLeave: (e) => {
+        if (!resizingColumn) {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }
+      }
+    });
+  });
 
   return {
     columnWidths,
