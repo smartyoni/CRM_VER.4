@@ -173,6 +173,808 @@
   - 데이터 실시간 반영: 수정/삭제 후 패널 자동 업데이트
   - 목록과 패널 동기화: 한쪽이 변경되면 다른 쪽도 자동 갱신
 
+## DetailPanel 구현 가이드 (BuildingTable 기준)
+
+### 개요
+
+모든 테이블에는 **우측 슬라이드 사이드바 형태의 상세 패널(DetailPanel)**이 필요합니다. BuildingTable + BuildingDetailPanel의 구조를 기준으로, 신규 테이블 추가 시 일관된 방식으로 구현해야 합니다.
+
+### 건물정보 테이블 구조 분석
+
+BuildingTable과 BuildingDetailPanel이 어떻게 연동되는지 이해하는 것이 중요합니다.
+
+#### BuildingTable.jsx의 핵심 구조
+
+**필수 Props:**
+```javascript
+const BuildingTable = ({
+  buildings,              // 데이터 배열
+  onSelectBuilding,      // 행 클릭 시 호출 (선택된 건물 전달)
+  onEdit,                // 수정 버튼 클릭 시 호출
+  onDelete,              // 삭제 버튼 클릭 시 호출
+  selectedBuildingId,    // 현재 선택된 건물 ID (선택 행 하이라이팅용)
+  onCloseDetailPanel     // 상세패널 닫기 (검색 입력 시 호출)
+})
+```
+
+**필수 State:**
+```javascript
+const [searchTerm, setSearchTerm] = useState('');
+const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'desc' });
+const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedBuilding: null });
+```
+
+**행 클릭 이벤트:**
+```javascript
+<tr
+  key={building.id}
+  onClick={() => onSelectBuilding(building)}  // 중요: 선택된 항목을 부모에 전달
+  style={{
+    backgroundColor: selectedBuildingId === building.id ? '#e3f2fd' : ...,  // 선택 상태 스타일
+    cursor: 'pointer'
+  }}
+/>
+```
+
+**검색 입력 포커스 시:**
+```javascript
+<input
+  onFocus={() => onCloseDetailPanel && onCloseDetailPanel()}  // UX: 검색 시 상세패널 자동 닫기
+/>
+```
+
+#### BuildingDetailPanel.jsx의 핵심 구조
+
+**필수 Props:**
+```javascript
+const BuildingDetailPanel = ({
+  selectedBuilding,       // 선택된 건물 객체
+  onClose,               // X 버튼 클릭 시 호출
+  onEdit,                // 수정 버튼 클릭 시 호출
+  onDelete,              // 삭제 버튼 클릭 시 호출
+  onUpdateBuilding       // 즉시 업데이트 (드롭다운 선택 시)
+})
+```
+
+**필수 구조:**
+```javascript
+// 1. Guard clause (선택된 항목이 없으면 렌더링 안 함)
+if (!selectedBuilding) return null;
+
+// 2. Layout (고정 3개 영역)
+<aside className="detail-panel open">
+  {/* 헤더 - 제목, 버튼, 닫기 */}
+  <div className="panel-header">
+    <h3>건물 상세</h3>
+    <button onClick={() => onEdit(selectedBuilding)}>수정</button>
+    <button onClick={onClose}>×</button>
+  </div>
+
+  {/* 콘텐츠 - 정보 표시 (섹션 분리) */}
+  <div className="panel-content">
+    <section>
+      <h4>📋 기본 정보</h4>
+      <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+        <span>건물명:</span>
+        <span>{selectedBuilding.name || '-'}</span>
+      </div>
+      {/* 각 필드별 표시 */}
+    </section>
+  </div>
+
+  {/* 푸터 - 액션 버튼 */}
+  <div className="panel-footer">
+    <button onClick={() => onEdit(selectedBuilding)}>수정</button>
+    <button onClick={() => onDelete(selectedBuilding)}>삭제</button>
+  </div>
+</aside>
+```
+
+**CSS 클래스:**
+```javascript
+// 위치와 크기
+className="detail-panel open"
+style={{
+  position: 'fixed',
+  right: 0,
+  top: 0,
+  height: '100vh',
+  width: '972px',      // 고정 너비
+  borderLeft: '1px solid #e0e0e0',
+  display: 'flex',
+  flexDirection: 'column',
+  zIndex: 50
+}}
+
+// 콘텐츠 영역 (스크롤 가능)
+className="panel-content"
+style={{
+  flex: 1,
+  overflowY: 'auto',  // 중요: 내용만 스크롤
+  padding: '20px'
+}}
+```
+
+#### App.jsx에서의 연결 방식
+
+**상태 변수 추가:**
+```javascript
+const [selectedBuildingId, setSelectedBuildingId] = useState(null);
+const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
+const [editingBuilding, setEditingBuilding] = useState(null);
+```
+
+**Computed property (선택된 항목 찾기):**
+```javascript
+const selectedBuilding = buildings.find(b => b.id === selectedBuildingId);
+```
+
+**핸들러 함수:**
+```javascript
+// 항목 선택
+const handleSelectBuilding = (building) => {
+  setSelectedBuildingId(building.id);
+};
+
+// 수정 모달 열기
+const handleOpenBuildingModal = (building = null) => {
+  setEditingBuilding(building);
+  setIsBuildingModalOpen(true);
+};
+
+// 저장
+const handleSaveBuilding = async (building) => {
+  await saveBuilding(building);
+  setIsBuildingModalOpen(false);
+  setEditingBuilding(null);
+  setSelectedBuildingId(building.id);  // 저장 후 선택 유지
+};
+
+// 삭제
+const handleDeleteBuilding = async (building) => {
+  if (window.confirm('정말 삭제하시겠습니까?')) {
+    await deleteBuilding(building.id);
+    setSelectedBuildingId(null);  // 삭제 후 선택 해제
+  }
+};
+
+// 상세패널 닫기
+const handleCloseDetailPanel = () => {
+  setSelectedBuildingId(null);
+};
+```
+
+**렌더링:**
+```javascript
+{activeTab === '건물정보' && (
+  <>
+    {/* DetailPanel */}
+    <BuildingDetailPanel
+      selectedBuilding={buildings.find(b => b.id === selectedBuildingId)}
+      onClose={() => setSelectedBuildingId(null)}
+      onEdit={handleOpenBuildingModal}
+      onDelete={handleDeleteBuilding}
+      onUpdateBuilding={handleSaveBuilding}
+    />
+
+    {/* Modal (별도 렌더링) */}
+    <BuildingModal
+      isOpen={isBuildingModalOpen}
+      onClose={() => setIsBuildingModalOpen(false)}
+      onSave={handleSaveBuilding}
+      building={editingBuilding}
+    />
+  </>
+)}
+```
+
+### 신규 테이블 추가 시 단계별 적용 방법
+
+#### 1단계: {Entity}Table.jsx 수정
+
+기존 테이블 컴포넌트에 다음을 추가합니다:
+
+**Props 추가:**
+```javascript
+const {Entity}Table = ({
+  items,
+  onSelect{Entity},        // ← 추가: 항목 선택 핸들러
+  onEdit,
+  onDelete,
+  selected{Entity}Id,      // ← 추가: 선택된 항목 ID
+  onCloseDetailPanel       // ← 추가: 패널 닫기
+}) => {
+  // ...
+}
+```
+
+**행 클릭 추가:**
+```javascript
+<tr
+  onClick={() => onSelect{Entity}(item)}
+  style={{
+    backgroundColor: selected{Entity}Id === item.id ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f5f5f5'),
+    cursor: 'pointer'
+  }}
+/>
+```
+
+**검색 입력 수정:**
+```javascript
+<input
+  onFocus={() => onCloseDetailPanel && onCloseDetailPanel()}
+/>
+```
+
+#### 2단계: {Entity}DetailPanel.jsx 생성
+
+BuildingDetailPanel을 템플릿으로 사용하여 새 파일을 생성합니다.
+
+**기본 템플릿:**
+```javascript
+import React, { useState, useEffect } from 'react';
+
+const {Entity}DetailPanel = ({
+  selected{Entity},
+  onClose,
+  onEdit,
+  onDelete,
+  onUpdate{Entity}
+}) => {
+  // Guard clause
+  if (!selected{Entity}) return null;
+
+  return (
+    <aside className="detail-panel open" style={{
+      position: 'fixed', right: 0, top: 0, height: '100vh',
+      borderLeft: '1px solid #e0e0e0', display: 'flex',
+      flexDirection: 'column', backgroundColor: '#fff',
+      overflow: 'hidden', zIndex: 50
+    }}>
+      {/* 헤더 */}
+      <div style={{
+        padding: '20px', borderBottom: '1px solid #e0e0e0',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+          {/* 항목명 표시 */}
+        </h3>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none', border: 'none', fontSize: '24px',
+            cursor: 'pointer', padding: 0
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* 콘텐츠 */}
+      <div style={{
+        flex: 1, overflowY: 'auto', padding: '20px',
+        display: 'flex', flexDirection: 'column', gap: '20px'
+      }}>
+        <section>
+          <h4 style={{
+            fontSize: '13px', fontWeight: '600', color: '#666',
+            marginBottom: '10px', paddingBottom: '8px',
+            borderBottom: '2px solid #2196F3'
+          }}>
+            📋 기본 정보
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+              <span style={{ fontWeight: '600', color: '#666' }}>필드명:</span>
+              <span style={{ color: '#333' }}>{selected{Entity}.fieldName || '-'}</span>
+            </div>
+            {/* 각 필드별 표시 */}
+          </div>
+        </section>
+      </div>
+
+      {/* 푸터 */}
+      <div style={{
+        padding: '15px', borderTop: '1px solid #e0e0e0',
+        display: 'flex', gap: '10px', justifyContent: 'flex-end'
+      }}>
+        <button
+          onClick={() => onEdit(selected{Entity})}
+          style={{
+            padding: '8px 16px', fontSize: '13px',
+            backgroundColor: '#2196F3', color: 'white',
+            border: 'none', cursor: 'pointer', borderRadius: '4px'
+          }}
+        >
+          수정
+        </button>
+        <button
+          onClick={() => onDelete(selected{Entity})}
+          style={{
+            padding: '8px 16px', fontSize: '13px',
+            backgroundColor: '#f44336', color: 'white',
+            border: 'none', cursor: 'pointer', borderRadius: '4px'
+          }}
+        >
+          삭제
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default {Entity}DetailPanel;
+```
+
+#### 3단계: App.jsx에 상태 및 핸들러 추가
+
+```javascript
+// 상태 변수 추가
+const [selected{Entity}Id, setSelected{Entity}Id] = useState(null);
+const [is{Entity}ModalOpen, setIs{Entity}ModalOpen] = useState(false);
+const [editing{Entity}, setEditing{Entity}] = useState(null);
+
+// Computed property
+const selected{Entity} = {entities}.find(e => e.id === selected{Entity}Id);
+
+// 핸들러 함수
+const handleSelect{Entity} = (item) => {
+  setSelected{Entity}Id(item.id);
+};
+
+const handleOpen{Entity}Modal = (item = null) => {
+  setEditing{Entity}(item);
+  setIs{Entity}ModalOpen(true);
+};
+
+const handleSave{Entity} = async (item) => {
+  await save{Entity}(item);
+  setIs{Entity}ModalOpen(false);
+  setEditing{Entity}(null);
+  setSelected{Entity}Id(item.id);
+};
+
+const handleDelete{Entity} = async (item) => {
+  if (window.confirm('정말 삭제하시겠습니까?')) {
+    await delete{Entity}(item.id);
+    setSelected{Entity}Id(null);
+  }
+};
+
+const handleClose{Entity}DetailPanel = () => {
+  setSelected{Entity}Id(null);
+};
+```
+
+#### 4단계: 테이블과 DetailPanel 렌더링
+
+```javascript
+{activeTab === '{tab_name}' && (
+  <>
+    {/* DetailPanel */}
+    <{Entity}DetailPanel
+      selected{Entity}={entities.find(e => e.id === selected{Entity}Id)}
+      onClose={() => setSelected{Entity}Id(null)}
+      onEdit={handleOpen{Entity}Modal}
+      onDelete={handleDelete{Entity}}
+      onUpdate{Entity}={handleSave{Entity}}
+    />
+
+    {/* Table (main content에 렌더링) */}
+    <{Entity}Table
+      items={items}
+      onSelect{Entity}={handleSelect{Entity}}
+      onEdit={handleOpen{Entity}Modal}
+      onDelete={handleDelete{Entity}}
+      selected{Entity}Id={selected{Entity}Id}
+      onCloseDetailPanel={handleClose{Entity}DetailPanel}
+    />
+
+    {/* Modal */}
+    <{Entity}Modal
+      isOpen={is{Entity}ModalOpen}
+      onClose={() => setIs{Entity}ModalOpen(false)}
+      onSave={handleSave{Entity}}
+      item={editing{Entity}}
+    />
+  </>
+)}
+```
+
+### 주요 체크리스트
+
+신규 테이블에 DetailPanel 추가 시 확인사항:
+
+- [ ] {Entity}Table.jsx에 `selected{Entity}Id`, `onSelect{Entity}`, `onCloseDetailPanel` props 추가
+- [ ] {Entity}Table의 행 클릭 이벤트에 `onSelect{Entity}(item)` 호출 추가
+- [ ] {Entity}Table의 검색 입력에 `onFocus={() => onCloseDetailPanel()}` 추가
+- [ ] {Entity}DetailPanel.jsx 신규 생성 (BuildingDetailPanel 템플릿 기반)
+- [ ] 선택된 항목이 없을 때 null 반환 (`if (!selected{Entity}) return null`)
+- [ ] 헤더에 제목 + 닫기(×) 버튼 포함
+- [ ] 콘텐츠에 정보 섹션 표시 (grid layout 사용)
+- [ ] 푸터에 수정/삭제 버튼 포함
+- [ ] App.jsx에 상태 변수 추가 (selected{Entity}Id 등)
+- [ ] App.jsx에 핸들러 함수 추가 (handleSelect{Entity}, handleSave{Entity} 등)
+- [ ] activeTab 조건 내에 DetailPanel과 Table 렌더링
+- [ ] 저장 후 선택 ID 유지 (UX 개선)
+- [ ] 삭제 후 선택 해제 (패널 자동 닫힘)
+
+## 동적 테이블 (Dynamic Table) 구현 가이드
+
+### 개요
+
+동적 테이블은 사용자가 런타임에 테이블 구조를 정의하고 데이터를 관리할 수 있는 기능입니다. 정적 테이블(CustomerTable, PropertyTable 등)과 달리 컬럼 정보(tableMetadata)를 기반으로 UI를 자동 생성합니다.
+
+### 1. DynamicTableView.jsx 상세패널 구조
+
+#### 핵심 특징: 인라인 수정 모드 (BuildingDetailPanel과의 주요 차이점)
+
+- **BuildingDetailPanel**: 별도 Modal을 통한 수정
+- **DynamicTableView**: 상세패널 내에서 직접 수정 (isEditing 상태 사용)
+
+#### 상태 관리
+
+```javascript
+const [isEditing, setIsEditing] = useState(false);        // 수정 모드 여부
+const [editingValues, setEditingValues] = useState({});   // 수정 중인 값
+```
+
+#### 수정 기능 동작 흐름
+
+```javascript
+// 1. 선택된 행이 변경되면 editingValues 초기화
+React.useEffect(() => {
+  if (selectedRow) {
+    setEditingValues({ ...selectedRow });
+    setIsEditing(false);
+  }
+}, [selectedRow?.id]);
+
+// 2. 수정 모드 진입
+const handleStartEditing = () => {
+  if (selectedRow) {
+    setEditingValues({ ...selectedRow });
+    setIsEditing(true);
+  }
+};
+
+// 3. 필드 값 변경
+const handleFieldChange = (fieldName, value) => {
+  setEditingValues(prev => ({
+    ...prev,
+    [fieldName]: value
+  }));
+};
+
+// 4. 수정 저장
+const handleSaveEdit = () => {
+  if (selectedRow) {
+    onEdit(editingValues);  // 부모 컴포넌트의 핸들러 호출
+    setIsEditing(false);
+  }
+};
+
+// 5. 수정 취소
+const handleCancelEdit = () => {
+  setEditingValues({ ...selectedRow });
+  setIsEditing(false);
+};
+```
+
+#### BuildingDetailPanel과의 차이점 비교
+
+| 항목 | BuildingDetailPanel | DynamicTableView |
+|------|---------------------|------------------|
+| **수정 방식** | 별도 Modal (BuildingModal) | 인라인 편집 (isEditing) |
+| **필드 정의** | 정적 하드코딩 | tableMetadata 기반 동적 생성 |
+| **드롭다운** | 건물유형/위치 필터 포함 | 없음 (순수 데이터 표시) |
+| **탭** | 없음 (단일 뷰) | 없음 (단일 뷰) |
+| **수정 상태** | 없음 (Modal에서 관리) | isEditing, editingValues |
+
+### 2. DynamicRowModal.jsx 구조
+
+#### 목적
+새로운 행을 추가하기 위한 모달 (수정은 DynamicTableView 상세패널에서 처리)
+
+#### 핵심 로직
+
+```javascript
+const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
+  const [formData, setFormData] = useState({});
+
+  // Guard clause
+  if (!isOpen || !tableMetadata) return null;
+
+  // 컬럼 정보 추출
+  const columns = tableMetadata.columns || [];
+  const displayColumns = columns.filter(col => col.display !== false);
+
+  // 입력 값 변경 핸들러
+  const handleInputChange = (fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+  };
+
+  // 저장 핸들러
+  const handleSave = () => {
+    // ID와 createdAt은 자동 생성
+    const newRow = {
+      id: `row_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      ...formData
+    };
+
+    onSave(newRow);
+    setFormData({});  // 폼 초기화
+  };
+};
+```
+
+#### 동적 필드 생성
+
+tableMetadata.columns를 순회하며 각 컬럼 타입에 맞게 입력 필드 자동 생성:
+
+```javascript
+{displayColumns.map(col => (
+  <div key={col.name}>
+    <label>
+      {col.label || col.name}
+      {col.required && <span style={{ color: '#f44336' }}>*</span>}
+    </label>
+    <input
+      type={
+        col.type === 'number' ? 'number' :
+        col.type === 'date' ? 'date' :
+        'text'
+      }
+      placeholder={`${col.label || col.name}을(를) 입력하세요`}
+      value={formData[col.name] || ''}
+      onChange={(e) => handleInputChange(col.name, e.target.value)}
+    />
+  </div>
+))}
+```
+
+### 3. App.jsx 연결 방식
+
+#### 필요한 상태 변수
+
+```javascript
+// 동적 테이블 관련 상태
+const [dynamicTables, setDynamicTables] = useState([]);                     // 테이블 메타데이터 목록
+const [dynamicTableData, setDynamicTableData] = useState({});              // { tableId: [rows] }
+const [selectedDynamicTableId, setSelectedDynamicTableId] = useState(null); // 현재 선택된 테이블
+const [selectedDynamicRowId, setSelectedDynamicRowId] = useState(null);    // 현재 선택된 행
+const [isTableCreatorOpen, setIsTableCreatorOpen] = useState(false);       // 테이블 생성 모달
+const [isCSVImporterOpen, setIsCSVImporterOpen] = useState(false);         // CSV 임포트 모달
+const [isDynamicRowModalOpen, setIsDynamicRowModalOpen] = useState(false); // 행 추가 모달
+
+// useRef로 구독 해제 함수 관리
+const dynamicTableUnsubscribes = useRef({});
+```
+
+#### 핸들러 함수들
+
+```javascript
+// 행 선택
+const handleSelectDynamicRow = (row) => {
+  if (selectedDynamicRowId === row.id) {
+    setSelectedDynamicRowId(null);
+  } else {
+    setSelectedDynamicRowId(row.id);
+  }
+};
+
+// 행 추가 (DynamicRowModal에서 호출)
+const handleAddDynamicRow = async (newRow) => {
+  try {
+    await saveTableRow(activeTab, newRow);  // activeTab = tableId
+    setDynamicTableData(prev => ({
+      ...prev,
+      [activeTab]: [...(prev[activeTab] || []), newRow]
+    }));
+    setIsDynamicRowModalOpen(false);
+    alert('행이 추가되었습니다.');
+  } catch (error) {
+    alert(`행 추가 실패: ${error.message}`);
+  }
+};
+
+// 행 수정 (DynamicTableView의 onEdit 콜백)
+const handleSaveDynamicRow = async (updatedRow) => {
+  try {
+    await saveTableRow(activeTab, updatedRow);
+    setDynamicTableData(prev => ({
+      ...prev,
+      [activeTab]: (prev[activeTab] || []).map(row =>
+        row.id === updatedRow.id ? updatedRow : row
+      )
+    }));
+    alert('저장되었습니다.');
+  } catch (error) {
+    alert(`행 저장 실패: ${error.message}`);
+  }
+};
+
+// 행 삭제
+const handleDeleteDynamicRow = async (row) => {
+  if (!confirm('이 행을 삭제하겠습니까?')) {
+    return;
+  }
+
+  try {
+    await deleteTableRow(selectedDynamicTableId, row.id);
+    if (selectedDynamicRowId === row.id) {
+      setSelectedDynamicRowId(null);
+    }
+  } catch (error) {
+    alert(`행 삭제 실패: ${error.message}`);
+  }
+};
+
+// 테이블 삭제
+const handleDeleteDynamicTable = async (tableId) => {
+  if (!confirm('이 테이블과 모든 데이터를 삭제하겠습니까?')) {
+    return;
+  }
+
+  try {
+    await deleteTable(tableId);
+    setSelectedDynamicTableId(null);
+    alert('테이블이 삭제되었습니다.');
+  } catch (error) {
+    alert(`테이블 삭제 실패: ${error.message}`);
+  }
+};
+```
+
+#### DynamicTableView와 DynamicRowModal Props 연결
+
+```javascript
+{/* main content 영역 */}
+{dynamicTables.some(t => t.id === activeTab) ? (
+  <DynamicTableView
+    tableData={dynamicTableData[activeTab] || []}
+    tableMetadata={dynamicTables.find(t => t.id === activeTab)}
+    onSelectRow={handleSelectDynamicRow}
+    onEdit={handleSaveDynamicRow}              // 수정 저장 핸들러
+    onDelete={handleDeleteDynamicRow}
+    selectedRowId={selectedDynamicRowId}
+    onCloseDetailPanel={handleCloseDetailPanel}
+  />
+) : (
+  // ... 다른 테이블들
+)}
+
+{/* 행 추가 모달 */}
+<DynamicRowModal
+  isOpen={isDynamicRowModalOpen}
+  onClose={() => setIsDynamicRowModalOpen(false)}
+  onSave={handleAddDynamicRow}
+  tableMetadata={dynamicTables.find(t => t.id === activeTab)}
+/>
+```
+
+#### 상단 액션 버튼
+
+```javascript
+{dynamicTables.some(t => t.id === activeTab) ? (
+  <>
+    <button onClick={() => setIsDynamicRowModalOpen(true)} className="btn-primary">
+      + 행 추가
+    </button>
+    <button onClick={() => setIsCSVImporterOpen(true)} className="btn-secondary">
+      CSV 임포트
+    </button>
+    <button
+      onClick={() => handleDeleteDynamicTable(activeTab)}
+      className="btn-danger"
+      style={{ backgroundColor: '#d32f2f', color: 'white', border: 'none' }}
+    >
+      테이블 삭제
+    </button>
+  </>
+) : (
+  // ... 다른 기능의 버튼들
+)}
+```
+
+#### 하단 탭바 - 동적 테이블 탭 생성
+
+```javascript
+{/* 동적 테이블 탭들 */}
+{dynamicTables.map(table => (
+  <button
+    key={table.id}
+    onClick={() => setActiveTab(table.id)}
+  >
+    {table.icon} {table.name}
+  </button>
+))}
+
+{/* 테이블 추가 버튼 */}
+<button onClick={() => setIsTableCreatorOpen(true)}>
+  + 테이블 추가
+</button>
+```
+
+### 4. 주요 특징과 차이점
+
+#### 정적 테이블 vs 동적 테이블
+
+| 항목 | 정적 테이블 (BuildingTable 등) | 동적 테이블 (DynamicTableView) |
+|------|-------------------------------|-------------------------------|
+| **컬럼 정의** | 코드에 하드코딩 | tableMetadata 기반 런타임 생성 |
+| **추가/수정 UI** | 추가: Modal, 수정: Modal | 추가: Modal, 수정: 인라인 (상세패널) |
+| **필드 구조** | 고정 (변경 시 코드 수정 필요) | 동적 (사용자가 정의) |
+| **타입 지원** | 모든 React 컴포넌트 가능 | text, number, date만 지원 |
+| **유효성 검사** | 커스텀 로직 가능 | 기본 HTML5 검증만 |
+| **DetailPanel** | 정적 UI (섹션별 구분) | 동적 UI (컬럼 정보 기반 자동 생성) |
+
+#### 동적 테이블만의 특징
+
+1. **메타데이터 기반 UI 생성**
+   - tableMetadata.columns를 순회하며 UI 자동 생성
+   - 컬럼 타입(text/number/date)에 따라 input 타입 자동 결정
+   - displayColumns 필터링으로 숨긴 컬럼 제외
+
+2. **인라인 수정 모드**
+   - 별도 Modal 없이 상세패널에서 직접 수정
+   - isEditing 상태로 읽기/수정 모드 전환
+   - editingValues로 임시 값 관리하여 취소 시 원본 보존
+
+3. **유연한 데이터 구조**
+   - 사용자가 런타임에 컬럼 추가/제거 가능
+   - CSV 임포트로 자동 테이블 생성 지원
+   - 여러 동적 테이블을 독립적으로 관리
+
+4. **자동 ID/시간 생성**
+   - 새 행 추가 시 `id: 'row_${Date.now()}'` 자동 생성
+   - `createdAt: new Date().toISOString()` 자동 설정
+
+### 5. 구현 시 주의사항
+
+#### 필수 체크리스트
+
+- [ ] **tableMetadata 필수 검증**: 모든 컴포넌트에서 `if (!tableMetadata) return null` 처리
+- [ ] **displayColumns 필터링**: `columns.filter(col => col.display !== false)` 사용
+- [ ] **타입별 렌더링**: 날짜는 toLocaleDateString(), 숫자는 toLocaleString() 사용
+- [ ] **자동 ID 생성**: 새 행 추가 시 타임스탐프 기반 ID 생성
+- [ ] **구독 정리**: dynamicTableUnsubscribes.current로 메모리 누수 방지
+- [ ] **상태 동기화**: Firebase 저장 후 로컬 state도 즉시 업데이트
+- [ ] **에러 처리**: try-catch로 Firebase 작업 실패 처리
+- [ ] **확인 다이얼로그**: 삭제 작업 전 confirm() 호출
+
+#### 성능 최적화
+
+```javascript
+// useMemo로 필터링/정렬 캐싱
+const filteredAndSortedData = useMemo(() => {
+  let filtered = tableData.filter(row => /* 검색 */);
+  // ... 정렬 로직
+  return filtered;
+}, [tableData, searchTerm, sortColumn, sortOrder, displayColumns]);
+
+// useEffect 의존성 배열 최적화
+React.useEffect(() => {
+  if (selectedRow) {
+    setEditingValues({ ...selectedRow });
+    setIsEditing(false);
+  }
+}, [selectedRow?.id]);  // 전체 객체 대신 id만 의존
+```
+
+#### 일관성 유지
+
+- 모든 동적 테이블은 동일한 UI 패턴 사용 (customer-table CSS 클래스)
+- 헤더 색상: `#689f38` (다크 라임 그린)
+- 행 색상: 짝수 `#ffffff`, 홀수 `#f5f5f5`, 선택 `#e3f2fd`
+- 호버 색상: `#dcfce7` (연한 초록색)
+- 패널 너비: `972px` (모든 DetailPanel과 동일)
+- 폰트 크기: 콘텐츠 `13px`, 헤더 `16px`
+
 ## 새로운 테이블 추가 시 체크리스트 (표준화 가이드)
 
 ### 테이블 컴포넌트 작성 규칙
@@ -739,4 +1541,4 @@ const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
 
 ## 확인 날짜
 - 작성: 2025-10-20
-- 최종 업데이트: 2025-11-19 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성)
+- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가)

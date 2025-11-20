@@ -13,6 +13,8 @@ const DynamicTableView = ({
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState('asc');
   const [contextMenu, setContextMenu] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingValues, setEditingValues] = useState({});
 
   if (!tableMetadata) {
     return (
@@ -99,7 +101,229 @@ const DynamicTableView = ({
     }
   };
 
+  // 선택된 행 찾기
+  const selectedRow = tableData.find(row => row.id === selectedRowId);
+
+  // selectedRow가 변경될 때 editingValues 초기화
+  React.useEffect(() => {
+    if (selectedRow) {
+      setEditingValues({ ...selectedRow });
+      setIsEditing(false);
+    }
+  }, [selectedRow?.id]);
+
+  // 수정 모드 진입
+  const handleStartEditing = () => {
+    if (selectedRow) {
+      setEditingValues({ ...selectedRow });
+      setIsEditing(true);
+    }
+  };
+
+  // 수정 값 변경
+  const handleFieldChange = (fieldName, value) => {
+    setEditingValues(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+  };
+
+  // 수정 저장
+  const handleSaveEdit = () => {
+    if (selectedRow) {
+      onEdit(editingValues);
+      setIsEditing(false);
+    }
+  };
+
+  // 수정 취소
+  const handleCancelEdit = () => {
+    setEditingValues({ ...selectedRow });
+    setIsEditing(false);
+  };
+
   return (
+    <>
+      {/* 상세 패널 */}
+      {selectedRow && (
+        <aside className="detail-panel open" style={{
+          position: 'fixed',
+          right: 0,
+          top: 0,
+          height: '100vh',
+          width: '972px',
+          borderLeft: '1px solid #e0e0e0',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#fff',
+          overflow: 'hidden',
+          zIndex: 50,
+          boxShadow: '-2px 0 8px rgba(0,0,0,0.1)'
+        }}>
+          {/* 헤더 */}
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+              {tableMetadata.name} 상세
+            </h3>
+            <button
+              onClick={() => onCloseDetailPanel()}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                padding: 0,
+                width: '30px',
+                height: '30px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* 콘텐츠 */}
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}>
+            <section>
+              <h4 style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#666',
+                marginBottom: '10px',
+                paddingBottom: '8px',
+                borderBottom: '2px solid #2196F3'
+              }}>
+                📋 기본 정보
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                {displayColumns.map((col) => (
+                  <div key={col.name} style={{
+                    display: 'grid',
+                    gridTemplateColumns: '80px 1fr',
+                    gap: '10px',
+                    alignItems: 'flex-start'
+                  }}>
+                    <span style={{ fontWeight: '600', color: '#666' }}>
+                      {col.label || col.name}:
+                    </span>
+                    {isEditing ? (
+                      <input
+                        type={col.type === 'number' ? 'number' : col.type === 'date' ? 'date' : 'text'}
+                        value={editingValues[col.name] || ''}
+                        onChange={(e) => handleFieldChange(col.name, e.target.value)}
+                        style={{
+                          padding: '8px 12px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          fontSize: '13px',
+                          fontFamily: 'inherit'
+                        }}
+                      />
+                    ) : (
+                      <span style={{
+                        color: '#333',
+                        wordBreak: 'break-word'
+                      }}>
+                        {renderCellValue(selectedRow[col.name], col.type)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* 푸터 */}
+          <div style={{
+            padding: '15px',
+            borderTop: '1px solid #e0e0e0',
+            display: 'flex',
+            gap: '10px',
+            justifyContent: 'flex-end',
+            backgroundColor: '#fff'
+          }}>
+            {isEditing ? (
+              <>
+                <button
+                  onClick={handleSaveEdit}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '4px'
+                  }}
+                >
+                  저장
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    backgroundColor: '#999',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '4px'
+                  }}
+                >
+                  취소
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleStartEditing}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '4px'
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => onDelete(selectedRow)}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '4px'
+                  }}
+                >
+                  삭제
+                </button>
+              </>
+            )}
+          </div>
+        </aside>
+      )}
+
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* 검색바 */}
       <div style={{ marginBottom: '15px', display: 'flex', gap: '10px', padding: '0 20px', paddingTop: '20px' }}>
@@ -319,6 +543,7 @@ const DynamicTableView = ({
         </>
       )}
     </div>
+    </>
   );
 };
 

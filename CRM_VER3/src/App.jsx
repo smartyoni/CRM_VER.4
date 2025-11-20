@@ -19,6 +19,7 @@ import ContractImporter from './components/ContractImporter';
 import DynamicTableView from './components/DynamicTable/DynamicTableView';
 import TableCreator from './components/DynamicTable/TableCreator';
 import DynamicCSVImporter from './components/DynamicTable/DynamicCSVImporter';
+import DynamicRowModal from './components/DynamicTable/DynamicRowModal';
 import {
   subscribeToCustomers,
   subscribeToActivities,
@@ -110,6 +111,7 @@ function App() {
   const [selectedDynamicRowId, setSelectedDynamicRowId] = useState(null);
   const [isTableCreatorOpen, setIsTableCreatorOpen] = useState(false);
   const [isCSVImporterOpen, setIsCSVImporterOpen] = useState(false);
+  const [isDynamicRowModalOpen, setIsDynamicRowModalOpen] = useState(false);
   const restoreInputRef = useRef(null);
   const dynamicTableUnsubscribes = useRef({});
 
@@ -509,6 +511,37 @@ function App() {
       }
     } catch (error) {
       alert(`행 삭제 실패: ${error.message}`);
+    }
+  };
+
+  const handleSaveDynamicRow = async (updatedRow) => {
+    try {
+      await saveTableRow(activeTab, updatedRow);
+      // 로컬 상태 업데이트
+      setDynamicTableData(prev => ({
+        ...prev,
+        [activeTab]: (prev[activeTab] || []).map(row =>
+          row.id === updatedRow.id ? updatedRow : row
+        )
+      }));
+      alert('저장되었습니다.');
+    } catch (error) {
+      alert(`행 저장 실패: ${error.message}`);
+    }
+  };
+
+  const handleAddDynamicRow = async (newRow) => {
+    try {
+      await saveTableRow(activeTab, newRow);
+      // 로컬 상태 업데이트
+      setDynamicTableData(prev => ({
+        ...prev,
+        [activeTab]: [...(prev[activeTab] || []), newRow]
+      }));
+      setIsDynamicRowModalOpen(false);
+      alert('행이 추가되었습니다.');
+    } catch (error) {
+      alert(`행 추가 실패: ${error.message}`);
     }
   };
 
@@ -1048,7 +1081,8 @@ function App() {
                 </>
               ) : dynamicTables.some(t => t.id === activeTab) ? (
                 <>
-                  <button onClick={() => setIsTableCreatorOpen(true)} className="btn-primary">+ 행 추가</button>
+                  <button onClick={() => setIsDynamicRowModalOpen(true)} className="btn-primary">+ 행 추가</button>
+                  <button onClick={() => setIsCSVImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
                   <button
                     onClick={() => handleDeleteDynamicTable(activeTab)}
                     className="btn-danger"
@@ -1129,7 +1163,7 @@ function App() {
                 tableData={dynamicTableData[activeTab] || []}
                 tableMetadata={dynamicTables.find(t => t.id === activeTab)}
                 onSelectRow={handleSelectDynamicRow}
-                onEdit={() => {}}
+                onEdit={handleSaveDynamicRow}
                 onDelete={handleDeleteDynamicRow}
                 selectedRowId={selectedDynamicRowId}
                 onCloseDetailPanel={handleCloseDetailPanel}
@@ -1427,6 +1461,14 @@ function App() {
         isOpen={isCSVImporterOpen}
         onClose={() => setIsCSVImporterOpen(false)}
         onImport={handleImportCSVTable}
+      />
+
+      {/* DynamicRowModal */}
+      <DynamicRowModal
+        isOpen={isDynamicRowModalOpen}
+        onClose={() => setIsDynamicRowModalOpen(false)}
+        onSave={handleAddDynamicRow}
+        tableMetadata={dynamicTables.find(t => t.id === activeTab)}
       />
     </div>
   );
