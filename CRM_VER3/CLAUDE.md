@@ -783,41 +783,105 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
 | **한글 키워드** | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | "기록", "일시", "로그" 등 포함 |
 | **영문 정확 매칭** | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | recordedAt, loggedAt 등 |
 
-**자동 입력 감지 로직:**
+**자동 입력 감지 로직 (DynamicRowModal.jsx):**
 
 ```javascript
-// DynamicRowModal.jsx의 useEffect
-useEffect(() => {
-  if (isOpen && tableMetadata) {
-    const autoInitialData = {};
-    const now = new Date();
-    // ... 현재 시간 포맷팅 (YYYY-MM-DD HH:MM)
+// 컴포넌트 구조 (React Hooks 규칙 준수)
+const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
+  // 1단계: State 선언 (Hook 순서 고정)
+  const [formData, setFormData] = useState({});
 
-    displayColumns.forEach(col => {
-      const colName = col.name.toLowerCase();
-      const colLabel = (col.label || '').toLowerCase();
+  // 2단계: useEffect 선언 (Hook 규칙: early return 전에 선언)
+  useEffect(() => {
+    if (isOpen && tableMetadata) {
+      // 모달 열릴 때만 실행
+      const columns = tableMetadata.columns || [];
+      const displayColumns = columns.filter(col => col.display !== false);
+      const autoInitialData = {};
 
-      // 감지 키워드: "기록", "일시", "로그"
-      if ((colName.includes('기록') || colLabel.includes('기록') ||
-           colName.includes('일시') || colLabel.includes('일시') ||
-           colName.includes('로그') || colLabel.includes('로그')) &&
-          (col.type === 'text' || !col.type)) {
-        // 자동으로 현재 시간 입력
-        autoInitialData[col.name] = timeString;  // "2025-11-20 14:35"
-      }
-    });
+      // 현재 시간을 YYYY-MM-DD HH:MM 형식으로 포맷
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const timeString = `${year}-${month}-${date} ${hours}:${minutes}`;
 
-    setFormData(autoInitialData);  // formData에 자동으로 채워짐
-  }
-}, [isOpen, tableMetadata]);
+      // 각 컬럼을 순회하며 시간 기반 컬럼 감지
+      displayColumns.forEach(col => {
+        const colName = col.name.toLowerCase();
+        const colLabel = (col.label || '').toLowerCase();
+
+        // 감지 조건:
+        // 1) 컬럼명이나 라벨에 "기록", "일시", "로그" 포함
+        // 2) 타입이 text 또는 undefined (자유 입력 필드)
+        if ((colName.includes('기록') || colLabel.includes('기록') ||
+             colName.includes('일시') || colLabel.includes('일시') ||
+             colName.includes('로그') || colLabel.includes('로그')) &&
+            (col.type === 'text' || !col.type)) {
+          // 자동으로 현재 시간 입력
+          autoInitialData[col.name] = timeString;  // "2025-11-20 14:35"
+        }
+      });
+
+      // formData 상태 업데이트 (입력 필드에 자동으로 표시됨)
+      setFormData(autoInitialData);
+    }
+  }, [isOpen, tableMetadata]);
+
+  // 3단계: early return (조건부 렌더링)
+  // ※ 중요: useEffect 이후에 위치해야 Hook 규칙 준수
+  if (!isOpen || !tableMetadata) return null;
+
+  // 4단계: 정상 렌더링
+  const columns = tableMetadata.columns || [];
+  const displayColumns = columns.filter(col => col.display !== false);
+
+  // ... 나머지 로직
+};
 ```
+
+**작동 흐름 상세:**
+
+1. **모달 오픈** (`isOpen = true`)
+   - useEffect 의존성 배열 `[isOpen, tableMetadata]` 변경
+   - useEffect 콜백 함수 실행
+
+2. **시간 포맷팅** (YYYY-MM-DD HH:MM)
+   - `new Date()` → 현재 시간 취득
+   - 월/일/시/분을 2자리로 패딩 (padStart)
+   - 초는 제외
+
+3. **컬럼 감지** (forEach 순회)
+   - 컬럼명/라벨을 소문자로 변환
+   - "기록", "일시", "로그" 키워드 포함 확인
+   - type이 text 또는 undefined 확인
+
+4. **autoInitialData에 저장**
+   - 감지된 컬럼: `autoInitialData[col.name] = timeString`
+   - 예: `{ "기록일시": "2025-11-20 14:35" }`
+
+5. **formData 상태 업데이트**
+   - `setFormData(autoInitialData)`
+   - React 리렌더링 트리거
+
+6. **입력 필드 자동 표시**
+   - `<input value={formData[col.name] || ''}>`
+   - formData의 값이 입력 필드에 자동으로 표시됨
+
+7. **사용자 수정 가능**
+   - `onChange={(e) => handleInputChange(col.name, e.target.value)}`
+   - 사용자가 값을 수정할 수 있음
 
 **자동 입력 특징:**
 - **타이밍**: 모달이 열릴 때 (isOpen이 true가 될 때)
 - **감지 대상**: 컬럼명이나 라벨에 "기록", "일시", "로그" 등의 키워드 포함
 - **형식**: `YYYY-MM-DD HH:MM` (월 일 시 분, 초 제외)
+- **예시**: `2025-11-20 14:35`
 - **수정 가능**: 입력 필드에서 사용자가 값을 수정 가능
 - **모든 테이블 적용**: 동적 테이블에 공통 적용
+- **React Hooks 규칙**: useState → useEffect → early return 순서 준수
 
 #### 동적 필드 생성
 
@@ -1648,4 +1712,4 @@ const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
 
 ## 확인 날짜
 - 작성: 2025-10-20
-- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일, DynamicRowModal 기록일시 자동입력 기능 구현 (useEffect로 모달 열때 자동 초기화), 한글 컬럼명 지원으로 개선)
+- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일, DynamicRowModal 기록일시 자동입력 기능 완성 - 모달 오픈시 현재 시간 자동 초기화, React Hooks 규칙 준수, 한글 컬럼명 완벽 지원)
