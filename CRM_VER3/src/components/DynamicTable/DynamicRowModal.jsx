@@ -22,6 +22,7 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
     // 컬럼 메타데이터를 순회하며 시간 기반 컬럼 감지 및 자동 입력
     displayColumns.forEach(col => {
       const colName = col.name.toLowerCase();
+      const colLabel = (col.label || '').toLowerCase();
 
       // 접수일 패턴: createdAt, created_at (날짜만 YYYY-MM-DD)
       if ((colName === 'createdat' || colName === 'created_at') && !autoFilledData[col.name]) {
@@ -29,7 +30,7 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
         autoFilledData[col.name] = now.toISOString().split('T')[0]; // YYYY-MM-DD
       }
 
-      // 기록일시 패턴: recordedAt, recorded_at, loggedAt, logged_at (날짜+시간 YYYY-MM-DD HH:MM)
+      // 기록일시 패턴 1: 영문 (recordedAt, recorded_at, loggedAt, logged_at)
       if ((colName === 'recordedat' || colName === 'recorded_at' ||
            colName === 'loggedat' || colName === 'logged_at') && !autoFilledData[col.name]) {
         const now = new Date();
@@ -39,6 +40,27 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         autoFilledData[col.name] = `${year}-${month}-${date} ${hours}:${minutes}`; // YYYY-MM-DD HH:MM
+      }
+
+      // 기록일시 패턴 2: 한글 또는 키워드 포함 (기록일시, 로그시간, 기록시간 등)
+      // 컬럼명이나 라벨에 "기록", "일시", "로그", "시간" 등의 키워드 포함
+      const isRecordTimeColumn =
+        colName.includes('기록') || colName.includes('로그') || colName.includes('기록일시') ||
+        colLabel.includes('기록') || colLabel.includes('로그') || colLabel.includes('기록일시') ||
+        colName.includes('recordtime') || colName.includes('record_time') ||
+        colLabel.includes('recordtime') || colLabel.includes('record_time');
+
+      if (isRecordTimeColumn && (col.type === 'text' || !col.type) && !autoFilledData[col.name]) {
+        // 컬럼에 이미 값이 있으면 건너뛰기
+        if (!autoFilledData[col.name]) {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const date = String(now.getDate()).padStart(2, '0');
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          autoFilledData[col.name] = `${year}-${month}-${date} ${hours}:${minutes}`; // YYYY-MM-DD HH:MM
+        }
       }
     });
 
