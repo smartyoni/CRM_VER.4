@@ -19,10 +19,18 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
     // 시간 기반 컬럼 자동 입력
     const autoFilledData = { ...formData };
 
+    // 디버그: 컬럼 정보 로깅
+    console.log('=== DynamicRowModal Debug ===');
+    console.log('displayColumns:', displayColumns);
+    console.log('formData:', formData);
+
     // 컬럼 메타데이터를 순회하며 시간 기반 컬럼 감지 및 자동 입력
     displayColumns.forEach(col => {
       const colName = col.name.toLowerCase();
       const colLabel = (col.label || '').toLowerCase();
+
+      console.log(`Column: name="${col.name}", label="${col.label}", type="${col.type}"`);
+      console.log(`  colName.toLowerCase()="${colName}", colLabel="${colLabel}"`);
 
       // 접수일 패턴: createdAt, created_at (날짜만 YYYY-MM-DD)
       if ((colName === 'createdat' || colName === 'created_at') && !autoFilledData[col.name]) {
@@ -50,6 +58,8 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
         colName.includes('recordtime') || colName.includes('record_time') ||
         colLabel.includes('recordtime') || colLabel.includes('record_time');
 
+      console.log(`  isRecordTimeColumn=${isRecordTimeColumn}, type check=${col.type === 'text' || !col.type}, hasValue=${!!autoFilledData[col.name]}`);
+
       if (isRecordTimeColumn && (col.type === 'text' || !col.type) && !autoFilledData[col.name]) {
         // 컬럼에 이미 값이 있으면 건너뛰기
         if (!autoFilledData[col.name]) {
@@ -59,7 +69,9 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
           const date = String(now.getDate()).padStart(2, '0');
           const hours = String(now.getHours()).padStart(2, '0');
           const minutes = String(now.getMinutes()).padStart(2, '0');
-          autoFilledData[col.name] = `${year}-${month}-${date} ${hours}:${minutes}`; // YYYY-MM-DD HH:MM
+          const autoValue = `${year}-${month}-${date} ${hours}:${minutes}`;
+          autoFilledData[col.name] = autoValue;
+          console.log(`  ✓ Auto-filled: ${col.name} = "${autoValue}"`);
         }
       }
     });
@@ -70,6 +82,9 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
       createdAt: new Date().toISOString(),
       ...autoFilledData
     };
+
+    console.log('Final newRow:', newRow);
+    console.log('=== End Debug ===');
 
     onSave(newRow);
     setFormData({});
