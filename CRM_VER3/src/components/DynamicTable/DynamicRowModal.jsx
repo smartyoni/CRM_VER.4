@@ -16,11 +16,37 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
   };
 
   const handleSave = () => {
+    // 시간 기반 컬럼 자동 입력
+    const autoFilledData = { ...formData };
+
+    // 컬럼 메타데이터를 순회하며 시간 기반 컬럼 감지 및 자동 입력
+    displayColumns.forEach(col => {
+      const colName = col.name.toLowerCase();
+
+      // 접수일 패턴: createdAt, created_at (날짜만 YYYY-MM-DD)
+      if ((colName === 'createdat' || colName === 'created_at') && !autoFilledData[col.name]) {
+        const now = new Date();
+        autoFilledData[col.name] = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      }
+
+      // 기록일시 패턴: recordedAt, recorded_at, loggedAt, logged_at (날짜+시간 YYYY-MM-DD HH:MM)
+      if ((colName === 'recordedat' || colName === 'recorded_at' ||
+           colName === 'loggedat' || colName === 'logged_at') && !autoFilledData[col.name]) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        autoFilledData[col.name] = `${year}-${month}-${date} ${hours}:${minutes}`; // YYYY-MM-DD HH:MM
+      }
+    });
+
     // ID와 createdAt은 자동 생성
     const newRow = {
       id: `row_${Date.now()}`,
       createdAt: new Date().toISOString(),
-      ...formData
+      ...autoFilledData
     };
 
     onSave(newRow);
