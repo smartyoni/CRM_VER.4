@@ -489,6 +489,14 @@ const DynamicTableView = ({
                 {displayColumns.map((col, colIndex) => {
                   const isLastColumn = colIndex === displayColumns.length - 1;
                   let columnClass = '';
+                  let columnStyle = {
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    padding: '12px',
+                    whiteSpace: 'nowrap',
+                    textAlign: 'left',
+                    fontWeight: '600'
+                  };
 
                   // 컬럼 타입별 클래스 지정
                   if (col.type === 'date') {
@@ -506,19 +514,20 @@ const DynamicTableView = ({
                     columnClass += ' col-expand';
                   }
 
+                  // 제목 컬럼은 너비 고정 (한글 15자 = 약 300px)
+                  if (col.label && (col.label.includes('제목') || col.label.includes('내용'))) {
+                    columnStyle.width = '300px';
+                    columnStyle.minWidth = '300px';
+                    columnStyle.maxWidth = '300px';
+                    columnStyle.whiteSpace = 'normal';
+                  }
+
                   return (
                     <th
                       key={col.name}
                       className={columnClass}
                       onClick={() => handleSort(col.name)}
-                      style={{
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                        padding: '12px',
-                        whiteSpace: 'nowrap',
-                        textAlign: 'left',
-                        fontWeight: '600'
-                      }}
+                      style={columnStyle}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         {col.label || col.name}
@@ -558,6 +567,7 @@ const DynamicTableView = ({
                   {displayColumns.map((col, colIndex) => {
                     const isLastColumn = colIndex === displayColumns.length - 1;
                     let columnClass = '';
+                    let columnStyle = { padding: '12px' };
 
                     // 컬럼 타입별 클래스 지정
                     if (col.type === 'date') {
@@ -575,8 +585,17 @@ const DynamicTableView = ({
                       columnClass += ' col-expand';
                     }
 
+                    // 제목 컬럼은 너비 고정 (한글 15자 = 약 300px)
+                    if (col.label && (col.label.includes('제목') || col.label.includes('내용'))) {
+                      columnStyle.width = '300px';
+                      columnStyle.minWidth = '300px';
+                      columnStyle.maxWidth = '300px';
+                      columnStyle.whiteSpace = 'normal';
+                      columnStyle.wordBreak = 'break-word';
+                    }
+
                     return (
-                      <td key={`${row.id}-${colIndex}`} className={columnClass} style={{ padding: '12px' }}>
+                      <td key={`${row.id}-${colIndex}`} className={columnClass} style={columnStyle}>
                         {renderCellValue(row[col.name], col.type)}
                       </td>
                     );
