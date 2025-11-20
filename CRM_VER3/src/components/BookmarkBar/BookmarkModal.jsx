@@ -4,11 +4,13 @@ const BookmarkModal = ({
   isOpen = false,
   onClose = () => {},
   onSave = () => {},
-  editingBookmark = null
+  editingBookmark = null,
+  selectedSection = 1
 }) => {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [color, setColor] = useState('#87CEEB');
+  const [section, setSection] = useState(selectedSection);
   const [error, setError] = useState('');
 
   // 색상 팔레트
@@ -30,14 +32,16 @@ const BookmarkModal = ({
       setName(editingBookmark.name || '');
       setUrl(editingBookmark.url || '');
       setColor(editingBookmark.color || '#87CEEB');
+      setSection(editingBookmark.section || selectedSection);
       setError('');
     } else {
       setName('');
       setUrl('');
       setColor('#87CEEB');
+      setSection(selectedSection);
       setError('');
     }
-  }, [editingBookmark, isOpen]);
+  }, [editingBookmark, isOpen, selectedSection]);
 
   const handleSave = () => {
     // 유효성 검사
@@ -72,6 +76,7 @@ const BookmarkModal = ({
       name: name.trim(),
       url: url.trim(),
       color,
+      section: parseInt(section),
       order: editingBookmark?.order || 0,
       createdAt: editingBookmark?.createdAt
     });
@@ -83,6 +88,7 @@ const BookmarkModal = ({
     setName('');
     setUrl('');
     setColor('#87CEEB');
+    setSection(selectedSection);
     setError('');
     onClose();
   };
@@ -183,6 +189,30 @@ const BookmarkModal = ({
                 fontFamily: 'inherit'
               }}
             />
+          </div>
+
+          {/* 영역 선택 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: '#333' }}>
+              영역:
+            </label>
+            <select
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                backgroundColor: '#fff'
+              }}
+            >
+              <option value="1">영역 1</option>
+              <option value="2">영역 2</option>
+              <option value="3">영역 3</option>
+              <option value="4">영역 4</option>
+            </select>
           </div>
 
           {/* 색상 선택 */}

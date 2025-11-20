@@ -9,6 +9,12 @@ const BookmarkBar = ({
   const [contextMenu, setContextMenu] = useState(null);
   const [selectedBookmark, setSelectedBookmark] = useState(null);
 
+  // 섹션별로 북마크 분류
+  const sections = [1, 2, 3, 4];
+  const getBookmarksBySection = (sectionNum) => {
+    return bookmarks.filter(b => (b.section || 1) === sectionNum);
+  };
+
   // 북마크 좌클릭: 새 탭에서 URL 열기
   const handleBookmarkClick = (bookmark) => {
     if (bookmark.url) {
@@ -57,84 +63,124 @@ const BookmarkBar = ({
     <>
       <div style={{
         display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '8px 20px',
+        alignItems: 'stretch',
+        gap: '0',
+        padding: '0',
         backgroundColor: '#E8D5F2',
-        height: '60px',
-        overflowX: 'auto',
+        height: '120px',
+        overflowX: 'hidden',
         overflowY: 'hidden',
         flexShrink: 0,
         borderBottom: '1px solid #ddd'
       }}>
-        {/* 북마크 버튼들 */}
-        {bookmarks.map((bookmark) => (
-          <button
-            key={bookmark.id}
-            onClick={() => handleBookmarkClick(bookmark)}
-            onContextMenu={(e) => handleBookmarkRightClick(e, bookmark)}
-            title={bookmark.url}
+        {/* 4개 섹션 */}
+        {sections.map((sectionNum) => (
+          <div
+            key={sectionNum}
             style={{
-              padding: '6px 12px',
-              backgroundColor: bookmark.color || '#87CEEB',
-              color: '#000',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.2s',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              padding: '8px',
+              borderRight: sectionNum < 4 ? '1px solid #ccc' : 'none',
+              overflowY: 'auto',
+              overflowX: 'hidden'
             }}
           >
-            {bookmark.name}
-          </button>
+            {/* 섹션 헤더 + 추가 버튼 */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '11px',
+              color: '#666',
+              fontWeight: '600',
+              height: '20px',
+              flexShrink: 0
+            }}>
+              <span>영역 {sectionNum}</span>
+              <button
+                onClick={() => onOpenModal(sectionNum)}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  border: '1px solid #999',
+                  backgroundColor: 'transparent',
+                  color: '#999',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  padding: '0'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#666';
+                  e.currentTarget.style.color = '#666';
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#999';
+                  e.currentTarget.style.color = '#999';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                +
+              </button>
+            </div>
+
+            {/* 북마크 버튼들 컨테이너 (2줄 지원) */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                alignContent: 'flex-start',
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden'
+              }}
+            >
+              {getBookmarksBySection(sectionNum).map((bookmark) => (
+                <button
+                  key={bookmark.id}
+                  onClick={() => handleBookmarkClick(bookmark)}
+                  onContextMenu={(e) => handleBookmarkRightClick(e, bookmark)}
+                  title={bookmark.url}
+                  style={{
+                    padding: '6px 10px',
+                    backgroundColor: bookmark.color || '#87CEEB',
+                    color: '#000',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    flexShrink: 0,
+                    height: 'fit-content'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                  }}
+                >
+                  {bookmark.name}
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
-
-        {/* 우측 스페이서 */}
-        <div style={{ flex: 1 }} />
-
-        {/* + 버튼 */}
-        <button
-          onClick={onOpenModal}
-          style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            border: '2px solid #999',
-            backgroundColor: 'transparent',
-            color: '#999',
-            fontSize: '20px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#666';
-            e.currentTarget.style.color = '#666';
-            e.currentTarget.style.backgroundColor = '#f5f5f5';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#999';
-            e.currentTarget.style.color = '#999';
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          +
-        </button>
       </div>
 
       {/* 컨텍스트 메뉴 */}

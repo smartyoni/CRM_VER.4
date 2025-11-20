@@ -120,6 +120,7 @@ function App() {
   const [bookmarks, setBookmarks] = useState([]);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState(null);
+  const [selectedBookmarkSection, setSelectedBookmarkSection] = useState(1);
   const restoreInputRef = useRef(null);
   const dynamicTableUnsubscribes = useRef({});
 
@@ -636,13 +637,23 @@ function App() {
     }
   };
 
-  const handleOpenBookmarkModal = (bookmark = null) => {
-    setEditingBookmark(bookmark);
+  const handleOpenBookmarkModal = (bookmarkOrSection = null) => {
+    // bookmarkOrSection이 숫자면 섹션 번호, 객체면 편집 중인 북마크
+    if (typeof bookmarkOrSection === 'number') {
+      setSelectedBookmarkSection(bookmarkOrSection);
+      setEditingBookmark(null);
+    } else {
+      setEditingBookmark(bookmarkOrSection);
+      if (bookmarkOrSection?.section) {
+        setSelectedBookmarkSection(bookmarkOrSection.section);
+      }
+    }
     setIsBookmarkModalOpen(true);
   };
 
   const handleCloseBookmarkModal = () => {
     setEditingBookmark(null);
+    setSelectedBookmarkSection(1);
     setIsBookmarkModalOpen(false);
   };
 
@@ -1525,6 +1536,7 @@ function App() {
         onClose={handleCloseBookmarkModal}
         onSave={handleSaveBookmark}
         editingBookmark={editingBookmark}
+        selectedSection={selectedBookmarkSection}
       />
     </div>
   );
