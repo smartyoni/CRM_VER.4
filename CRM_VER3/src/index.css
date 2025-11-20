@@ -923,3 +923,43 @@ button {
     width: 100% !important;
   }
 }
+
+/* --- 북마크바 반응형 스타일 --- */
+/* 데스크톱: 4개 섹션 가로 표시 */
+.bookmark-bar-desktop {
+  display: flex !important;
+}
+
+.bookmark-bar-mobile {
+  display: none !important;
+}
+
+/* 모바일 (768px 이하): 카로셀 스타일로 변경 */
+@media (max-width: 768px) {
+  /* 데스크톱 버전 숨기기 */
+  .bookmark-bar-desktop {
+    display: none !important;
+  }
+
+  /* 모바일 카로셀 표시 */
+  .bookmark-bar-mobile {
+    display: flex !important;
+  }
+
+  /* 모바일 카로셀 높이 조정 */
+  .bookmark-bar-mobile {
+    height: 150px;
+  }
+
+  /* 터치 이벤트로 드래그 감지 */
+  .bookmark-bar-mobile {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* 카로셀 컨테이너 - 스무스 애니메이션 */
+  .bookmark-bar-mobile > div[style*="flex"] {
+    will-change: transform;
+  }
+}

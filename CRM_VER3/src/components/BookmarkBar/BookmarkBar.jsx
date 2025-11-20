@@ -18,6 +18,9 @@ const BookmarkBar = ({
   });
   const [editingSectionNum, setEditingSectionNum] = useState(null);
   const [editingSectionName, setEditingSectionName] = useState('');
+  const [activeSection, setActiveSection] = useState(0); // 모바일용 현재 활성 섹션
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchDrag, setTouchDrag] = useState(0);
 
   // localStorage에서 섹션 이름 로드
   useEffect(() => {
@@ -74,6 +77,39 @@ const BookmarkBar = ({
       4: '#FCE4EC'  // Light Pink
     };
     return colors[sectionNum] || '#ffffff';
+  };
+
+  // 터치 시작
+  const handleTouchStart = (e) => {
+    setTouchStart(e.touches[0].clientX);
+    setTouchDrag(0);
+  };
+
+  // 터치 이동
+  const handleTouchMove = (e) => {
+    if (touchStart === null) return;
+    const dragDistance = e.touches[0].clientX - touchStart;
+    setTouchDrag(dragDistance);
+  };
+
+  // 터치 종료
+  const handleTouchEnd = () => {
+    if (touchStart === null) return;
+
+    // 50px 이상 드래그 시 섹션 전환
+    if (Math.abs(touchDrag) > 50) {
+      if (touchDrag > 0 && activeSection > 0) {
+        // 오른쪽으로 드래그: 이전 섹션
+        setActiveSection(activeSection - 1);
+      } else if (touchDrag < 0 && activeSection < 3) {
+        // 왼쪽으로 드래그: 다음 섹션
+        setActiveSection(activeSection + 1);
+      }
+    }
+
+    // 터치 상태 초기화
+    setTouchStart(null);
+    setTouchDrag(0);
   };
 
   // 북마크 좌클릭: 새 탭에서 URL 열기
@@ -150,18 +186,21 @@ const BookmarkBar = ({
 
   return (
     <>
-      <div style={{
-        display: 'flex',
-        alignItems: 'stretch',
-        gap: '0',
-        padding: '0',
-        backgroundColor: '#E8D5F2',
-        height: '120px',
-        overflowX: 'hidden',
-        overflowY: 'hidden',
-        flexShrink: 0,
-        borderBottom: '1px solid #ddd'
-      }}>
+      {/* 데스크톱 버전: 고정 4개 섹션 표시 */}
+      <div
+        className="bookmark-bar-desktop"
+        style={{
+          display: 'flex',
+          alignItems: 'stretch',
+          gap: '0',
+          padding: '0',
+          backgroundColor: '#E8D5F2',
+          height: '120px',
+          overflowX: 'hidden',
+          overflowY: 'hidden',
+          flexShrink: 0,
+          borderBottom: '1px solid #ddd'
+        }}>
         {/* 4개 섹션 */}
         {sections.map((sectionNum) => (
           <div
@@ -323,6 +362,230 @@ const BookmarkBar = ({
             </div>
           </div>
         ))}
+      </div>
+
+      {/* 모바일 버전: 카로셀 스타일 (1개 섹션씩 표시) */}
+      <div
+        className="bookmark-bar-mobile"
+        style={{
+          display: 'none', // CSS media query에서 활성화됨
+          flexDirection: 'column',
+          gap: '0',
+          padding: '0',
+          backgroundColor: '#E8D5F2',
+          height: '140px',
+          overflowX: 'hidden',
+          overflowY: 'hidden',
+          flexShrink: 0,
+          borderBottom: '1px solid #ddd',
+          position: 'relative'
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* 카로셀 컨테이너 */}
+        <div
+          style={{
+            display: 'flex',
+            flex: 1,
+            transform: `translateX(calc(${-activeSection * 100}% + ${touchDrag}px))`,
+            transition: touchStart === null ? 'transform 0.3s ease-out' : 'none',
+            width: '100%'
+          }}
+        >
+          {/* 4개 섹션을 가로로 배열 */}
+          {sections.map((sectionNum) => (
+            <div
+              key={sectionNum}
+              style={{
+                flex: '0 0 100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                padding: '8px',
+                backgroundColor: getSectionColor(sectionNum),
+                width: '100%'
+              }}
+            >
+              {/* 섹션 헤더 + 추가 버튼 */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '11px',
+                  color: '#666',
+                  fontWeight: '600',
+                  height: '20px',
+                  flexShrink: 0,
+                  gap: '4px'
+                }}
+              >
+                {editingSectionNum === sectionNum ? (
+                  <input
+                    autoFocus
+                    type="text"
+                    value={editingSectionName}
+                    onChange={(e) => setEditingSectionName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveSectionName(sectionNum);
+                      } else if (e.key === 'Escape') {
+                        handleCancelEditSectionName();
+                      }
+                    }}
+                    onBlur={() => handleSaveSectionName(sectionNum)}
+                    style={{
+                      flex: 1,
+                      padding: '2px 4px',
+                      fontSize: '11px',
+                      border: '1px solid #999',
+                      borderRadius: '2px',
+                      fontWeight: '600'
+                    }}
+                  />
+                ) : (
+                  <span
+                    onDoubleClick={() => handleStartEditSectionName(sectionNum)}
+                    style={{
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                    title="더블클릭하여 편집"
+                  >
+                    {sectionNames[sectionNum]}
+                  </span>
+                )}
+                <button
+                  onClick={() => onOpenModal(sectionNum)}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: '1px solid #999',
+                    backgroundColor: 'transparent',
+                    color: '#999',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                    padding: '0'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#666';
+                    e.currentTarget.style.color = '#666';
+                    e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#999';
+                    e.currentTarget.style.color = '#999';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  +
+                </button>
+              </div>
+
+              {/* 북마크 버튼들 */}
+              <div
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setSelectedBookmark(null);
+                  setContextMenu({
+                    x: e.clientX,
+                    y: e.clientY,
+                    targetSection: sectionNum
+                  });
+                }}
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '4px',
+                  alignContent: 'flex-start',
+                  flex: 1,
+                  overflowY: 'auto',
+                  overflowX: 'hidden'
+                }}
+              >
+                {getBookmarksBySection(sectionNum).map((bookmark) => (
+                  <button
+                    key={bookmark.id}
+                    onClick={() => handleBookmarkClick(bookmark)}
+                    onContextMenu={(e) => handleBookmarkRightClick(e, bookmark, sectionNum)}
+                    title={bookmark.url}
+                    style={{
+                      padding: '6px 8px',
+                      backgroundColor: bookmark.color || '#87CEEB',
+                      color: '#000',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      flex: '0 0 calc(25% - 3px)',
+                      height: '28px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    }}
+                  >
+                    {bookmark.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 인디케이터 점 (현재 섹션 위치 표시) */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '8px 0 0 0',
+            backgroundColor: '#E8D5F2'
+          }}
+        >
+          {sections.map((sectionNum) => (
+            <button
+              key={sectionNum}
+              onClick={() => setActiveSection(sectionNum - 1)}
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                border: 'none',
+                backgroundColor: activeSection === sectionNum - 1 ? '#666' : '#ccc',
+                cursor: 'pointer',
+                padding: '0',
+                transition: 'background-color 0.3s'
+              }}
+              title={`${sectionNames[sectionNum]}로 이동`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* 컨텍스트 메뉴 */}
