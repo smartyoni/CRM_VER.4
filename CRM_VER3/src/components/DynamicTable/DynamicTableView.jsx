@@ -29,6 +29,26 @@ const DynamicTableView = ({
   const columns = tableMetadata.columns || [];
   const displayColumns = columns.filter(col => col.display !== false);
 
+  // tableMetadata가 로드될 때 기록일시 컬럼으로 기본 정렬 설정
+  React.useEffect(() => {
+    if (tableMetadata && tableMetadata.columns) {
+      const memoColumn = tableMetadata.columns.find(col => {
+        const colName = col.name.toLowerCase();
+        const colLabel = (col.label || '').toLowerCase();
+        // "기록일시", "일시", "로그" 등 시간 관련 컬럼 감지
+        return (colName.includes('기록') && colName.includes('일시')) ||
+               (colLabel.includes('기록') && colLabel.includes('일시')) ||
+               colName === 'recordedat' || colName === 'recorded_at' ||
+               colName === 'loggedat' || colName === 'logged_at';
+      });
+
+      if (memoColumn) {
+        setSortColumn(memoColumn.name);
+        setSortOrder('desc');
+      }
+    }
+  }, [tableMetadata?.id]);
+
   // 검색 및 정렬 로직
   const filteredAndSortedData = useMemo(() => {
     let filtered = tableData;
