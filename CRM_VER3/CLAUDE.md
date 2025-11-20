@@ -781,11 +781,24 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
 | `createdAt`, `created_at` | `YYYY-MM-DD` | `2025-11-20` | 접수일 (날짜만) |
 | `recordedAt`, `recorded_at` | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 기록일시 (시간과 분까지) |
 | `loggedAt`, `logged_at` | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 로그 시간 (시간과 분까지) |
+| `기록일시` (한글) | `YYYY-MM-DD HH:MM` | `2025-11-20 14:35` | 한글 컬럼명 지원 |
+
+**자동 입력 감지 방식:**
+
+1. **정확한 컬럼명 매칭** (우선순위 1)
+   - 컬럼명: `createdAt`, `created_at` (접수일 - 날짜만)
+   - 컬럼명: `recordedAt`, `recorded_at`, `loggedAt`, `logged_at` (기록일시 - 날짜+시간)
+
+2. **키워드 기반 감지** (우선순위 2, 한글 지원)
+   - 컬럼명이나 라벨에 다음 키워드 포함:
+     - `기록`, `로그`, `기록일시`, `recordtime`, `record_time`
+   - type이 `text` 또는 undefined인 경우만 적용
+   - 자동 입력: `YYYY-MM-DD HH:MM` 형식
 
 **자동 입력 조건:**
-- 컬럼명이 위의 패턴과 일치해야 함 (대소문자 구분 안 함)
-- 사용자가 이미 값을 입력한 경우는 자동 입력 스킵
+- 사용자가 이미 값을 입력한 경우는 자동 입력 스킵 (사용자 입력 우선)
 - 모든 동적 테이블에 공통 적용
+- 대소문자 구분 안 함
 
 #### 동적 필드 생성
 
@@ -1616,4 +1629,4 @@ const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
 
 ## 확인 날짜
 - 작성: 2025-10-20
-- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일, DynamicRowModal 기록일시 자동입력 기능 구현)
+- 최종 업데이트: 2025-11-20 (테이블뷰 표준화 완료 - 모든 테이블 디자인/기능 통일, 헤더색 #689f38로 변경, 검색창 드롭다운 제거, 새로운 테이블 추가 가이드 작성, 동적 테이블 상세패널 구현 가이드 추가, 상세패널 너비 856px로 통일, DynamicRowModal 기록일시 자동입력 기능 구현, 한글 컬럼명 지원으로 개선)
