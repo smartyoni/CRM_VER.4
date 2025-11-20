@@ -16,6 +16,7 @@ const PROPERTY_SELECTIONS_COLLECTION = 'propertySelections';
 const PROPERTIES_COLLECTION = 'properties';
 const BUILDINGS_COLLECTION = 'buildings';
 const CONTRACTS_COLLECTION = 'contracts';
+const BOOKMARKS_COLLECTION = 'bookmarks';
 
 // ========== Customer Functions ==========
 
@@ -417,5 +418,42 @@ export const subscribeToContracts = (callback) => {
     callback(contracts);
   }, (error) => {
     console.error('Error in contracts subscription:', error);
+  });
+};
+
+// ========== Bookmark Functions ==========
+
+export const saveBookmark = async (bookmark) => {
+  try {
+    const bookmarkId = bookmark.id || `bookmark_${Date.now()}`;
+    await setDoc(doc(db, BOOKMARKS_COLLECTION, bookmarkId), {
+      ...bookmark,
+      id: bookmarkId,
+      createdAt: bookmark.createdAt || new Date().toISOString()
+    });
+    return bookmarkId;
+  } catch (error) {
+    console.error('Error saving bookmark:', error);
+    throw error;
+  }
+};
+
+export const deleteBookmark = async (bookmarkId) => {
+  try {
+    await deleteDoc(doc(db, BOOKMARKS_COLLECTION, bookmarkId));
+  } catch (error) {
+    console.error('Error deleting bookmark:', error);
+    throw error;
+  }
+};
+
+export const subscribeToBookmarks = (callback) => {
+  return onSnapshot(collection(db, BOOKMARKS_COLLECTION), (snapshot) => {
+    const bookmarks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // order 속성으로 정렬
+    bookmarks.sort((a, b) => (a.order || 0) - (b.order || 0));
+    callback(bookmarks);
+  }, (error) => {
+    console.error('Error in bookmarks subscription:', error);
   });
 };

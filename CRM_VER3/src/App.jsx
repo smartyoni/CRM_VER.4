@@ -20,6 +20,8 @@ import DynamicTableView from './components/DynamicTable/DynamicTableView';
 import TableCreator from './components/DynamicTable/TableCreator';
 import DynamicCSVImporter from './components/DynamicTable/DynamicCSVImporter';
 import DynamicRowModal from './components/DynamicTable/DynamicRowModal';
+import BookmarkBar from './components/BookmarkBar/BookmarkBar';
+import BookmarkModal from './components/BookmarkBar/BookmarkModal';
 import {
   subscribeToCustomers,
   subscribeToActivities,
@@ -45,7 +47,10 @@ import {
   saveContract,
   saveContracts,
   deleteContract,
-  removeDuplicateBuildings
+  removeDuplicateBuildings,
+  subscribeToBookmarks,
+  saveBookmark,
+  deleteBookmark
 } from './utils/storage';
 import {
   subscribeToTables,
@@ -112,6 +117,9 @@ function App() {
   const [isTableCreatorOpen, setIsTableCreatorOpen] = useState(false);
   const [isCSVImporterOpen, setIsCSVImporterOpen] = useState(false);
   const [isDynamicRowModalOpen, setIsDynamicRowModalOpen] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
+  const [editingBookmark, setEditingBookmark] = useState(null);
   const restoreInputRef = useRef(null);
   const dynamicTableUnsubscribes = useRef({});
 
@@ -145,6 +153,10 @@ function App() {
       setContracts(contracts);
     });
 
+    const unsubscribeBookmarks = subscribeToBookmarks((bookmarks) => {
+      setBookmarks(bookmarks);
+    });
+
     // 동적 테이블 메타데이터 구독
     const unsubscribeTables = subscribeToTables((tables) => {
       setDynamicTables(tables);
@@ -175,6 +187,7 @@ function App() {
       unsubscribeProperties();
       unsubscribeBuildings();
       unsubscribeContracts();
+      unsubscribeBookmarks();
       unsubscribeTables();
 
       // 동적 테이블 데이터 구독 모두 해제
@@ -602,6 +615,37 @@ function App() {
     }
   };
 
+  // 북마크 핸들러
+  const handleSaveBookmark = async (bookmark) => {
+    try {
+      await saveBookmark(bookmark);
+      // Firestore 실시간 구독이 자동으로 state 업데이트
+      setEditingBookmark(null);
+      setIsBookmarkModalOpen(false);
+    } catch (error) {
+      alert(`북마크 저장 실패: ${error.message}`);
+    }
+  };
+
+  const handleDeleteBookmark = async (bookmarkId) => {
+    try {
+      await deleteBookmark(bookmarkId);
+      // Firestore 실시간 구독이 자동으로 state 업데이트
+    } catch (error) {
+      alert(`북마크 삭제 실패: ${error.message}`);
+    }
+  };
+
+  const handleOpenBookmarkModal = (bookmark = null) => {
+    setEditingBookmark(bookmark);
+    setIsBookmarkModalOpen(true);
+  };
+
+  const handleCloseBookmarkModal = () => {
+    setEditingBookmark(null);
+    setIsBookmarkModalOpen(false);
+  };
+
   const handleBackup = () => {
     const backupData = {
         customers,
@@ -993,6 +1037,14 @@ function App() {
       {isMobileSidebarOpen && (
         <div className="mobile-overlay" onClick={() => setIsMobileSidebarOpen(false)} />
       )}
+
+      {/* 북마크 헤더바 */}
+      <BookmarkBar
+        bookmarks={bookmarks}
+        onOpenModal={handleOpenBookmarkModal}
+        onEditBookmark={handleOpenBookmarkModal}
+        onDeleteBookmark={handleDeleteBookmark}
+      />
 
       {/* 상단 콘텐츠 영역 (사이드바 + 메인콘텐츠) */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
@@ -1465,6 +1517,14 @@ function App() {
         onClose={() => setIsDynamicRowModalOpen(false)}
         onSave={handleAddDynamicRow}
         tableMetadata={dynamicTables.find(t => t.id === activeTab)}
+      />
+
+      {/* BookmarkModal */}
+      <BookmarkModal
+        isOpen={isBookmarkModalOpen}
+        onClose={handleCloseBookmarkModal}
+        onSave={handleSaveBookmark}
+        editingBookmark={editingBookmark}
       />
     </div>
   );
