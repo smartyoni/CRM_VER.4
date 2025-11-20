@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const BookmarkBar = ({
   bookmarks = [],
@@ -10,6 +10,54 @@ const BookmarkBar = ({
   const [contextMenu, setContextMenu] = useState(null);
   const [selectedBookmark, setSelectedBookmark] = useState(null);
   const [clipboardBookmark, setClipboardBookmark] = useState(null);
+  const [sectionNames, setSectionNames] = useState({
+    1: '영역 1',
+    2: '영역 2',
+    3: '영역 3',
+    4: '영역 4'
+  });
+  const [editingSectionNum, setEditingSectionNum] = useState(null);
+  const [editingSectionName, setEditingSectionName] = useState('');
+
+  // localStorage에서 섹션 이름 로드
+  useEffect(() => {
+    const savedNames = localStorage.getItem('bookmarkSectionNames');
+    if (savedNames) {
+      try {
+        setSectionNames(JSON.parse(savedNames));
+      } catch (e) {
+        console.error('Failed to load section names:', e);
+      }
+    }
+  }, []);
+
+  // 섹션 이름 저장
+  const saveSectionNames = (newNames) => {
+    setSectionNames(newNames);
+    localStorage.setItem('bookmarkSectionNames', JSON.stringify(newNames));
+  };
+
+  // 섹션 이름 수정 시작
+  const handleStartEditSectionName = (sectionNum) => {
+    setEditingSectionNum(sectionNum);
+    setEditingSectionName(sectionNames[sectionNum]);
+  };
+
+  // 섹션 이름 수정 저장
+  const handleSaveSectionName = (sectionNum) => {
+    if (editingSectionName.trim()) {
+      const newNames = { ...sectionNames, [sectionNum]: editingSectionName.trim() };
+      saveSectionNames(newNames);
+    }
+    setEditingSectionNum(null);
+    setEditingSectionName('');
+  };
+
+  // 섹션 이름 수정 취소
+  const handleCancelEditSectionName = () => {
+    setEditingSectionNum(null);
+    setEditingSectionName('');
+  };
 
   // 섹션별로 북마크 분류
   const sections = [1, 2, 3, 4];
@@ -139,9 +187,47 @@ const BookmarkBar = ({
               color: '#666',
               fontWeight: '600',
               height: '20px',
-              flexShrink: 0
+              flexShrink: 0,
+              gap: '4px'
             }}>
-              <span>영역 {sectionNum}</span>
+              {editingSectionNum === sectionNum ? (
+                <input
+                  autoFocus
+                  type="text"
+                  value={editingSectionName}
+                  onChange={(e) => setEditingSectionName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveSectionName(sectionNum);
+                    } else if (e.key === 'Escape') {
+                      handleCancelEditSectionName();
+                    }
+                  }}
+                  onBlur={() => handleSaveSectionName(sectionNum)}
+                  style={{
+                    flex: 1,
+                    padding: '2px 4px',
+                    fontSize: '11px',
+                    border: '1px solid #999',
+                    borderRadius: '2px',
+                    fontWeight: '600'
+                  }}
+                />
+              ) : (
+                <span
+                  onDoubleClick={() => handleStartEditSectionName(sectionNum)}
+                  style={{
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                  title="더블클릭하여 편집"
+                >
+                  {sectionNames[sectionNum]}
+                </span>
+              )}
               <button
                 onClick={() => onOpenModal(sectionNum)}
                 style={{
