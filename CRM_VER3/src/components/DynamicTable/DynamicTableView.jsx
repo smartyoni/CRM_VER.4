@@ -15,6 +15,8 @@ const DynamicTableView = ({
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingValues, setEditingValues] = useState({});
+  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  const [memoValue, setMemoValue] = useState('');
 
   if (!tableMetadata) {
     return (
@@ -104,11 +106,13 @@ const DynamicTableView = ({
   // 선택된 행 찾기
   const selectedRow = tableData.find(row => row.id === selectedRowId);
 
-  // selectedRow가 변경될 때 editingValues 초기화
+  // selectedRow가 변경될 때 editingValues와 memoValue 초기화
   React.useEffect(() => {
     if (selectedRow) {
       setEditingValues({ ...selectedRow });
+      setMemoValue(selectedRow.memo || '');
       setIsEditing(false);
+      setIsEditingMemo(false);
     }
   }, [selectedRow?.id]);
 
@@ -140,6 +144,20 @@ const DynamicTableView = ({
   const handleCancelEdit = () => {
     setEditingValues({ ...selectedRow });
     setIsEditing(false);
+  };
+
+  // 메모 편집 모드 진입
+  const handleEditMemo = () => {
+    setMemoValue(selectedRow.memo || '');
+    setIsEditingMemo(true);
+  };
+
+  // 메모 저장
+  const handleSaveMemo = () => {
+    if (selectedRow) {
+      onEdit({ ...selectedRow, memo: memoValue });
+      setIsEditingMemo(false);
+    }
   };
 
   return (
@@ -259,35 +277,74 @@ const DynamicTableView = ({
               }}>
                 📝 메모
               </h4>
-              {isEditing ? (
-                <textarea
-                  value={editingValues.memo || ''}
-                  onChange={(e) => handleFieldChange('memo', e.target.value)}
-                  rows="10"
-                  placeholder="메모를 입력하세요"
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '13px',
-                    fontFamily: 'inherit',
-                    resize: 'vertical',
-                    boxSizing: 'border-box'
-                  }}
-                />
+              {isEditingMemo ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <textarea
+                    value={memoValue}
+                    onChange={(e) => setMemoValue(e.target.value)}
+                    rows="10"
+                    placeholder="메모를 입력하세요"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      fontFamily: 'inherit',
+                      resize: 'vertical',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <button
+                      onClick={() => setIsEditingMemo(false)}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '13px',
+                        backgroundColor: '#999',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={handleSaveMemo}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '13px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      저장
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <div style={{
-                  padding: '12px',
-                  backgroundColor: '#f9f9f9',
-                  borderRadius: '4px',
-                  minHeight: '140px',
-                  color: selectedRow.memo ? '#333' : '#999',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  lineHeight: '1.5'
-                }}>
-                  {selectedRow.memo || '메모가 없습니다'}
+                <div
+                  onDoubleClick={handleEditMemo}
+                  style={{
+                    padding: '12px',
+                    backgroundColor: '#f9f9f9',
+                    borderRadius: '4px',
+                    minHeight: '140px',
+                    color: selectedRow.memo ? '#333' : '#999',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    lineHeight: '1.5',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'}
+                >
+                  {selectedRow.memo || '메모가 없습니다 (더블클릭하여 편집)'}
                 </div>
               )}
             </section>
