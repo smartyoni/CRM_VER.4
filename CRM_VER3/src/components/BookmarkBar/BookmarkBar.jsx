@@ -265,102 +265,121 @@ const BookmarkBar = ({
               minWidth: '120px'
             }}
           >
-            {selectedBookmark && (
-              <>
-                <button
-                  onClick={handleEditBookmark}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '10px 16px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: '#333'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  변경
-                </button>
-                <button
-                  onClick={handleCopyURL}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '10px 16px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: '#333'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  URL 복사
-                </button>
-                <button
-                  onClick={handleCopyBookmark}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '10px 16px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: '#333'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  북마크 복사
-                </button>
-                <button
-                  onClick={handleDelete}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '10px 16px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: '#d32f2f'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#ffebee'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  삭제
-                </button>
-              </>
-            )}
-            {!selectedBookmark && contextMenu.targetSection && (
-              <button
-                onClick={() => handlePasteBookmark(contextMenu.targetSection)}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '10px 16px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  color: '#2196F3'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#e3f2fd'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                북마크 붙여넣기
-              </button>
-            )}
+            {/* 변경 */}
+            <button
+              onClick={handleEditBookmark}
+              disabled={!selectedBookmark}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                cursor: selectedBookmark ? 'pointer' : 'not-allowed',
+                fontSize: '13px',
+                color: selectedBookmark ? '#333' : '#ccc'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedBookmark) e.target.style.backgroundColor = '#f5f5f5';
+              }}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              변경
+            </button>
+
+            {/* URL 복사 */}
+            <button
+              onClick={handleCopyURL}
+              disabled={!selectedBookmark}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                cursor: selectedBookmark ? 'pointer' : 'not-allowed',
+                fontSize: '13px',
+                color: selectedBookmark ? '#333' : '#ccc'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedBookmark) e.target.style.backgroundColor = '#f5f5f5';
+              }}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              URL 복사
+            </button>
+
+            {/* 북마크 복사 */}
+            <button
+              onClick={handleCopyBookmark}
+              disabled={!selectedBookmark}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                cursor: selectedBookmark ? 'pointer' : 'not-allowed',
+                fontSize: '13px',
+                color: selectedBookmark ? '#333' : '#ccc'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedBookmark) e.target.style.backgroundColor = '#f5f5f5';
+              }}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              북마크 복사
+            </button>
+
+            {/* 삭제 */}
+            <button
+              onClick={handleDelete}
+              disabled={!selectedBookmark}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                cursor: selectedBookmark ? 'pointer' : 'not-allowed',
+                fontSize: '13px',
+                color: selectedBookmark ? '#d32f2f' : '#ccc'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedBookmark) e.target.style.backgroundColor = '#ffebee';
+              }}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              삭제
+            </button>
+
+            {/* 붙여넣기 */}
+            <button
+              onClick={() => handlePasteBookmark(contextMenu.targetSection)}
+              disabled={!clipboardBookmark}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                cursor: clipboardBookmark ? 'pointer' : 'not-allowed',
+                fontSize: '13px',
+                color: clipboardBookmark ? '#2196F3' : '#ccc'
+              }}
+              onMouseEnter={(e) => {
+                if (clipboardBookmark) e.target.style.backgroundColor = '#e3f2fd';
+              }}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              북마크 붙여넣기
+            </button>
+
             <div style={{ height: '1px', backgroundColor: '#eee' }} />
             <button
               onClick={() => setContextMenu(null)}
