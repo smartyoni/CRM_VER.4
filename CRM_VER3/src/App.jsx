@@ -1055,6 +1055,7 @@ function App() {
         onOpenModal={handleOpenBookmarkModal}
         onEditBookmark={handleOpenBookmarkModal}
         onDeleteBookmark={handleDeleteBookmark}
+        onSaveBookmark={handleSaveBookmark}
       />
 
       {/* 상단 콘텐츠 영역 (사이드바 + 메인콘텐츠) */}
