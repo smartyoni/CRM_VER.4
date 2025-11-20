@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useColumnResize } from '../hooks/useColumnResize';
 
 const PropertyTable = ({
   properties,
@@ -12,21 +11,6 @@ const PropertyTable = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedProperty: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
-
-  // 컬럼 리사이징
-  const defaultColumns = [
-    { id: 'createdAt', width: 120 },
-    { id: 'propertyType', width: 120 },
-    { id: 'category', width: 120 },
-    { id: 'buildingName', width: 120 },
-    { id: 'deposit', width: 120 },
-    { id: 'monthlyRent', width: 120 },
-    { id: 'moveInDate', width: 120 },
-    { id: 'ownerName', width: 120 },
-    { id: 'ownerPhone', width: 120 },
-    { id: 'tenantPhone', width: 120 }
-  ];
-  const { columnWidths, ResizeHandle } = useColumnResize('property', defaultColumns);
 
   const filteredProperties = useMemo(() => {
     let filtered = properties.filter(property =>
@@ -111,20 +95,17 @@ const PropertyTable = ({
   };
 
   // TableHeader 컴포넌트
-  const TableHeader = ({ column, label, className, columnId }) => (
+  const TableHeader = ({ column, label, className }) => (
     <th
       className={className}
       onClick={() => handleSort(column)}
       style={{
-        position: 'relative',
         cursor: 'pointer',
         userSelect: 'none',
         padding: '12px',
         whiteSpace: 'nowrap',
         textAlign: 'left',
-        fontWeight: '600',
-        width: columnWidths[columnId],
-        minWidth: '50px'
+        fontWeight: '600'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -135,7 +116,6 @@ const PropertyTable = ({
           </span>
         )}
       </div>
-      <ResizeHandle columnId={columnId} currentWidth={columnWidths[columnId]} />
     </th>
   );
 
@@ -198,25 +178,32 @@ const PropertyTable = ({
           <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <TableHeader column="createdAt" label="접수일" className="col-date-standard" columnId="createdAt" />
-                <TableHeader column="propertyType" label="매물유형" className="col-text-standard" columnId="propertyType" />
-                <th className="col-text-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['category'], minWidth: '50px' }}>
-                  구분
-                  <ResizeHandle columnId="category" currentWidth={columnWidths['category']} />
+                <TableHeader column="createdAt" label="접수일" className="col-date-standard" />
+                <th className="col-text-standard" onClick={() => handleSort('buildingName')} style={{ cursor: 'pointer', userSelect: 'none', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: '250px', minWidth: '250px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    매물명
+                    {sortConfig.key === 'buildingName' && (
+                      <span style={{ fontSize: '12px' }}>
+                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="col-text-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['buildingName'], minWidth: '50px' }}>
-                  매물명
-                  <ResizeHandle columnId="buildingName" currentWidth={columnWidths['buildingName']} />
+                <TableHeader column="deposit" label="보증금" className="col-number-standard" />
+                <TableHeader column="monthlyRent" label="월세" className="col-number-standard" />
+                <TableHeader column="moveInDate" label="입주일" className="col-date-standard" />
+                <TableHeader column="ownerName" label="소유자" className="col-text-standard" />
+                <th className="col-phone-standard" onClick={() => handleSort('ownerPhone')} style={{ cursor: 'pointer', userSelect: 'none', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: '150px', minWidth: '150px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    소유자번호
+                    {sortConfig.key === 'ownerPhone' && (
+                      <span style={{ fontSize: '12px' }}>
+                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <TableHeader column="deposit" label="보증금" className="col-number-standard" columnId="deposit" />
-                <TableHeader column="monthlyRent" label="월세" className="col-number-standard" columnId="monthlyRent" />
-                <TableHeader column="moveInDate" label="입주일" className="col-date-standard" columnId="moveInDate" />
-                <TableHeader column="ownerName" label="소유자" className="col-text-standard" columnId="ownerName" />
-                <th className="col-phone-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['ownerPhone'], minWidth: '50px' }}>
-                  소유자번호
-                  <ResizeHandle columnId="ownerPhone" currentWidth={columnWidths['ownerPhone']} />
-                </th>
-                <th className="col-phone-standard col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <th className="col-phone-standard col-expand" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   점주번호
                 </th>
               </tr>
@@ -252,14 +239,12 @@ const PropertyTable = ({
                       day: 'numeric'
                     })}
                   </td>
-                  <td className="col-text-standard">{property.propertyType || '-'}</td>
-                  <td>{property.category || '-'}</td>
-                  <td className="col-text-standard" style={{ fontWeight: 'bold' }}>{getPropertyName(property)}</td>
+                  <td className="col-text-standard" style={{ fontWeight: 'bold', width: '250px', minWidth: '250px' }}>{getPropertyName(property)}</td>
                   <td className="col-number-standard">{formatPrice(property.deposit || property.price)}</td>
                   <td className="col-number-standard">{formatPrice(property.monthlyRent)}</td>
                   <td className="col-date-standard">{property.moveInDate ? property.moveInDate.slice(0, 10) : '-'}</td>
                   <td className="col-text-standard">{property.ownerName || '-'}</td>
-                  <td className="col-phone-standard">
+                  <td className="col-phone-standard" style={{ width: '150px', minWidth: '150px' }}>
                     {property.ownerPhone ? (
                       <a href={`sms:${property.ownerPhone}`} style={{ color: '#2196F3', textDecoration: 'none' }}>
                         {property.ownerPhone}

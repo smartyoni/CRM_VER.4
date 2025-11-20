@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useColumnResize } from '../../hooks/useColumnResize';
 
 const DynamicTableView = ({
   tableData = [],
@@ -32,20 +31,6 @@ const DynamicTableView = ({
 
   const columns = tableMetadata.columns || [];
   const displayColumns = columns.filter(col => col.display !== false);
-
-  // 동적으로 defaultColumns 생성 (모든 컬럼 기본값 120px)
-  const defaultColumns = useMemo(() => {
-    return columns.map(col => ({
-      id: col.name,
-      width: col.width || 120
-    }));
-  }, [tableMetadata?.id]);
-
-  // 컬럼 리사이징
-  const { columnWidths, ResizeHandle } = useColumnResize(
-    tableMetadata?.id || 'dynamic-table',
-    defaultColumns
-  );
 
   // tableMetadata가 로드될 때 기록일시 컬럼으로 기본 정렬 설정
   React.useEffect(() => {
@@ -702,7 +687,6 @@ const DynamicTableView = ({
                   const isLastColumn = colIndex === displayColumns.length - 1;
                   let columnClass = '';
                   let columnStyle = {
-                    position: 'relative',
                     cursor: 'pointer',
                     userSelect: 'none',
                     padding: '12px',
@@ -711,10 +695,19 @@ const DynamicTableView = ({
                     fontWeight: '600'
                   };
 
-                  // 마지막 컬럼이 아닐 때만 width 적용
-                  if (!isLastColumn) {
-                    columnStyle.width = columnWidths[col.name];
-                    columnStyle.minWidth = '50px';
+                  // 첫 번째 컬럼(기록일시) 너비 200px로 고정
+                  if (colIndex === 0) {
+                    columnStyle.width = '200px';
+                    columnStyle.minWidth = '200px';
+                    columnStyle.maxWidth = '200px';
+                  }
+
+                  // 두 번째 컬럼(제목) 너비 250px로 고정
+                  if (colIndex === 1) {
+                    columnStyle.width = '250px';
+                    columnStyle.minWidth = '250px';
+                    columnStyle.maxWidth = '250px';
+                    columnStyle.whiteSpace = 'normal';
                   }
 
                   // 컬럼 타입별 클래스 지정
@@ -733,14 +726,6 @@ const DynamicTableView = ({
                     columnClass += ' col-expand';
                   }
 
-                  // 제목 컬럼은 너비 고정 (한글 15자 = 약 300px)
-                  if (col.label && (col.label.includes('제목') || col.label.includes('내용'))) {
-                    columnStyle.width = '300px';
-                    columnStyle.minWidth = '300px';
-                    columnStyle.maxWidth = '300px';
-                    columnStyle.whiteSpace = 'normal';
-                  }
-
                   return (
                     <th
                       key={col.name}
@@ -756,7 +741,6 @@ const DynamicTableView = ({
                           </span>
                         )}
                       </div>
-                      {!isLastColumn && <ResizeHandle columnId={col.name} currentWidth={columnWidths[col.name]} />}
                     </th>
                   );
                 })}
@@ -791,11 +775,20 @@ const DynamicTableView = ({
                       padding: '12px'
                     };
 
-                    // 마지막 컬럼이 아닐 때만 width 적용
-                    if (!isLastColumn) {
-                      columnStyle.width = columnWidths[col.name];
-                      columnStyle.overflow = 'hidden';
-                      columnStyle.textOverflow = 'ellipsis';
+                    // 첫 번째 컬럼(기록일시) 너비 200px로 고정
+                    if (colIndex === 0) {
+                      columnStyle.width = '200px';
+                      columnStyle.minWidth = '200px';
+                      columnStyle.maxWidth = '200px';
+                    }
+
+                    // 두 번째 컬럼(제목) 너비 250px로 고정
+                    if (colIndex === 1) {
+                      columnStyle.width = '250px';
+                      columnStyle.minWidth = '250px';
+                      columnStyle.maxWidth = '250px';
+                      columnStyle.whiteSpace = 'normal';
+                      columnStyle.wordBreak = 'break-word';
                     }
 
                     // 컬럼 타입별 클래스 지정
@@ -812,15 +805,6 @@ const DynamicTableView = ({
                     // 마지막 컬럼은 col-expand 추가
                     if (isLastColumn) {
                       columnClass += ' col-expand';
-                    }
-
-                    // 제목 컬럼은 너비 고정 (한글 15자 = 약 300px)
-                    if (col.label && (col.label.includes('제목') || col.label.includes('내용'))) {
-                      columnStyle.width = '300px';
-                      columnStyle.minWidth = '300px';
-                      columnStyle.maxWidth = '300px';
-                      columnStyle.whiteSpace = 'normal';
-                      columnStyle.wordBreak = 'break-word';
                     }
 
                     return (

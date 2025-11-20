@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useColumnResize } from '../hooks/useColumnResize';
 
 const CustomerTable = ({
   customers,
@@ -17,14 +16,6 @@ const CustomerTable = ({
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedCustomer: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
-  // 컬럼 리사이징
-  const defaultColumns = [
-    { id: 'createdAt', width: 120 },
-    { id: 'name', width: 120 },
-    { id: 'phone', width: 120 },
-    { id: 'memo', width: 120 }
-  ];
-  const { columnWidths, ResizeHandle } = useColumnResize('customer', defaultColumns);
 
   const filteredCustomers = useMemo(() => {
     let filtered = customers.filter(customer =>
@@ -92,20 +83,18 @@ const CustomerTable = ({
   };
 
   // TableHeader 컴포넌트
-  const TableHeader = ({ label, sortKey, className, columnId }) => (
+  const TableHeader = ({ label, sortKey, className }) => (
     <th
       className={className}
       onClick={() => handleSort(sortKey)}
       style={{
-        position: 'relative',
         cursor: 'pointer',
         userSelect: 'none',
         padding: '12px',
         whiteSpace: 'nowrap',
         textAlign: 'left',
         fontWeight: '600',
-        width: columnWidths[columnId],
-        minWidth: '50px'
+        width: '120px'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -116,7 +105,6 @@ const CustomerTable = ({
           </span>
         )}
       </div>
-      <ResizeHandle columnId={columnId} currentWidth={columnWidths[columnId]} />
     </th>
   );
 
@@ -180,10 +168,25 @@ const CustomerTable = ({
             <thead>
               <tr>
                 <TableHeader label="접수일" sortKey="createdAt" className="col-date-standard" columnId="createdAt" />
-                <TableHeader label="고객명" sortKey="name" className="col-text-standard" columnId="name" />
-                <th className="col-phone-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['phone'], minWidth: '50px' }}>
-                  연락처
-                  <ResizeHandle columnId="phone" currentWidth={columnWidths['phone']} />
+                <th className="col-text-standard" onClick={() => handleSort('name')} style={{ cursor: 'pointer', userSelect: 'none', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: '250px', minWidth: '250px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    고객명
+                    {sortConfig.key === 'name' && (
+                      <span style={{ fontSize: '12px' }}>
+                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
+                </th>
+                <th className="col-phone-standard" onClick={() => handleSort('phone')} style={{ cursor: 'pointer', userSelect: 'none', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: '150px', minWidth: '150px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    연락처
+                    {sortConfig.key === 'phone' && (
+                      <span style={{ fontSize: '12px' }}>
+                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
                 </th>
                 <th className="col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   활동내용
@@ -215,14 +218,14 @@ const CustomerTable = ({
                     }
                   }}
                 >
-                  <td className="col-date-standard" style={{ padding: '12px', width: columnWidths['createdAt'], overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <td className="col-date-standard" style={{ padding: '12px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {new Date(customer.createdAt).toLocaleDateString('ko-KR', {
                       month: 'short',
                       day: 'numeric'
                     })}
                   </td>
-                  <td className="col-text-standard" style={{ padding: '12px', width: columnWidths['name'], overflow: 'hidden', textOverflow: 'ellipsis' }}>{customer.name}</td>
-                  <td className="col-phone-standard" style={{ padding: '12px', width: columnWidths['phone'], overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <td className="col-text-standard" style={{ padding: '12px', overflow: 'hidden', textOverflow: 'ellipsis', width: '250px', minWidth: '250px' }}>{customer.name}</td>
+                  <td className="col-phone-standard" style={{ padding: '12px', overflow: 'hidden', textOverflow: 'ellipsis', width: '150px', minWidth: '150px' }}>
                     <a href={`sms:${customer.phone}`} style={{ textDecoration: 'none', color: '#2196F3' }}>
                       {customer.phone}
                     </a>

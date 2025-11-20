@@ -1,21 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useColumnResize } from '../hooks/useColumnResize';
 
 const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selectedBuildingId, onCloseDetailPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedBuilding: null });
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'desc' });
-
-  // 컬럼 리사이징
-  const defaultColumns = [
-    { id: 'name', width: 120 },
-    { id: 'address', width: 120 },
-    { id: 'entrance', width: 120 },
-    { id: 'floors', width: 120 },
-    { id: 'parking', width: 120 },
-    { id: 'office', width: 120 }
-  ];
-  const { columnWidths, ResizeHandle } = useColumnResize('building', defaultColumns);
 
   const filteredBuildings = useMemo(() => {
     let filtered = buildings.filter(building =>
@@ -80,20 +68,17 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
     }));
   };
 
-  const TableHeader = ({ label, sortKey, className, columnId }) => (
+  const TableHeader = ({ label, sortKey, className }) => (
     <th
       className={className}
       onClick={() => handleSort(sortKey)}
       style={{
-        position: 'relative',
         cursor: 'pointer',
         userSelect: 'none',
         padding: '12px',
         whiteSpace: 'nowrap',
         textAlign: 'left',
-        fontWeight: '600',
-        width: columnWidths[columnId],
-        minWidth: '50px'
+        fontWeight: '600'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -102,7 +87,6 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
           <span style={{ fontSize: '12px' }}>{sortConfig.direction === 'asc' ? '▲' : '▼'}</span>
         )}
       </div>
-      <ResizeHandle columnId={columnId} currentWidth={columnWidths[columnId]} />
     </th>
   );
 
@@ -157,21 +141,21 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
           <table className="customer-table building-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', minWidth: '700px' }}>
             <thead>
               <tr>
-                <TableHeader label="건물명" sortKey="name" className="col-text-standard" columnId="name" />
-                <TableHeader label="지번" sortKey="address" className="col-text-standard" columnId="address" />
-                <th style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['entrance'], minWidth: '50px' }}>
-                  공동현관비번
-                  <ResizeHandle columnId="entrance" currentWidth={columnWidths['entrance']} />
+                <th className="col-text-standard" onClick={() => handleSort('name')} style={{ cursor: 'pointer', userSelect: 'none', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: '250px', minWidth: '250px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    건물명
+                    {sortConfig.key === 'name' && (
+                      <span style={{ fontSize: '12px' }}>
+                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['floors'], minWidth: '50px' }}>
-                  층수
-                  <ResizeHandle columnId="floors" currentWidth={columnWidths['floors']} />
-                </th>
-                <th style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['parking'], minWidth: '50px' }}>
-                  주차
-                  <ResizeHandle columnId="parking" currentWidth={columnWidths['parking']} />
-                </th>
-                <th className="col-phone-standard col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <TableHeader label="지번" sortKey="address" className="col-text-standard" />
+                <TableHeader label="공동현관비번" sortKey="entrance" className="col-text-standard" />
+                <TableHeader label="층수" sortKey="floors" className="col-number-standard" />
+                <TableHeader label="주차" sortKey="parking" className="col-number-standard" />
+                <th className="col-phone-standard col-expand" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   관리실번호
                 </th>
               </tr>
@@ -199,7 +183,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
                     }
                   }}
                 >
-                  <td className="col-text-standard">
+                  <td className="col-text-standard" style={{ width: '250px', minWidth: '250px' }}>
                     {building.name || '-'}
                   </td>
                   <td className="col-text-standard">
