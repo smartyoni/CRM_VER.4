@@ -151,7 +151,7 @@ const DynamicTableView = ({
           right: 0,
           top: 0,
           height: '100vh',
-          width: '972px',
+          width: '856px',
           borderLeft: '1px solid #e0e0e0',
           display: 'flex',
           flexDirection: 'column',
