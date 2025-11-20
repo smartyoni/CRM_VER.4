@@ -533,11 +533,7 @@ function App() {
   const handleAddDynamicRow = async (newRow) => {
     try {
       await saveTableRow(activeTab, newRow);
-      // 로컬 상태 업데이트
-      setDynamicTableData(prev => ({
-        ...prev,
-        [activeTab]: [...(prev[activeTab] || []), newRow]
-      }));
+      // Firestore 실시간 구독이 자동으로 state 업데이트하므로 로컬 상태 업데이트 제거
       setIsDynamicRowModalOpen(false);
       alert('행이 추가되었습니다.');
     } catch (error) {
