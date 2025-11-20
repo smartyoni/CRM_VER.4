@@ -15,16 +15,16 @@ const PropertyTable = ({
 
   // 컬럼 리사이징
   const defaultColumns = [
-    { id: 'createdAt', width: 300 },
-    { id: 'propertyType', width: 300 },
-    { id: 'category', width: 300 },
-    { id: 'buildingName', width: 300 },
-    { id: 'deposit', width: 300 },
-    { id: 'monthlyRent', width: 300 },
-    { id: 'moveInDate', width: 300 },
-    { id: 'ownerName', width: 300 },
-    { id: 'ownerPhone', width: 150 },
-    { id: 'tenantPhone', width: 150 }
+    { id: 'createdAt', width: 120 },
+    { id: 'propertyType', width: 120 },
+    { id: 'category', width: 120 },
+    { id: 'buildingName', width: 120 },
+    { id: 'deposit', width: 120 },
+    { id: 'monthlyRent', width: 120 },
+    { id: 'moveInDate', width: 120 },
+    { id: 'ownerName', width: 120 },
+    { id: 'ownerPhone', width: 120 },
+    { id: 'tenantPhone', width: 120 }
   ];
   const { columnWidths, ResizeHandle } = useColumnResize('property', defaultColumns);
 

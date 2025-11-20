@@ -33,27 +33,12 @@ const DynamicTableView = ({
   const columns = tableMetadata.columns || [];
   const displayColumns = columns.filter(col => col.display !== false);
 
-  // 동적으로 defaultColumns 생성 (전화번호 컬럼은 150px, 기록일시는 390px, 나머지는 300px)
+  // 동적으로 defaultColumns 생성 (모든 컬럼 기본값 120px)
   const defaultColumns = useMemo(() => {
-    return columns.map(col => {
-      const colName = col.name.toLowerCase();
-      const colLabel = (col.label || '').toLowerCase();
-      const isPhoneColumn = colName.includes('번호') || colLabel.includes('번호');
-      const isRecordedAtColumn =
-        (colName.includes('기록') && colName.includes('일시')) ||
-        (colLabel.includes('기록') && colLabel.includes('일시')) ||
-        colName === 'recordedat' || colName === 'recorded_at' ||
-        colName === 'loggedat' || colName === 'logged_at';
-
-      let width = 300; // 기본값
-      if (isPhoneColumn) width = 150;
-      else if (isRecordedAtColumn) width = 390;
-
-      return {
-        id: col.name,
-        width: col.width || width
-      };
-    });
+    return columns.map(col => ({
+      id: col.name,
+      width: col.width || 120
+    }));
   }, [tableMetadata?.id]);
 
   // 컬럼 리사이징

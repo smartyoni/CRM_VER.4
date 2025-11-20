@@ -8,12 +8,12 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
   // 컬럼 리사이징
   const defaultColumns = [
-    { id: 'name', width: 300 },
-    { id: 'address', width: 300 },
-    { id: 'entrance', width: 300 },
-    { id: 'floors', width: 300 },
-    { id: 'parking', width: 300 },
-    { id: 'office', width: 150 }
+    { id: 'name', width: 120 },
+    { id: 'address', width: 120 },
+    { id: 'entrance', width: 120 },
+    { id: 'floors', width: 120 },
+    { id: 'parking', width: 120 },
+    { id: 'office', width: 120 }
   ];
   const { columnWidths, ResizeHandle } = useColumnResize('building', defaultColumns);
 
