@@ -483,7 +483,7 @@ const DynamicTableView = ({
       {/* 테이블 */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
         {filteredAndSortedData.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%' }}>
+          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
                 {displayColumns.map((col, colIndex) => {
