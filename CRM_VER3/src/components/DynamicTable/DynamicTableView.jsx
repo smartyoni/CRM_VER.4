@@ -246,6 +246,51 @@ const DynamicTableView = ({
                 ))}
               </div>
             </section>
+
+            {/* 메모 섹션 */}
+            <section>
+              <h4 style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#666',
+                marginBottom: '10px',
+                paddingBottom: '8px',
+                borderBottom: '2px solid #2196F3'
+              }}>
+                📝 메모
+              </h4>
+              {isEditing ? (
+                <textarea
+                  value={editingValues.memo || ''}
+                  onChange={(e) => handleFieldChange('memo', e.target.value)}
+                  rows="10"
+                  placeholder="메모를 입력하세요"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '13px',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  padding: '12px',
+                  backgroundColor: '#f9f9f9',
+                  borderRadius: '4px',
+                  minHeight: '140px',
+                  color: selectedRow.memo ? '#333' : '#999',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  lineHeight: '1.5'
+                }}>
+                  {selectedRow.memo || '메모가 없습니다'}
+                </div>
+              )}
+            </section>
           </div>
 
           {/* 푸터 */}
