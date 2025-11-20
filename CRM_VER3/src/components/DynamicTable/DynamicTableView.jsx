@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useColumnResize } from '../../hooks/useColumnResize';
 
 const DynamicTableView = ({
   tableData = [],
@@ -28,6 +29,20 @@ const DynamicTableView = ({
 
   const columns = tableMetadata.columns || [];
   const displayColumns = columns.filter(col => col.display !== false);
+
+  // 동적으로 defaultColumns 생성
+  const defaultColumns = useMemo(() => {
+    return columns.map(col => ({
+      id: col.name,
+      width: col.width || 130
+    }));
+  }, [tableMetadata?.id]);
+
+  // 컬럼 리사이징
+  const { columnWidths, ResizeHandle } = useColumnResize(
+    tableMetadata?.id || 'dynamic-table',
+    defaultColumns
+  );
 
   // tableMetadata가 로드될 때 기록일시 컬럼으로 기본 정렬 설정
   React.useEffect(() => {
@@ -483,19 +498,22 @@ const DynamicTableView = ({
       {/* 테이블 */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
         {filteredAndSortedData.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%' }}>
+          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
                 {displayColumns.map((col, colIndex) => {
                   const isLastColumn = colIndex === displayColumns.length - 1;
                   let columnClass = '';
                   let columnStyle = {
+                    position: 'relative',
                     cursor: 'pointer',
                     userSelect: 'none',
                     padding: '12px',
                     whiteSpace: 'nowrap',
                     textAlign: 'left',
-                    fontWeight: '600'
+                    fontWeight: '600',
+                    width: columnWidths[col.name],
+                    minWidth: '50px'
                   };
 
                   // 컬럼 타입별 클래스 지정
@@ -537,6 +555,7 @@ const DynamicTableView = ({
                           </span>
                         )}
                       </div>
+                      <ResizeHandle columnId={col.name} currentWidth={columnWidths[col.name]} />
                     </th>
                   );
                 })}
@@ -567,7 +586,12 @@ const DynamicTableView = ({
                   {displayColumns.map((col, colIndex) => {
                     const isLastColumn = colIndex === displayColumns.length - 1;
                     let columnClass = '';
-                    let columnStyle = { padding: '12px' };
+                    let columnStyle = {
+                      padding: '12px',
+                      width: columnWidths[col.name],
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    };
 
                     // 컬럼 타입별 클래스 지정
                     if (col.type === 'date') {
