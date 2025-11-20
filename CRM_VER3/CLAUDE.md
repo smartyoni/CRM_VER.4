@@ -21,6 +21,27 @@
 - **2차**: 중개법인 패턴
 - 둘 다 매칭되지 않으면 부동산명 미추출
 
+### 시간 기반 컬럼 자동 입력 규칙
+- **목적**: 접수일, 기록일시 등 "언제 작성되었는지를 기록하는 컬럼"은 자동으로 현재 시간을 기록
+- **규칙**:
+  - **접수일** (예: `createdAt`): `YYYY-MM-DD` 형식 (월 일만 기록)
+    ```javascript
+    const createdAt = new Date().toISOString().split('T')[0]; // 예: 2025-11-20
+    ```
+  - **기록일시** (예: `recordedAt`, `loggedAt`): `YYYY-MM-DD HH:MM` 형식 (초 제외, 시간과 분까지만)
+    ```javascript
+    const now = new Date();
+    const recordedAt = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    // 예: 2025-11-20 14:35
+    ```
+- **적용 범위**:
+  - 모든 테이블 (고객, 매물, 건물, 계약, 일지 등)에 공통 적용
+  - 신규 행 추가 시 자동으로 현재 시간 입력
+  - 사용자 수정 불가 (읽기 전용)
+- **컬럼명 패턴**:
+  - `createdAt`, `created_at`: 접수일 (날짜만)
+  - `recordedAt`, `recorded_at`, `loggedAt`, `logged_at`: 기록일시 (날짜+시간)
+
 ### 지역 정보
 - **프로젝트 경로**: C:\Users\User\Desktop\앱개발\CRM_VER.4\CRM_VER.4\CRM_VER3
 - **주요 파일**:
