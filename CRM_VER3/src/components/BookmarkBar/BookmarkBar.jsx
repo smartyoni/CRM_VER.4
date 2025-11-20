@@ -275,7 +275,7 @@ const BookmarkBar = ({
               style={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                gap: '6px',
+                gap: '4px',
                 alignContent: 'flex-start',
                 flex: 1,
                 overflowY: 'auto',
