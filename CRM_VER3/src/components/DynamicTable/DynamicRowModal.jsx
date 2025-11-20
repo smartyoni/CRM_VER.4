@@ -3,14 +3,11 @@ import React, { useState, useEffect } from 'react';
 const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
   const [formData, setFormData] = useState({});
 
-  if (!isOpen || !tableMetadata) return null;
-
-  const columns = tableMetadata.columns || [];
-  const displayColumns = columns.filter(col => col.display !== false);
-
   // 모달이 열릴 때 시간 기반 컬럼 자동 채우기
   useEffect(() => {
     if (isOpen && tableMetadata) {
+      const columns = tableMetadata.columns || [];
+      const displayColumns = columns.filter(col => col.display !== false);
       const autoInitialData = {};
       const now = new Date();
       const year = now.getFullYear();
@@ -35,7 +32,13 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
 
       setFormData(autoInitialData);
     }
-  }, [isOpen, tableMetadata, displayColumns]);
+  }, [isOpen, tableMetadata]);
+
+  // early return을 JSX에서 조건부 렌더링으로 변경
+  if (!isOpen || !tableMetadata) return null;
+
+  const columns = tableMetadata.columns || [];
+  const displayColumns = columns.filter(col => col.display !== false);
 
   const handleInputChange = (fieldName, value) => {
     setFormData(prev => ({
