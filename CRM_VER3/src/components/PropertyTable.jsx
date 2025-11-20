@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useColumnResize } from '../hooks/useColumnResize';
 
 const PropertyTable = ({
   properties,
@@ -11,6 +12,21 @@ const PropertyTable = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedProperty: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+
+  // 컬럼 리사이징
+  const defaultColumns = [
+    { id: 'createdAt', width: 120 },
+    { id: 'propertyType', width: 120 },
+    { id: 'category', width: 100 },
+    { id: 'buildingName', width: 150 },
+    { id: 'deposit', width: 130 },
+    { id: 'monthlyRent', width: 130 },
+    { id: 'moveInDate', width: 120 },
+    { id: 'ownerName', width: 150 },
+    { id: 'ownerPhone', width: 140 },
+    { id: 'tenantPhone', width: 140 }
+  ];
+  const { columnWidths, ResizeHandle } = useColumnResize('property', defaultColumns);
 
   const filteredProperties = useMemo(() => {
     let filtered = properties.filter(property =>
@@ -95,10 +111,21 @@ const PropertyTable = ({
   };
 
   // TableHeader 컴포넌트
-  const TableHeader = ({ column, label, className }) => (
+  const TableHeader = ({ column, label, className, columnId }) => (
     <th
       className={className}
       onClick={() => handleSort(column)}
+      style={{
+        position: 'relative',
+        cursor: 'pointer',
+        userSelect: 'none',
+        padding: '12px',
+        whiteSpace: 'nowrap',
+        textAlign: 'left',
+        fontWeight: '600',
+        width: columnWidths[columnId],
+        minWidth: '50px'
+      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {label}
@@ -108,6 +135,7 @@ const PropertyTable = ({
           </span>
         )}
       </div>
+      <ResizeHandle columnId={columnId} currentWidth={columnWidths[columnId]} />
     </th>
   );
 
@@ -167,24 +195,30 @@ const PropertyTable = ({
       {/* 테이블 */}
       <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredProperties.length > 0 ? (
-          <table className="customer-table" style={{ width: '100%' }}>
+          <table className="customer-table" style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <TableHeader column="createdAt" label="접수일" className="col-date-standard" />
-                <TableHeader column="propertyType" label="매물유형" className="col-text-standard" />
-                <TableHeader column="category" label="구분" />
-                <th className="col-text-standard">
+                <TableHeader column="createdAt" label="접수일" className="col-date-standard" columnId="createdAt" />
+                <TableHeader column="propertyType" label="매물유형" className="col-text-standard" columnId="propertyType" />
+                <th className="col-text-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['category'], minWidth: '50px' }}>
+                  구분
+                  <ResizeHandle columnId="category" currentWidth={columnWidths['category']} />
+                </th>
+                <th className="col-text-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['buildingName'], minWidth: '50px' }}>
                   매물명
+                  <ResizeHandle columnId="buildingName" currentWidth={columnWidths['buildingName']} />
                 </th>
-                <TableHeader column="deposit" label="보증금" className="col-number-standard" />
-                <TableHeader column="monthlyRent" label="월세" className="col-number-standard" />
-                <TableHeader column="moveInDate" label="입주일" className="col-date-standard" />
-                <TableHeader column="ownerName" label="소유자" className="col-text-standard" />
-                <th className="col-phone-standard">
+                <TableHeader column="deposit" label="보증금" className="col-number-standard" columnId="deposit" />
+                <TableHeader column="monthlyRent" label="월세" className="col-number-standard" columnId="monthlyRent" />
+                <TableHeader column="moveInDate" label="입주일" className="col-date-standard" columnId="moveInDate" />
+                <TableHeader column="ownerName" label="소유자" className="col-text-standard" columnId="ownerName" />
+                <th className="col-phone-standard" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['ownerPhone'], minWidth: '50px' }}>
                   소유자번호
+                  <ResizeHandle columnId="ownerPhone" currentWidth={columnWidths['ownerPhone']} />
                 </th>
-                <th className="col-phone-standard col-expand">
+                <th className="col-phone-standard col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['tenantPhone'], minWidth: '50px' }}>
                   점주번호
+                  <ResizeHandle columnId="tenantPhone" currentWidth={columnWidths['tenantPhone']} />
                 </th>
               </tr>
             </thead>

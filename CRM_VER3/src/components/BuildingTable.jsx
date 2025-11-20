@@ -1,9 +1,21 @@
 import React, { useState, useMemo } from 'react';
+import { useColumnResize } from '../hooks/useColumnResize';
 
 const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selectedBuildingId, onCloseDetailPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedBuilding: null });
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'desc' });
+
+  // 컬럼 리사이징
+  const defaultColumns = [
+    { id: 'name', width: 180 },
+    { id: 'address', width: 250 },
+    { id: 'entrance', width: 150 },
+    { id: 'floors', width: 100 },
+    { id: 'parking', width: 100 },
+    { id: 'office', width: 140 }
+  ];
+  const { columnWidths, ResizeHandle } = useColumnResize('building', defaultColumns);
 
   const filteredBuildings = useMemo(() => {
     let filtered = buildings.filter(building =>
@@ -68,10 +80,21 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
     }));
   };
 
-  const TableHeader = ({ label, sortKey, className }) => (
+  const TableHeader = ({ label, sortKey, className, columnId }) => (
     <th
       className={className}
       onClick={() => handleSort(sortKey)}
+      style={{
+        position: 'relative',
+        cursor: 'pointer',
+        userSelect: 'none',
+        padding: '12px',
+        whiteSpace: 'nowrap',
+        textAlign: 'left',
+        fontWeight: '600',
+        width: columnWidths[columnId],
+        minWidth: '50px'
+      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {label}
@@ -79,6 +102,7 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
           <span style={{ fontSize: '12px' }}>{sortConfig.direction === 'asc' ? '▲' : '▼'}</span>
         )}
       </div>
+      <ResizeHandle columnId={columnId} currentWidth={columnWidths[columnId]} />
     </th>
   );
 
@@ -130,15 +154,24 @@ const BuildingTable = ({ buildings, onSelectBuilding, onEdit, onDelete, selected
 
 <div style={{ flex: 1, overflowX: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}>
         {filteredBuildings.length > 0 ? (
-          <table className="customer-table building-table" style={{ width: '100%', tableLayout: 'auto', borderCollapse: 'collapse', minWidth: '700px' }}>
+          <table className="customer-table building-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', minWidth: '700px' }}>
             <thead>
               <tr>
-                <TableHeader label="건물명" sortKey="name" className="col-text-standard" />
-                <TableHeader label="지번" sortKey="address" className="col-text-standard" />
-                <TableHeader label="공동현관비번" sortKey="entrance" />
-                <TableHeader label="층수" sortKey="floors" />
-                <TableHeader label="주차" sortKey="parking" />
-                <TableHeader label="관리실번호" sortKey="office" className="col-phone-standard col-expand" />
+                <TableHeader label="건물명" sortKey="name" className="col-text-standard" columnId="name" />
+                <TableHeader label="지번" sortKey="address" className="col-text-standard" columnId="address" />
+                <th style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['entrance'], minWidth: '50px' }}>
+                  공동현관비번
+                  <ResizeHandle columnId="entrance" currentWidth={columnWidths['entrance']} />
+                </th>
+                <th style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['floors'], minWidth: '50px' }}>
+                  층수
+                  <ResizeHandle columnId="floors" currentWidth={columnWidths['floors']} />
+                </th>
+                <th style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600', width: columnWidths['parking'], minWidth: '50px' }}>
+                  주차
+                  <ResizeHandle columnId="parking" currentWidth={columnWidths['parking']} />
+                </th>
+                <TableHeader label="관리실번호" sortKey="office" className="col-phone-standard col-expand" columnId="office" />
               </tr>
             </thead>
             <tbody>

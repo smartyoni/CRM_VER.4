@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useColumnResize } from '../hooks/useColumnResize';
 
 const ContractTable = ({
   contracts,
@@ -12,6 +13,23 @@ const ContractTable = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, selectedContract: null });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+
+  // 컬럼 리사이징 (12개 컬럼)
+  const defaultColumns = [
+    { id: 'progressStatus', width: 100 },
+    { id: 'buildingName', width: 150 },
+    { id: 'contractDate', width: 130 },
+    { id: 'balanceDate', width: 130 },
+    { id: 'expiryDate', width: 130 },
+    { id: 'landlordName', width: 150 },
+    { id: 'landlordPhone', width: 140 },
+    { id: 'tenantName', width: 150 },
+    { id: 'tenantPhone', width: 140 },
+    { id: 'remainderPaymentDate', width: 130 },
+    { id: 'brokerageFee', width: 130 },
+    { id: 'feeStatus', width: 150 }
+  ];
+  const { columnWidths, ResizeHandle } = useColumnResize('contract', defaultColumns);
 
   // 날짜 포맷팅 함수
   const formatDate = (dateStr) => {
