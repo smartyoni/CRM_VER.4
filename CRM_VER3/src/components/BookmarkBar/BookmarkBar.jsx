@@ -15,6 +15,17 @@ const BookmarkBar = ({
     return bookmarks.filter(b => (b.section || 1) === sectionNum);
   };
 
+  // 섹션별 배경색
+  const getSectionColor = (sectionNum) => {
+    const colors = {
+      1: '#E1F5FE', // Light Blue
+      2: '#F1F8E9', // Light Green
+      3: '#FFFEF0', // Light Amber
+      4: '#FCE4EC'  // Light Pink
+    };
+    return colors[sectionNum] || '#ffffff';
+  };
+
   // 북마크 좌클릭: 새 탭에서 URL 열기
   const handleBookmarkClick = (bookmark) => {
     if (bookmark.url) {
@@ -83,7 +94,8 @@ const BookmarkBar = ({
               flexDirection: 'column',
               gap: '8px',
               padding: '8px',
-              borderRight: sectionNum < 4 ? '1px solid #ccc' : 'none',
+              backgroundColor: getSectionColor(sectionNum),
+              borderRight: sectionNum < 4 ? '2px solid #000' : 'none',
               overflowY: 'auto',
               overflowX: 'hidden'
             }}
