@@ -1,6 +1,7 @@
 import {
   collection,
   getDocs,
+  getDoc,
   doc,
   setDoc,
   deleteDoc,
@@ -69,6 +70,31 @@ export const subscribeToTables = (callback) => {
   }, (error) => {
     console.error('Error in tables subscription:', error);
   });
+};
+
+// 테이블 컬럼의 required 속성 업데이트 (마이그레이션용)
+export const updateTableColumnRequired = async (tableId, columnName, required) => {
+  try {
+    const tableRef = doc(db, TABLES_METADATA_COLLECTION, tableId);
+    const tableDoc = await getDoc(tableRef);
+
+    if (!tableDoc.exists()) {
+      throw new Error('테이블을 찾을 수 없습니다.');
+    }
+
+    const tableData = tableDoc.data();
+    const updatedColumns = (tableData.columns || []).map(col => {
+      if (col.name === columnName) {
+        return { ...col, required };
+      }
+      return col;
+    });
+
+    await updateDoc(tableRef, { columns: updatedColumns });
+  } catch (error) {
+    console.error(`Error updating column ${columnName} required:`, error);
+    throw error;
+  }
 };
 
 // ========== 동적 테이블 데이터 Functions ==========

@@ -59,7 +59,8 @@ import {
   subscribeToTableData,
   saveTableRow,
   saveTableRows,
-  deleteTableRow
+  deleteTableRow,
+  updateTableColumnRequired
 } from './utils/dynamicTableStorage';
 
 // Mock data for initial setup
@@ -163,8 +164,32 @@ function App() {
     const unsubscribeTables = subscribeToTables((tables) => {
       setDynamicTables(tables);
 
-      // 각 테이블의 데이터 구독 설정
+      // 각 테이블의 데이터 구독 설정 및 마이그레이션
       tables.forEach(table => {
+        // 마이그레이션: 제목과 내용 컬럼의 required를 false로 변경
+        if (table.columns) {
+          const titleColumn = table.columns.find(col =>
+            col.name === '제목' || col.name === 'title' || col.label === '제목'
+          );
+          const contentColumn = table.columns.find(col =>
+            col.name === '내용' || col.name === 'content' || col.label === '내용'
+          );
+
+          // 제목 컬럼의 required가 true이면 false로 변경
+          if (titleColumn && titleColumn.required === true) {
+            updateTableColumnRequired(table.id, titleColumn.name, false).catch(err =>
+              console.log('제목 컬럼 업데이트 실패:', err)
+            );
+          }
+
+          // 내용 컬럼의 required가 true이면 false로 변경
+          if (contentColumn && contentColumn.required === true) {
+            updateTableColumnRequired(table.id, contentColumn.name, false).catch(err =>
+              console.log('내용 컬럼 업데이트 실패:', err)
+            );
+          }
+        }
+
         // 기존 구독 해제
         if (dynamicTableUnsubscribes.current[table.id]) {
           dynamicTableUnsubscribes.current[table.id]();
