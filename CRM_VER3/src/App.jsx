@@ -62,6 +62,8 @@ import {
   deleteTableRow,
   updateTableColumnRequired
 } from './utils/dynamicTableStorage';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from './firebase/config';
 
 // Mock data for initial setup
 const initialCustomers = [
@@ -186,6 +188,53 @@ function App() {
           if (contentColumn && contentColumn.required === true) {
             updateTableColumnRequired(table.id, contentColumn.name, false).catch(err =>
               console.log('내용 컬럼 업데이트 실패:', err)
+            );
+          }
+
+          // 마이그레이션: 일지 테이블 컬럼 순서 및 가시성 조정
+          if (table.name?.includes('일지') || table.name?.includes('journal')) {
+            const updatedColumns = table.columns.map(col => {
+              const colName = col.name;
+              const colLabel = col.label || '';
+
+              // 표시할 컬럼: 기록일, 제목, 내용만 display: true
+              if (colName === '기록일' || colLabel === '기록일' ||
+                  colName === '제목' || colLabel === '제목' ||
+                  colName === '내용' || colLabel === '내용') {
+                return { ...col, display: true };
+              }
+
+              // 나머지 컬럼은 숨김
+              return { ...col, display: false };
+            });
+
+            // 컬럼 순서 재정렬: 기록일 → 제목 → 내용
+            const reorderedColumns = [];
+            const 기록일Col = updatedColumns.find(col =>
+              col.name === '기록일' || col.label === '기록일'
+            );
+            const 제목Col = updatedColumns.find(col =>
+              col.name === '제목' || col.label === '제목'
+            );
+            const 내용Col = updatedColumns.find(col =>
+              col.name === '내용' || col.label === '내용'
+            );
+
+            if (기록일Col) reorderedColumns.push(기록일Col);
+            if (제목Col) reorderedColumns.push(제목Col);
+            if (내용Col) reorderedColumns.push(내용Col);
+
+            // 나머지 컬럼 추가 (display: false 상태)
+            updatedColumns.forEach(col => {
+              if (col !== 기록일Col && col !== 제목Col && col !== 내용Col) {
+                reorderedColumns.push(col);
+              }
+            });
+
+            // Firestore 업데이트
+            const tableRef = doc(db, 'tables', table.id);
+            updateDoc(tableRef, { columns: reorderedColumns }).catch(err =>
+              console.log('일지 테이블 컬럼 재배치 실패:', err)
             );
           }
         }
