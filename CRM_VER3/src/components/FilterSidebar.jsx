@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { STATUSES, CONTRACT_PROGRESS_STATUSES } from '../constants';
+import { STATUSES, CONTRACT_PROGRESS_STATUSES, JOURNAL_CATEGORIES } from '../constants';
 
 const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, buildings, contracts, dynamicTableData, dynamicTables, isMobileOpen, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -231,10 +231,15 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
   const isDynamicTable = dynamicTables && dynamicTables.some(t => t.id === activeTab);
   const allStatuses = (() => {
     if (isDynamicTable && dynamicTableData && dynamicTableData[activeTab]) {
-      const tableData = dynamicTableData[activeTab];
-      // category 필드에서 카테고리 값들을 추출하고 고유값만 가져오기
-      const uniqueCategories = [...new Set(tableData.map(row => row.category).filter(Boolean))];
-      return ['전체', ...uniqueCategories];
+      // 일지 테이블인 경우 JOURNAL_CATEGORIES의 모든 항목 표시
+      const tableMetadata = dynamicTables.find(t => t.id === activeTab);
+      // 동적 테이블 이름에 "일지"가 포함되어 있거나, category 필드가 있는 경우
+      const hasCategory = dynamicTableData[activeTab]?.some(row => row.hasOwnProperty('category'));
+
+      if (hasCategory && (tableMetadata?.name?.includes('일지') || tableMetadata?.name?.includes('journal'))) {
+        // 모든 카테고리 포함 (JOURNAL_CATEGORIES 사용)
+        return ['전체', ...JOURNAL_CATEGORIES];
+      }
     }
 
     if (activeTab === '고객관리') {
