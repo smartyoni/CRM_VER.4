@@ -105,6 +105,7 @@ function App() {
   const [activeContractFilter, setActiveContractFilter] = useState('전체');
   const [activeDashboardFilter, setActiveDashboardFilter] = useState('고객관리');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
+  const [dynamicTableFilters, setDynamicTableFilters] = useState({}); // { tableId: filterValue }
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객관리', '매물장', '건물정보'
   const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
@@ -262,7 +263,13 @@ function App() {
   }, [contracts]);
 
   const handleFilterChange = (filter) => {
-    if (activeTab === '고객관리') {
+    // 동적 테이블 필터
+    if (dynamicTables && dynamicTables.some(t => t.id === activeTab)) {
+      setDynamicTableFilters(prev => ({
+        ...prev,
+        [activeTab]: filter
+      }));
+    } else if (activeTab === '고객관리') {
       setActiveCustomerFilter(filter);
       setActiveProgressFilter(null); // 상태 변경 시 진행상황 필터 초기화
     } else if (activeTab === '매물장') {
@@ -1037,6 +1044,33 @@ function App() {
     return contracts.filter(c => c.progressStatus === activeContractFilter);
   })();
 
+  // 동적 테이블 필터링 (카테고리 기반)
+  const filteredDynamicTableData = (() => {
+    if (!dynamicTables.some(t => t.id === activeTab)) {
+      return [];
+    }
+
+    const tableData = dynamicTableData[activeTab] || [];
+    const tableMetadata = dynamicTables.find(t => t.id === activeTab);
+    const categoryColumn = tableMetadata?.columns?.find(col =>
+      col.name.toLowerCase() === 'category' || col.name === '카테고리'
+    );
+
+    // 카테고리 컬럼이 없으면 전체 데이터 반환
+    if (!categoryColumn) {
+      return tableData;
+    }
+
+    // 필터가 '전체'이면 전체 데이터 반환
+    const currentFilter = dynamicTableFilters[activeTab] || '전체';
+    if (currentFilter === '전체') {
+      return tableData;
+    }
+
+    // 선택된 카테고리로 필터링
+    return tableData.filter(row => row[categoryColumn.name] === currentFilter);
+  })();
+
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
   const selectedContract = contracts.find(c => c.id === selectedContractId);
@@ -1063,6 +1097,7 @@ function App() {
         <FilterSidebar
           activeTab={activeTab}
           activeFilter={
+            dynamicTables && dynamicTables.some(t => t.id === activeTab) ? (dynamicTableFilters[activeTab] || '전체') :
             activeTab === '고객관리' ? activeCustomerFilter :
             activeTab === '계약호실' ? activeContractFilter :
             activeTab === '대시보드' ? activeDashboardFilter :
@@ -1075,6 +1110,8 @@ function App() {
           properties={properties}
           buildings={buildings}
           contracts={contracts}
+          dynamicTableData={dynamicTableData}
+          dynamicTables={dynamicTables}
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
@@ -1220,7 +1257,7 @@ function App() {
               />
             ) : dynamicTables.some(t => t.id === activeTab) ? (
               <DynamicTableView
-                tableData={dynamicTableData[activeTab] || []}
+                tableData={filteredDynamicTableData}
                 tableMetadata={dynamicTables.find(t => t.id === activeTab)}
                 onSelectRow={handleSelectDynamicRow}
                 onEdit={handleSaveDynamicRow}

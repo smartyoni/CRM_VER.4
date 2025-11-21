@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { STATUSES, CONTRACT_PROGRESS_STATUSES } from '../constants';
 
-const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, buildings, contracts, isMobileOpen, onMobileClose }) => {
+const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, buildings, contracts, dynamicTableData, dynamicTables, isMobileOpen, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const getLastActivityDate = (customerId) => {
@@ -17,6 +17,26 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
   };
 
   const getStatusCount = (status) => {
+    // 동적 테이블 필터 (카테고리 기반)
+    const isDynamicTable = dynamicTables && dynamicTables.some(t => t.id === activeTab);
+    if (isDynamicTable && dynamicTableData && dynamicTableData[activeTab]) {
+      const tableData = dynamicTableData[activeTab];
+      const tableMetadata = dynamicTables.find(t => t.id === activeTab);
+
+      // 카테고리 컬럼 찾기
+      const categoryColumn = tableMetadata?.columns?.find(col =>
+        col.name.toLowerCase() === 'category' || col.name === '카테고리'
+      );
+
+      if (categoryColumn) {
+        // 카테고리별 개수 세기
+        if (status === '전체') {
+          return tableData.length;
+        }
+        return tableData.filter(row => row[categoryColumn.name] === status).length;
+      }
+    }
+
     // 고객목록 필터
     if (activeTab === '고객관리') {
       const today = new Date();
@@ -216,13 +236,31 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
   };
 
   // activeTab에 따라 다른 필터 목록 표시
-  const allStatuses = activeTab === '고객관리'
-    ? ['전체', '오늘활동', '오늘미팅', '미팅일확정', '즐겨찾기', '답장대기', '보류']
-    : activeTab === '계약호실'
-    ? ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'] // 계약호실 필터
-    : activeTab === '대시보드'
-    ? ['고객관리'] // 대시보드 메뉴
-    : [];
+  const isDynamicTable = dynamicTables && dynamicTables.some(t => t.id === activeTab);
+  const allStatuses = (() => {
+    if (isDynamicTable && dynamicTableData && dynamicTableData[activeTab]) {
+      const tableMetadata = dynamicTables.find(t => t.id === activeTab);
+      const categoryColumn = tableMetadata?.columns?.find(col =>
+        col.name.toLowerCase() === 'category' || col.name === '카테고리'
+      );
+
+      if (categoryColumn) {
+        const tableData = dynamicTableData[activeTab];
+        // 카테고리 값들을 추출하고 고유값만 가져오기
+        const uniqueCategories = [...new Set(tableData.map(row => row[categoryColumn.name]).filter(Boolean))];
+        return ['전체', ...uniqueCategories];
+      }
+    }
+
+    if (activeTab === '고객관리') {
+      return ['전체', '오늘활동', '오늘미팅', '미팅일확정', '즐겨찾기', '답장대기', '보류'];
+    } else if (activeTab === '계약호실') {
+      return ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'];
+    } else if (activeTab === '대시보드') {
+      return ['고객관리'];
+    }
+    return [];
+  })();
 
   const handleFilterClick = (status) => {
     onFilterChange(status);
