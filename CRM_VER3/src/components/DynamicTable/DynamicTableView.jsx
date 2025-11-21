@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { JOURNAL_CATEGORIES } from '../../constants';
 
 const DynamicTableView = ({
   tableData = [],
@@ -20,6 +21,7 @@ const DynamicTableView = ({
   const [checklistItems, setChecklistItems] = useState([]);
   const [newChecklistText, setNewChecklistText] = useState('');
   const [isAddingChecklist, setIsAddingChecklist] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   if (!tableMetadata) {
     return (
@@ -135,6 +137,7 @@ const DynamicTableView = ({
       setEditingValues({ ...selectedRow });
       setMemoValue(selectedRow.memo || '');
       setChecklistItems(selectedRow.checklists || []);
+      setSelectedCategory(selectedRow.category || '');
       setIsEditing(false);
       setIsEditingMemo(false);
       setIsAddingChecklist(false);
@@ -170,6 +173,14 @@ const DynamicTableView = ({
   const handleCancelEdit = () => {
     setEditingValues({ ...selectedRow });
     setIsEditing(false);
+  };
+
+  // 카테고리 변경
+  const handleCategoryChange = (newCategory) => {
+    setSelectedCategory(newCategory);
+    if (selectedRow) {
+      onEdit({ ...selectedRow, category: newCategory });
+    }
   };
 
   // 메모 편집 모드 진입
@@ -284,6 +295,37 @@ const DynamicTableView = ({
             >
               ×
             </button>
+          </div>
+
+          {/* 카테고리 드롭다운 */}
+          <div style={{
+            padding: '15px 20px',
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center'
+          }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '60px' }}>
+              카테고리:
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '13px',
+                backgroundColor: '#fff',
+                cursor: 'pointer',
+                flex: 1
+              }}
+            >
+              <option value="">카테고리 선택</option>
+              {JOURNAL_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
           </div>
 
           {/* 콘텐츠 */}
