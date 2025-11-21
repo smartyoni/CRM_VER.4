@@ -768,6 +768,11 @@ const DynamicTableView = ({
                     columnClass += ' col-expand';
                   }
 
+                  // 첫 번째 컬럼은 모바일에서 숨김
+                  if (colIndex === 0) {
+                    columnClass += ' col-hidden-mobile';
+                  }
+
                   return (
                     <th
                       key={col.name}
@@ -847,6 +852,11 @@ const DynamicTableView = ({
                     // 마지막 컬럼은 col-expand 추가
                     if (isLastColumn) {
                       columnClass += ' col-expand';
+                    }
+
+                    // 첫 번째 컬럼은 모바일에서 숨김
+                    if (colIndex === 0) {
+                      columnClass += ' col-hidden-mobile';
                     }
 
                     return (

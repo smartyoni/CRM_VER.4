@@ -127,6 +127,8 @@ function App() {
   const [selectedBookmarkSection, setSelectedBookmarkSection] = useState(1);
   const restoreInputRef = useRef(null);
   const dynamicTableUnsubscribes = useRef({});
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     // Realtime subscriptions for Firestore
@@ -799,6 +801,43 @@ function App() {
     return new Date(sorted[0].date);
   };
 
+  // 스와이프 제스처 처리 (모바일 테이블 네비게이션)
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    handleSwipe();
+  };
+
+  const handleSwipe = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50; // 최소 50px 이상 스와이프
+
+    if (Math.abs(diff) < minSwipeDistance) return; // 너무 짧은 터치 무시
+
+    // 탭 목록 정의
+    const tabs = ['대시보드', '고객관리', '매물장', '건물정보', '계약호실'];
+    const dynamicTabIds = dynamicTables.map(t => t.id);
+    const allTabs = [...tabs, ...dynamicTabIds];
+
+    const currentIndex = allTabs.findIndex(t => t === activeTab);
+    if (currentIndex === -1) return;
+
+    if (diff > 0) {
+      // 왼쪽 스와이프 → 다음 탭
+      if (currentIndex < allTabs.length - 1) {
+        setActiveTab(allTabs[currentIndex + 1]);
+      }
+    } else {
+      // 오른쪽 스와이프 → 이전 탭
+      if (currentIndex > 0) {
+        setActiveTab(allTabs[currentIndex - 1]);
+      }
+    }
+  };
+
   // 필터 설명 함수
   const getFilterDescription = (filter) => {
     const descriptions = {
@@ -1186,7 +1225,12 @@ function App() {
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
 
-        <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div
+          className="main-content"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <header className="main-header">
             <button className="hamburger-btn" onClick={() => setIsMobileSidebarOpen(true)}>
               ☰
