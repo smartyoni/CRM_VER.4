@@ -21,20 +21,12 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     const isDynamicTable = dynamicTables && dynamicTables.some(t => t.id === activeTab);
     if (isDynamicTable && dynamicTableData && dynamicTableData[activeTab]) {
       const tableData = dynamicTableData[activeTab];
-      const tableMetadata = dynamicTables.find(t => t.id === activeTab);
 
-      // 카테고리 컬럼 찾기
-      const categoryColumn = tableMetadata?.columns?.find(col =>
-        col.name.toLowerCase() === 'category' || col.name === '카테고리'
-      );
-
-      if (categoryColumn) {
-        // 카테고리별 개수 세기
-        if (status === '전체') {
-          return tableData.length;
-        }
-        return tableData.filter(row => row[categoryColumn.name] === status).length;
+      // 카테고리별 개수 세기 (category 필드 사용)
+      if (status === '전체') {
+        return tableData.length;
       }
+      return tableData.filter(row => row.category === status).length;
     }
 
     // 고객목록 필터
@@ -239,17 +231,10 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
   const isDynamicTable = dynamicTables && dynamicTables.some(t => t.id === activeTab);
   const allStatuses = (() => {
     if (isDynamicTable && dynamicTableData && dynamicTableData[activeTab]) {
-      const tableMetadata = dynamicTables.find(t => t.id === activeTab);
-      const categoryColumn = tableMetadata?.columns?.find(col =>
-        col.name.toLowerCase() === 'category' || col.name === '카테고리'
-      );
-
-      if (categoryColumn) {
-        const tableData = dynamicTableData[activeTab];
-        // 카테고리 값들을 추출하고 고유값만 가져오기
-        const uniqueCategories = [...new Set(tableData.map(row => row[categoryColumn.name]).filter(Boolean))];
-        return ['전체', ...uniqueCategories];
-      }
+      const tableData = dynamicTableData[activeTab];
+      // category 필드에서 카테고리 값들을 추출하고 고유값만 가져오기
+      const uniqueCategories = [...new Set(tableData.map(row => row.category).filter(Boolean))];
+      return ['전체', ...uniqueCategories];
     }
 
     if (activeTab === '고객관리') {

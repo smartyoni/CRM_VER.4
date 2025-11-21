@@ -1051,24 +1051,15 @@ function App() {
     }
 
     const tableData = dynamicTableData[activeTab] || [];
-    const tableMetadata = dynamicTables.find(t => t.id === activeTab);
-    const categoryColumn = tableMetadata?.columns?.find(col =>
-      col.name.toLowerCase() === 'category' || col.name === '카테고리'
-    );
-
-    // 카테고리 컬럼이 없으면 전체 데이터 반환
-    if (!categoryColumn) {
-      return tableData;
-    }
+    const currentFilter = dynamicTableFilters[activeTab] || '전체';
 
     // 필터가 '전체'이면 전체 데이터 반환
-    const currentFilter = dynamicTableFilters[activeTab] || '전체';
     if (currentFilter === '전체') {
       return tableData;
     }
 
-    // 선택된 카테고리로 필터링
-    return tableData.filter(row => row[categoryColumn.name] === currentFilter);
+    // category 필드로 필터링
+    return tableData.filter(row => row.category === currentFilter);
   })();
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
