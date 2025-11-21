@@ -26,6 +26,10 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       if (status === '전체') {
         return tableData.length;
       }
+      // 미분류: category가 없거나 빈 값인 데이터
+      if (status === '미분류') {
+        return tableData.filter(row => !row.category || row.category.trim() === '').length;
+      }
       return tableData.filter(row => row.category === status).length;
     }
 
@@ -237,8 +241,8 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       const hasCategory = dynamicTableData[activeTab]?.some(row => row.hasOwnProperty('category'));
 
       if (hasCategory && (tableMetadata?.name?.includes('일지') || tableMetadata?.name?.includes('journal'))) {
-        // 모든 카테고리 포함 (JOURNAL_CATEGORIES 사용)
-        return ['전체', ...JOURNAL_CATEGORIES];
+        // 모든 카테고리 포함 (JOURNAL_CATEGORIES 사용) + 미분류
+        return ['전체', '미분류', ...JOURNAL_CATEGORIES];
       }
     }
 

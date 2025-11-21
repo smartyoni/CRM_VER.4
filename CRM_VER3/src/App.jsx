@@ -1058,6 +1058,11 @@ function App() {
       return tableData;
     }
 
+    // 미분류: category가 없거나 빈 값인 데이터
+    if (currentFilter === '미분류') {
+      return tableData.filter(row => !row.category || row.category.trim() === '');
+    }
+
     // category 필드로 필터링
     return tableData.filter(row => row.category === currentFilter);
   })();
