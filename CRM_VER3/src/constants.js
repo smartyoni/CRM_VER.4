@@ -8,7 +8,7 @@ export const ACTIVITY_TYPES = ['전화상담', '문자/카톡', '매물제안', 
 export const PROPERTY_STATUSES = ['확인전', '확인중', '볼수있음', '오늘못봄', '계약됨', '현장방문완료', '안보기로함'];
 
 // 일지 관련 상수
-export const JOURNAL_CATEGORIES = ['지금할일', '해야할일', '해결할일', '프로젝트', '상황기록', '사야할것', '스터디', '자기계발', '완료', '보류'];
+export const JOURNAL_CATEGORIES = ['지금할일', '해야할일', '해결할일', '프로젝트', '상황기록', '사야할것', '스터디', '자기계발', '기타', '완료', '보류'];
 
 // 건물정보 관련 상수
 export const BUILDING_LOCATIONS = ['향교', '나루', '발산', '마곡', '신방화', '가양', '등촌', '공항', '화곡', '기타'];
