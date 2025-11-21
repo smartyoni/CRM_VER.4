@@ -1228,8 +1228,6 @@ function App() {
         <div
           className="main-content"
           style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
         >
           <header className="main-header">
             <button className="hamburger-btn" onClick={() => setIsMobileSidebarOpen(true)}>
@@ -1395,18 +1393,23 @@ function App() {
       </div>
 
       {/* 하단 탭바 */}
-      <div className="tab-bar" style={{
-        display: 'flex',
-        borderTop: '2px solid #e0e0e0',
-        backgroundColor: '#f8f8f8',
-        height: '70px',
-        justifyContent: 'flex-start',
-        paddingLeft: '40px',
-        gap: '60px',
-        alignItems: 'center',
-        flexShrink: 0,
-        width: '100%'
-      }}>
+      <div
+        className="tab-bar"
+        style={{
+          display: 'flex',
+          borderTop: '2px solid #e0e0e0',
+          backgroundColor: '#f8f8f8',
+          height: '70px',
+          justifyContent: 'flex-start',
+          paddingLeft: '40px',
+          gap: '60px',
+          alignItems: 'center',
+          flexShrink: 0,
+          width: '100%'
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <button
           onClick={() => setActiveTab('대시보드')}
           style={{
