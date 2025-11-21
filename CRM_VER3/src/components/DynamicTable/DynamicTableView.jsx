@@ -81,7 +81,20 @@ const DynamicTableView = ({
         } else if (typeof aVal === 'number' && typeof bVal === 'number') {
           comparison = aVal - bVal;
         } else {
-          comparison = String(aVal).localeCompare(String(bVal), 'ko-KR');
+          // YYYY-MM-DD HH:MM 형식 감지 (기록일시 형식) - 타임스탐프 기반 정렬
+          const dateTimeRegex = /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}$/;
+          const aIsDateTime = dateTimeRegex.test(aVal);
+          const bIsDateTime = dateTimeRegex.test(bVal);
+
+          if (aIsDateTime && bIsDateTime) {
+            // 타임스탐프 기반 비교 (ISO 형식으로 변환)
+            const aDate = new Date(aVal.replace(' ', 'T'));
+            const bDate = new Date(bVal.replace(' ', 'T'));
+            comparison = aDate.getTime() - bDate.getTime();
+          } else {
+            // 문자열 기반 비교
+            comparison = String(aVal).localeCompare(String(bVal), 'ko-KR');
+          }
         }
 
         return sortOrder === 'asc' ? comparison : -comparison;
@@ -116,6 +129,12 @@ const DynamicTableView = ({
   const renderCellValue = (value, columnType) => {
     if (value === null || value === undefined || value === '') {
       return <span style={{ color: '#999' }}>-</span>;
+    }
+
+    // YYYY-MM-DD HH:MM 형식 감지 (기록일시 형식)
+    const dateTimeRegex = /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}$/;
+    if (dateTimeRegex.test(value)) {
+      return value.split(' ')[0]; // YYYY-MM-DD만 추출
     }
 
     switch (columnType) {
