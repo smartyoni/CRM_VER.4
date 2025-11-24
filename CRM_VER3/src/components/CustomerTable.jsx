@@ -188,7 +188,7 @@ const CustomerTable = ({
                     )}
                   </div>
                 </th>
-                <th className="col-expand" style={{ position: 'relative', padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
+                <th className="col-expand" style={{ padding: '12px', whiteSpace: 'nowrap', textAlign: 'left', fontWeight: '600' }}>
                   활동내용
                 </th>
               </tr>
