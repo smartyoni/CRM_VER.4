@@ -1092,7 +1092,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                         </div>
                       )}
                     </div>
-                  )}
                   <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
                     {editingResponseIndex === originalIndex ? (
