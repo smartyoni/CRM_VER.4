@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import BasicInfo from './BasicInfo';
 import BasicInfoSection from './BasicInfoSection';
 import ActivityTab from './ActivityTab';
 import MeetingTab from './MeetingTab';
@@ -200,18 +199,7 @@ const CustomerDetailPanel = ({
 
             <div className="tab-content">
               {activeTab === '기본정보' && (
-                <>
-                  <BasicInfoSection customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} />
-                  <BasicInfo
-                    customer={selectedCustomer}
-                    onUpdateCustomer={onUpdateCustomer}
-                    activities={activities}
-                    meetings={meetings}
-                    onTabChange={setActiveTab}
-                    onOpenActivityDetail={handleOpenActivityDetail}
-                    onOpenMeetingDetail={handleOpenMeetingDetail}
-                  />
-                </>
+                <BasicInfoSection customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} />
               )}
               {activeTab === '활동기록' &&
                 <ActivityTab
