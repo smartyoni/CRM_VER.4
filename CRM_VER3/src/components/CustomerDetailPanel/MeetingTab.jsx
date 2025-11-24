@@ -1593,7 +1593,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       {sortedProperties.length > 0 && (
                         <div style={{ fontSize: '12px', color: '#999', marginTop: '4px', lineHeight: '1.6' }}>
                           {sortedProperties.map((prop, idx) => (
-                            <div key={prop.id}>
+                            <div key={prop.id} style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>
                               {idx + 1}. {prop.roomName || prop.agency || '미팅'}
                             </div>
                           ))}
