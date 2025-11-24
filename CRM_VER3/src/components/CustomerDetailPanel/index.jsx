@@ -198,20 +198,20 @@ const CustomerDetailPanel = ({
               ))}
             </div>
 
-            {/* 기본정보 섹션 - 모든 탭에서 표시 */}
-            <BasicInfoSection customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} />
-
             <div className="tab-content">
               {activeTab === '기본정보' && (
-                <BasicInfo
-                  customer={selectedCustomer}
-                  onUpdateCustomer={onUpdateCustomer}
-                  activities={activities}
-                  meetings={meetings}
-                  onTabChange={setActiveTab}
-                  onOpenActivityDetail={handleOpenActivityDetail}
-                  onOpenMeetingDetail={handleOpenMeetingDetail}
-                />
+                <>
+                  <BasicInfoSection customer={selectedCustomer} onUpdateCustomer={onUpdateCustomer} />
+                  <BasicInfo
+                    customer={selectedCustomer}
+                    onUpdateCustomer={onUpdateCustomer}
+                    activities={activities}
+                    meetings={meetings}
+                    onTabChange={setActiveTab}
+                    onOpenActivityDetail={handleOpenActivityDetail}
+                    onOpenMeetingDetail={handleOpenMeetingDetail}
+                  />
+                </>
               )}
               {activeTab === '활동기록' &&
                 <ActivityTab
