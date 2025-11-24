@@ -22,7 +22,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
-        fontSize: '13px',
+        fontSize: '14px',
         marginTop: '10px'
       }}>
         {/* 고객명 */}
@@ -33,7 +33,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
           alignItems: 'flex-start'
         }}>
           <span style={{ fontWeight: '600', color: '#666' }}>고객명:</span>
-          <span style={{ color: '#333' }}>{customer.name || '-'}</span>
+          <span style={{ color: '#333', fontWeight: 'bold' }}>{customer.name || '-'}</span>
         </div>
 
         {/* 연락처 */}
@@ -47,7 +47,8 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
           <a href={`sms:${customer.phone}`} style={{
             color: '#2196F3',
             textDecoration: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            fontWeight: 'bold'
           }}>
             {customer.phone || '-'}
           </a>
@@ -62,7 +63,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
             alignItems: 'flex-start'
           }}>
             <span style={{ fontWeight: '600', color: '#666' }}>출처:</span>
-            <span style={{ color: '#333' }}>{customer.source}</span>
+            <span style={{ color: '#333', fontWeight: 'bold' }}>{customer.source}</span>
           </div>
         )}
 
@@ -75,7 +76,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
             alignItems: 'flex-start'
           }}>
             <span style={{ fontWeight: '600', color: '#666' }}>매물유형:</span>
-            <span style={{ color: '#333' }}>{customer.propertyType}</span>
+            <span style={{ color: '#333', fontWeight: 'bold' }}>{customer.propertyType}</span>
           </div>
         )}
 
@@ -88,7 +89,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
             alignItems: 'flex-start'
           }}>
             <span style={{ fontWeight: '600', color: '#666' }}>입주희망일:</span>
-            <span style={{ color: '#333' }}>{customer.moveInDate}</span>
+            <span style={{ color: '#333', fontWeight: 'bold' }}>{customer.moveInDate}</span>
           </div>
         )}
 
@@ -101,7 +102,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
             alignItems: 'flex-start'
           }}>
             <span style={{ fontWeight: '600', color: '#666' }}>희망보증금:</span>
-            <span style={{ color: '#333' }}>{customer.hopefulDeposit}만원</span>
+            <span style={{ color: '#333', fontWeight: 'bold' }}>{customer.hopefulDeposit}만원</span>
           </div>
         )}
 
@@ -114,7 +115,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
             alignItems: 'flex-start'
           }}>
             <span style={{ fontWeight: '600', color: '#666' }}>희망월세:</span>
-            <span style={{ color: '#333' }}>{customer.hopefulMonthlyRent}만원</span>
+            <span style={{ color: '#333', fontWeight: 'bold' }}>{customer.hopefulMonthlyRent}만원</span>
           </div>
         )}
 
@@ -127,7 +128,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
             alignItems: 'flex-start'
           }}>
             <span style={{ fontWeight: '600', color: '#666' }}>선호지역:</span>
-            <span style={{ color: '#333', wordBreak: 'break-word' }}>{customer.preferredArea}</span>
+            <span style={{ color: '#333', wordBreak: 'break-word', fontWeight: 'bold' }}>{customer.preferredArea}</span>
           </div>
         )}
 
@@ -140,7 +141,7 @@ const BasicInfoSection = ({ customer, onUpdateCustomer }) => {
             alignItems: 'flex-start'
           }}>
             <span style={{ fontWeight: '600', color: '#666' }}>메모:</span>
-            <span style={{ color: '#333', wordBreak: 'break-word' }}>{customer.memo}</span>
+            <span style={{ color: '#333', wordBreak: 'break-word', fontWeight: 'bold' }}>{customer.memo}</span>
           </div>
         )}
       </div>

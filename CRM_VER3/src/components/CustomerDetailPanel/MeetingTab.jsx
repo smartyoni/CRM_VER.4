@@ -47,8 +47,21 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     return meetingDate === todayStr;
   };
 
+  // D-Day 계산 함수
+  const calculateDDay = (dateString) => {
+    const today = new Date();
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const meetingDateStr = dateString.slice(0, 10);
+    const [year, month, day] = meetingDateStr.split('-').map(Number);
+    const meetingDate = new Date(year, month - 1, day);
+    const timeDiff = meetingDate - todayDate;
+    const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    return daysDiff;
+  };
+
   const customerMeetings = meetings
-    .filter(m => m.customerId === customerId);
+    .filter(m => m.customerId === customerId)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const MeetingForm = ({ onCancel, meetingData, initialPropertiesData }) => {
     const initFormData = () => {
@@ -509,20 +522,6 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [showReportModal, setShowReportModal] = useState(false);
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
-    const [expandedPropertyCards, setExpandedPropertyCards] = useState(new Set());
-
-    // 매물 카드 아코디언 토글
-    const togglePropertyCard = (propertyId) => {
-      setExpandedPropertyCards(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(propertyId)) {
-          newSet.delete(propertyId);
-        } else {
-          newSet.add(propertyId);
-        }
-        return newSet;
-      });
-    };
 
     // 순서 순으로 정렬 (원본 인덱스 보존)
     // photos 필드 초기화
@@ -938,21 +937,14 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 <div key={prop.id} className="property-card" style={{ marginBottom: '15px', marginTop: window.innerWidth < 768 ? '15px' : (index === 0 ? '0' : '15px'), width: window.innerWidth < 768 ? 'auto' : '90%', marginLeft: window.innerWidth < 768 ? '0' : 'auto', marginRight: window.innerWidth < 768 ? '0' : 'auto' }}>
                   <div
                     className="property-card-header"
-                    onClick={() => togglePropertyCard(prop.id)}
                     style={{
-                      cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
                       paddingRight: '8px',
                       transition: 'background-color 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   >
-                    <span style={{ fontSize: '12px', color: '#999', minWidth: '16px' }}>
-                      {expandedPropertyCards.has(prop.id) ? '▼' : '▶'}
-                    </span>
                     <div className="property-room-name">🏠 {prop.roomName || '미지정'}</div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
                       <select
@@ -1013,8 +1005,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       </select>
                     </div>
                   </div>
-                  {expandedPropertyCards.has(prop.id) && (
-                    <div className="property-card-body">
+                  <div className="property-card-body">
                       <div
                         className="property-info-label"
                         style={{
@@ -1102,90 +1093,88 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       )}
                     </div>
                   )}
-                  {expandedPropertyCards.has(prop.id) && (
-                    <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
-                      {editingResponseIndex === originalIndex ? (
-                        <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
-                          <textarea
-                            value={editingResponseValue}
-                            onChange={(e) => setEditingResponseValue(e.target.value)}
-                            onKeyDown={(e) => handleResponseKeyDown(e, originalIndex)}
-                            onBlur={() => handleResponseSave(originalIndex)}
-                            autoFocus
-                            style={{
-                              width: '100%',
-                              minHeight: '100px',
-                              padding: '8px',
-                              border: '1px solid #FF6B9D',
-                              borderRadius: '4px',
-                              fontSize: '13px',
-                              fontFamily: 'inherit',
-                              resize: 'vertical'
-                            }}
-                          />
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
-                            <button
-                              onClick={() => handleResponseSave(originalIndex)}
-                              style={{
-                                padding: '4px 12px',
-                                backgroundColor: '#4CAF50',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '12px'
-                              }}
-                            >
-                              ✓ 저장
-                            </button>
-                            <button
-                              onClick={handleResponseCancel}
-                              style={{
-                                padding: '4px 12px',
-                                backgroundColor: '#999',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '12px'
-                              }}
-                            >
-                              ✕ 취소
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          onDoubleClick={() => handleResponseDoubleClick(originalIndex)}
+                  <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>💬 고객반응</div>
+                    {editingResponseIndex === originalIndex ? (
+                      <div style={{ padding: '8px', backgroundColor: '#fff8f0', borderRadius: '4px', border: '1px solid #FF6B9D' }}>
+                        <textarea
+                          value={editingResponseValue}
+                          onChange={(e) => setEditingResponseValue(e.target.value)}
+                          onKeyDown={(e) => handleResponseKeyDown(e, originalIndex)}
+                          onBlur={() => handleResponseSave(originalIndex)}
+                          autoFocus
                           style={{
+                            width: '100%',
+                            minHeight: '100px',
                             padding: '8px',
-                            backgroundColor: '#f9f9f9',
+                            border: '1px solid #FF6B9D',
                             borderRadius: '4px',
-                            cursor: 'pointer',
-                            border: '1px solid transparent',
-                            transition: 'all 0.2s ease',
-                            minHeight: '20px',
                             fontSize: '13px',
-                            color: '#333',
-                            lineHeight: '1.5',
-                            whiteSpace: 'pre-wrap'
+                            fontFamily: 'inherit',
+                            resize: 'vertical'
                           }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f0f0f0';
-                            e.currentTarget.style.border = '1px solid #e0e0e0';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f9f9f9';
-                            e.currentTarget.style.border = '1px solid transparent';
-                          }}
-                        >
-                          {prop.customerResponse || '(클릭하여 고객반응 추가)'}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleResponseSave(originalIndex)}
+                            style={{
+                              padding: '4px 12px',
+                              backgroundColor: '#4CAF50',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            ✓ 저장
+                          </button>
+                          <button
+                            onClick={handleResponseCancel}
+                            style={{
+                              padding: '4px 12px',
+                              backgroundColor: '#999',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            ✕ 취소
+                          </button>
                         </div>
-                      )}
-                    </div>
-                  )}
-                  {expandedPropertyCards.has(prop.id) && prop.photos && prop.photos.some(photo => photo) && (
+                      </div>
+                    ) : (
+                      <div
+                        onDoubleClick={() => handleResponseDoubleClick(originalIndex)}
+                        style={{
+                          padding: '8px',
+                          backgroundColor: '#f9f9f9',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          border: '1px solid transparent',
+                          transition: 'all 0.2s ease',
+                          minHeight: '20px',
+                          fontSize: '13px',
+                          color: '#333',
+                          lineHeight: '1.5',
+                          whiteSpace: 'pre-wrap'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f0f0f0';
+                          e.currentTarget.style.border = '1px solid #e0e0e0';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f9f9f9';
+                          e.currentTarget.style.border = '1px solid transparent';
+                        }}
+                      >
+                        {prop.customerResponse || '(클릭하여 고객반응 추가)'}
+                      </div>
+                    )}
+                  </div>
+                  {prop.photos && prop.photos.some(photo => photo) && (
                     <div style={{ padding: '10px 0', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
                       <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px', fontWeight: '600' }}>📷 사진</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -1250,65 +1239,63 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       방문
                     </span>
                   </div>
-                  {expandedPropertyCards.has(prop.id) && (
-                    <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                      {/* 좌측 정렬: 지번 정보 및 지도 버튼 */}
-                      <div style={{ marginRight: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {prop.jibun && (
-                          <>
-                            <span style={{ fontSize: '12px', color: '#555', fontWeight: '500' }}>
-                              📍 {prop.jibun}
-                            </span>
-                            <button
-                              onClick={() => {
-                                // 카카오맵 검색 URL로 열기
-                                const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(prop.jibun)}`;
-                                window.open(mapUrl, '_blank');
-                              }}
-                              title="카카오맵에서 보기"
-                              style={{
-                                backgroundColor: '#FEE500',
-                                color: '#333',
-                                border: 'none',
-                                borderRadius: '4px',
-                                padding: '4px 10px',
-                                fontSize: '11px',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '3px'
-                              }}
-                            >
-                              🗺️ 지도
-                            </button>
-                          </>
-                        )}
-                      </div>
-
-                      {/* 우측 정렬: 액션 버튼 */}
-                      <button
-                        onClick={() => triggerPhotoUpload(originalIndex)}
-                        style={{
-                          backgroundColor: '#FF9800',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                        title="사진 촬영/첨부"
-                      >
-                        📸 사진
-                      </button>
-                      <button onClick={() => handlePropertyEdit(originalIndex)} className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>수정</button>
-                      <button onClick={() => handlePropertyDelete(originalIndex)} className="btn-secondary" style={{ fontSize: '12px', padding: '6px 12px' }}>삭제</button>
+                  <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0', display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    {/* 좌측 정렬: 지번 정보 및 지도 버튼 */}
+                    <div style={{ marginRight: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {prop.jibun && (
+                        <>
+                          <span style={{ fontSize: '12px', color: '#555', fontWeight: '500' }}>
+                            📍 {prop.jibun}
+                          </span>
+                          <button
+                            onClick={() => {
+                              // 카카오맵 검색 URL로 열기
+                              const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(prop.jibun)}`;
+                              window.open(mapUrl, '_blank');
+                            }}
+                            title="카카오맵에서 보기"
+                            style={{
+                              backgroundColor: '#FEE500',
+                              color: '#333',
+                              border: 'none',
+                              borderRadius: '4px',
+                              padding: '4px 10px',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                          >
+                            🗺️ 지도
+                          </button>
+                        </>
+                      )}
                     </div>
-                  )}
+
+                    {/* 우측 정렬: 액션 버튼 */}
+                    <button
+                      onClick={() => triggerPhotoUpload(originalIndex)}
+                      style={{
+                        backgroundColor: '#FF9800',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="사진 촬영/첨부"
+                    >
+                      📸 사진
+                    </button>
+                    <button onClick={() => handlePropertyEdit(originalIndex)} className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>수정</button>
+                    <button onClick={() => handlePropertyDelete(originalIndex)} className="btn-secondary" style={{ fontSize: '12px', padding: '6px 12px' }}>삭제</button>
+                  </div>
                 </div>
               ))
             ) : (
@@ -1519,35 +1506,100 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           <MeetingForm key={editingMeeting.id} meetingData={editingMeeting} onCancel={() => setEditingMeeting(null)} />
         ) : customerMeetings.length > 0 ? (
           <>
-            <table className="customer-table">
-              <thead>
-                <tr>
-                  <th>미팅일시</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customerMeetings.map(meeting => {
-                  const isTodayMeeting = isToday(meeting.date);
-                  return (
-                    <tr
-                      key={meeting.id}
-                      style={{
-                        backgroundColor: isTodayMeeting ? 'rgba(211, 47, 47, 0.08)' : 'transparent',
-                        color: isTodayMeeting ? '#d32f2f' : 'inherit',
-                        fontWeight: isTodayMeeting ? 'bold' : 'normal',
-                        cursor: 'context-menu'
-                      }}
-                      onContextMenu={(e) => handleContextMenu(e, meeting)}
-                      onClick={() => setViewingMeeting(meeting)}
-                    >
-                      <td style={{ color: isTodayMeeting ? '#d32f2f' : 'inherit', cursor: 'pointer' }}>
-                        {formatMeetingDateTime(meeting.date, meeting.properties?.length || 0)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {customerMeetings.map(meeting => {
+                const isTodayMeeting = isToday(meeting.date);
+                const daysLeft = calculateDDay(meeting.date);
+                const propertiesCount = meeting.properties?.length || 0;
+                const propertyNames = (meeting.properties || []).slice(0, 2).map(p => p.roomName || p.agency || '미팅').join(', ');
+
+                return (
+                  <div
+                    key={meeting.id}
+                    className="meeting-card"
+                    style={{
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      padding: '14px',
+                      backgroundColor: isTodayMeeting ? '#ffebee' : '#fff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      borderLeft: '4px solid ' + (isTodayMeeting ? '#d32f2f' : '#2196F3'),
+                      position: 'relative'
+                    }}
+                    onClick={() => setViewingMeeting(meeting)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    {/* 헤더: 시간 + D-Day 배지 + 메뉴 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          color: isTodayMeeting ? '#d32f2f' : '#2196F3'
+                        }}>
+                          {meeting.date}
+                        </span>
+
+                        {/* D-Day 배지 */}
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          color: '#fff',
+                          backgroundColor: isTodayMeeting ? '#d32f2f' : (daysLeft > 0 ? '#ff9800' : '#999'),
+                          padding: '2px 8px',
+                          borderRadius: '12px'
+                        }}>
+                          {isTodayMeeting ? '🔴 오늘' : daysLeft > 0 ? `D-${daysLeft}` : `+${Math.abs(daysLeft)}일`}
+                        </span>
+                      </div>
+
+                      {/* 메뉴 버튼 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleContextMenu(e, meeting);
+                        }}
+                        style={{
+                          border: 'none',
+                          background: 'none',
+                          fontSize: '18px',
+                          cursor: 'pointer',
+                          padding: '4px 8px',
+                          opacity: 0.6,
+                          transition: 'opacity 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.opacity = '1'}
+                        onMouseLeave={(e) => e.target.style.opacity = '0.6'}
+                      >
+                        ⋮
+                      </button>
+                    </div>
+
+                    {/* 매물 정보 */}
+                    <div style={{
+                      fontSize: '13px',
+                      color: '#666',
+                      marginBottom: '8px'
+                    }}>
+                      📍 <span style={{ fontWeight: 'bold', color: '#333' }}>{propertiesCount}개 매물</span>
+                      {propertyNames && (
+                        <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+                          {propertyNames}{propertiesCount > 2 ? ' ...' : ''}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* 우클릭 컨텍스트 메뉴 */}
             {contextMenu && contextMenuMeeting && (
