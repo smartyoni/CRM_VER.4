@@ -11,6 +11,8 @@ const ActivityTab = ({
   selectedActivityId
 }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [noteContent, setNoteContent] = useState('');
 
   // 데이터 정규화: followUps를 replies로 변환
   const normalizeActivity = (activity) => {
@@ -99,27 +101,89 @@ const ActivityTab = ({
     }
   };
 
+  // 인라인 편집 저장
+  const handleSaveNote = () => {
+    if (noteContent.trim()) {
+      const newActivity = {
+        id: generateId(),
+        customerId,
+        author: '나',
+        date: new Date().toISOString().slice(0, 16),
+        content: noteContent.trim(),
+        images: [],
+        replies: []
+      };
+      onSaveActivity(newActivity);
+      setNoteContent('');
+      setIsEditingNote(false);
+    }
+  };
+
+  // 엔터로 저장 (Shift+엔터는 줄바꿈)
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSaveNote();
+    }
+  };
+
   return (
     <div style={{ padding: '15px' }}>
-      {/* 활동 추가 버튼 */}
-      <button
-        onClick={() => setIsAdding(!isAdding)}
-        style={{
-          backgroundColor: '#4CAF50',
-          color: 'white',
-          padding: '10px 16px',
-          borderRadius: '4px',
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '13px',
-          fontWeight: '600',
-          marginBottom: '20px'
-        }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#4CAF50'}
-      >
-        + 활동 추가
-      </button>
+      {/* 활동 추가 버튼 + 인라인 편집 필드 */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', alignItems: 'flex-start' }}>
+        {/* 버튼 */}
+        <button
+          onClick={() => setIsAdding(!isAdding)}
+          style={{
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            padding: '10px 16px',
+            borderRadius: '4px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '13px',
+            fontWeight: '600',
+            whiteSpace: 'nowrap',
+            flexShrink: 0
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#4CAF50'}
+        >
+          + 활동 추가
+        </button>
+
+        {/* 인라인 편집 필드 */}
+        <textarea
+          value={noteContent}
+          onChange={(e) => setNoteContent(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onDoubleClick={() => !isEditingNote && setIsEditingNote(true)}
+          onBlur={() => {
+            if (isEditingNote && noteContent.trim()) {
+              handleSaveNote();
+            } else if (isEditingNote) {
+              setIsEditingNote(false);
+            }
+          }}
+          onFocus={() => setIsEditingNote(true)}
+          placeholder={isEditingNote ? '활동을 입력하세요... (Shift+Enter: 줄바꿈, Enter: 저장)' : '두 번 클릭하여 편집'}
+          style={{
+            flex: 1,
+            minHeight: '40px',
+            padding: '8px 12px',
+            border: isEditingNote ? '2px solid #2196F3' : '1px solid #e0e0e0',
+            borderRadius: '4px',
+            fontSize: '13px',
+            fontFamily: 'inherit',
+            resize: 'vertical',
+            backgroundColor: isEditingNote ? '#fff' : '#f5f5f5',
+            color: isEditingNote ? '#333' : '#999',
+            cursor: isEditingNote ? 'text' : 'default',
+            transition: 'all 0.2s ease',
+            outline: 'none'
+          }}
+        />
+      </div>
 
       {/* 활동 추가 입력창 */}
       {isAdding && (
