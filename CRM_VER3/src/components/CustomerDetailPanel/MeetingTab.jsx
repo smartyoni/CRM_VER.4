@@ -1510,7 +1510,8 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                 const isTodayMeeting = isToday(meeting.date);
                 const daysLeft = calculateDDay(meeting.date);
                 const propertiesCount = meeting.properties?.length || 0;
-                const propertyNames = (meeting.properties || []).slice(0, 2).map(p => p.roomName || p.agency || '미팅').join(', ');
+                // order 필드로 정렬된 매물 목록
+                const sortedProperties = (meeting.properties || []).sort((a, b) => (a.order || 0) - (b.order || 0));
 
                 return (
                   <div
@@ -1589,9 +1590,13 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       marginBottom: '8px'
                     }}>
                       📍 <span style={{ fontWeight: 'bold', color: '#333' }}>{propertiesCount}개 매물</span>
-                      {propertyNames && (
-                        <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
-                          {propertyNames}{propertiesCount > 2 ? ' ...' : ''}
+                      {sortedProperties.length > 0 && (
+                        <div style={{ fontSize: '12px', color: '#999', marginTop: '4px', lineHeight: '1.6' }}>
+                          {sortedProperties.map((prop, idx) => (
+                            <div key={prop.id}>
+                              {idx + 1}. {prop.roomName || prop.agency || '미팅'}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
