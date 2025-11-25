@@ -1717,10 +1717,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       border: '1px solid #e0e0e0',
                       borderRadius: '8px',
                       padding: '14px',
-                      backgroundColor: isTodayMeeting ? '#ffebee' : '#fff',
+                      backgroundColor: isTodayMeeting ? '#e3f2fd' : '#fff',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      borderLeft: '4px solid ' + (isTodayMeeting ? '#d32f2f' : '#2196F3'),
+                      borderLeft: '4px solid #2196F3',
                       position: 'relative'
                     }}
                     onClick={() => setViewingMeeting(meeting)}
@@ -1739,7 +1739,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                         <span style={{
                           fontSize: '14px',
                           fontWeight: 'bold',
-                          color: isTodayMeeting ? '#d32f2f' : '#2196F3'
+                          color: '#2196F3'
                         }}>
                           {meeting.date}
                         </span>
@@ -1749,11 +1749,11 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                           fontSize: '11px',
                           fontWeight: 'bold',
                           color: '#fff',
-                          backgroundColor: isTodayMeeting ? '#d32f2f' : (daysLeft > 0 ? '#ff9800' : '#999'),
+                          backgroundColor: isTodayMeeting ? '#2196F3' : (daysLeft > 0 ? '#ff9800' : '#999'),
                           padding: '2px 8px',
                           borderRadius: '12px'
                         }}>
-                          {isTodayMeeting ? '🔴 오늘' : daysLeft > 0 ? `D-${daysLeft}` : `+${Math.abs(daysLeft)}일`}
+                          {isTodayMeeting ? '🔵 오늘' : daysLeft > 0 ? `D-${daysLeft}` : `+${Math.abs(daysLeft)}일`}
                         </span>
                       </div>
 
