@@ -516,12 +516,15 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const [editingInfoValue, setEditingInfoValue] = useState('');
     const [editingResponseIndex, setEditingResponseIndex] = useState(null);
     const [editingResponseValue, setEditingResponseValue] = useState('');
+    const [editingRoomNameIndex, setEditingRoomNameIndex] = useState(null);
+    const [editingRoomName, setEditingRoomName] = useState('');
     const scrollContainerRef = useRef(null);
     const scrollPositionRef = useRef(0);
     const [photoSourcePropertyIndex, setPhotoSourcePropertyIndex] = useState(null);
     const [showReportModal, setShowReportModal] = useState(false);
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
+    const roomNameInputRef = useRef(null);
 
     // 배열 위치 = 순서 (order 필드는 배열 인덱스 기반으로 자동 계산되므로 정렬 불필요)
     // photos 필드 초기화
@@ -630,6 +633,35 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       if (onUpdateMeeting) {
         onUpdateMeeting(updatedMeeting);
       }
+    };
+
+    // 호실명 더블클릭 편집
+    const handleRoomNameDoubleClick = (originalIndex) => {
+      setEditingRoomNameIndex(originalIndex);
+      setEditingRoomName(meeting.properties[originalIndex].roomName || '');
+      setTimeout(() => {
+        roomNameInputRef.current?.focus();
+        roomNameInputRef.current?.select();
+      }, 0);
+    };
+
+    const handleRoomNameSave = (originalIndex) => {
+      if (editingRoomNameIndex === originalIndex && editingRoomName.trim()) {
+        const newProperties = [...meeting.properties];
+        newProperties[originalIndex] = { ...newProperties[originalIndex], roomName: editingRoomName };
+        const updatedMeeting = { ...meeting, properties: newProperties };
+        onSaveMeeting(updatedMeeting);
+        if (onUpdateMeeting) {
+          onUpdateMeeting(updatedMeeting);
+        }
+      }
+      setEditingRoomNameIndex(null);
+      setEditingRoomName('');
+    };
+
+    const handleRoomNameCancel = () => {
+      setEditingRoomNameIndex(null);
+      setEditingRoomName('');
     };
 
     const handleInfoDoubleClick = (originalIndex) => {
@@ -1012,7 +1044,68 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                       transition: 'background-color 0.2s'
                     }}
                   >
-                    <div className="property-room-name">🏠 {prop.roomName || '미지정'}</div>
+                    {editingRoomNameIndex === originalIndex ? (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          flex: 1,
+                          backgroundColor: '#fff3cd',
+                          border: '2px solid #ffc107',
+                          borderRadius: '4px',
+                          padding: '6px 10px',
+                          marginRight: '8px'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <span>🏠</span>
+                        <input
+                          ref={roomNameInputRef}
+                          type="text"
+                          value={editingRoomName}
+                          onChange={(e) => setEditingRoomName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleRoomNameSave(originalIndex);
+                            if (e.key === 'Escape') handleRoomNameCancel();
+                          }}
+                          onBlur={() => handleRoomNameSave(originalIndex)}
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            flex: 1,
+                            outline: 'none',
+                            padding: 0
+                          }}
+                          placeholder="호실명 입력..."
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="property-room-name"
+                        onDoubleClick={() => handleRoomNameDoubleClick(originalIndex)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          flex: 1,
+                          backgroundColor: '#e3f2fd',
+                          border: '2px solid #2196F3',
+                          borderRadius: '4px',
+                          padding: '6px 10px',
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                          transition: 'all 0.2s ease',
+                          fontSize: '14px',
+                          fontWeight: 'bold'
+                        }}
+                        title="더블클릭으로 편집"
+                      >
+                        🏠 {prop.roomName || '미지정'}
+                      </div>
+                    )}
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
                       {/* 위로 이동 버튼 */}
                       <button
