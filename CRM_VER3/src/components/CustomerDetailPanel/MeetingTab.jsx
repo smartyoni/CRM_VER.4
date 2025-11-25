@@ -1879,7 +1879,7 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
 
   const handlePropertyFieldEdit = (propertyIdx, field, value) => {
     const newProperties = [...meeting.properties];
-    if (field === 'customerResponse' || field === 'leaseInfo' || field === 'info') {
+    if (field === 'customerResponse' || field === 'info') {
       newProperties[propertyIdx] = { ...newProperties[propertyIdx], [field]: value };
       onSaveMeeting({ ...meeting, properties: newProperties });
     }
@@ -2007,48 +2007,26 @@ const MeetingReportModal = ({ meeting, onClose, onSaveMeeting }) => {
                     )}
                   </div>
 
-                  {/* 고객반응 및 임대차정보 */}
-                  <div style={{ marginBottom: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
-                    <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #FF6B9D' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        💬 고객반응
-                        <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, [`response_${originalIndex}`]: !editingFields[`response_${originalIndex}`] })}>
-                          {editingFields[`response_${originalIndex}`] ? '✓' : '✎'}
-                        </span>
-                      </div>
-                      {editingFields[`response_${originalIndex}`] ? (
-                        <textarea
-                          value={prop.customerResponse || ''}
-                          onChange={(e) => handlePropertyFieldEdit(originalIndex, 'customerResponse', e.target.value)}
-                          style={{ width: '100%', minHeight: '80px', padding: '6px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'inherit', fontSize: '12px' }}
-                          placeholder="고객반응을 입력하세요"
-                        />
-                      ) : (
-                        <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4', minHeight: '20px' }}>
-                          {prop.customerResponse || '입력된 내용 없음'}
-                        </div>
-                      )}
+                  {/* 고객반응 */}
+                  <div style={{ marginBottom: '15px', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #FF6B9D' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      💬 고객반응
+                      <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, [`response_${originalIndex}`]: !editingFields[`response_${originalIndex}`] })}>
+                        {editingFields[`response_${originalIndex}`] ? '✓' : '✎'}
+                      </span>
                     </div>
-                    <div style={{ padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px', borderLeft: '3px solid #4CAF50' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#666', marginBottom: '3px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        ⭐ 특이사항
-                        <span style={{ fontSize: '11px', color: '#999', cursor: 'pointer' }} onClick={() => setEditingFields({ ...editingFields, [`lease_${originalIndex}`]: !editingFields[`lease_${originalIndex}`] })}>
-                          {editingFields[`lease_${originalIndex}`] ? '✓' : '✎'}
-                        </span>
+                    {editingFields[`response_${originalIndex}`] ? (
+                      <textarea
+                        value={prop.customerResponse || ''}
+                        onChange={(e) => handlePropertyFieldEdit(originalIndex, 'customerResponse', e.target.value)}
+                        style={{ width: '100%', minHeight: '80px', padding: '6px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'inherit', fontSize: '12px' }}
+                        placeholder="고객반응을 입력하세요"
+                      />
+                    ) : (
+                      <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4', minHeight: '20px' }}>
+                        {prop.customerResponse || '입력된 내용 없음'}
                       </div>
-                      {editingFields[`lease_${originalIndex}`] ? (
-                        <textarea
-                          value={prop.leaseInfo || ''}
-                          onChange={(e) => handlePropertyFieldEdit(originalIndex, 'leaseInfo', e.target.value)}
-                          style={{ width: '100%', minHeight: '80px', padding: '6px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'inherit', fontSize: '12px' }}
-                          placeholder="특이사항을 입력하세요"
-                        />
-                      ) : (
-                        <div style={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.4', minHeight: '20px' }}>
-                          {prop.leaseInfo || '입력된 내용 없음'}
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
 
                   {/* 사진 */}
