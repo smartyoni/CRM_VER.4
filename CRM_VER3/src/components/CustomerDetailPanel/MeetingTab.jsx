@@ -98,7 +98,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const addProperty = () => {
         const nextOrder = formData.properties.length + 1;
-        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0], order: nextOrder };
+        const newProperty = { id: generateId(), roomName: '', visitTime: '', agency: '', agencyPhone: '', info: '', customerResponse: '', photos: ['', '', '', ''], status: PROPERTY_STATUSES[0], order: nextOrder };
         setFormData({...formData, properties: [...formData.properties, newProperty]});
     }
 
@@ -124,7 +124,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyModal = ({ onClose, propertyToEdit, editIndex }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', jibun: '', visitTime: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0], order: editIndex !== null ? editIndex + 1 : 1 }
+        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', jibun: '', visitTime: '', customerResponse: '', photos: ['', '', '', ''], status: PROPERTY_STATUSES[0], order: editIndex !== null ? editIndex + 1 : 1 }
       );
       const [source, setSource] = useState('TEN');
 
@@ -527,9 +527,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const roomNameInputRef = useRef(null);
 
     // 배열 위치 = 순서 (order 필드는 배열 인덱스 기반으로 자동 계산되므로 정렬 불필요)
-    // photos 필드 초기화
+    // photos 필드 초기화 (4장까지 지원)
     const sortedProperties = (meeting.properties || []).map((prop, index) => ({
-      prop: { ...prop, photos: prop.photos || ['', ''] },
+      prop: { ...prop, photos: prop.photos || ['', '', '', ''] },
       originalIndex: index
     }));
 
@@ -620,7 +620,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         agencyPhone: '',
         info: '',
         customerResponse: '',
-        photos: ['', ''],
+        photos: ['', '', '', ''],
         status: PROPERTY_STATUSES[0],
         order: (meeting.properties?.length || 0) + 1
       };
@@ -764,7 +764,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
           const newProperties = [...meeting.properties];
-          const photos = newProperties[originalIndex].photos || ['', ''];
+          const photos = newProperties[originalIndex].photos || ['', '', '', ''];
           photos[photoIndex] = compressedBase64;
           newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
           const updatedMeeting = { ...meeting, properties: newProperties };
@@ -780,7 +780,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const handlePhotoDelete = (originalIndex, photoIndex) => {
       const newProperties = [...meeting.properties];
-      const photos = newProperties[originalIndex].photos || ['', ''];
+      const photos = newProperties[originalIndex].photos || ['', '', '', ''];
       photos[photoIndex] = '';
       newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
       const updatedMeeting = { ...meeting, properties: newProperties };
@@ -792,13 +792,13 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const triggerPhotoUpload = (originalIndex) => {
       const property = meeting.properties[originalIndex];
-      const photos = property?.photos || ['', ''];
+      const photos = property?.photos || ['', '', '', ''];
       const emptyPhotoIndex = photos.findIndex(p => !p);
 
       if (emptyPhotoIndex !== -1) {
         setPhotoSourcePropertyIndex(originalIndex);
       } else {
-        alert('최대 2장까지만 첨부할 수 있습니다.');
+        alert('최대 4장까지 첨부할 수 있습니다.');
       }
     };
 
@@ -837,7 +837,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
 
     const PropertyEditModal = ({ propertyToEdit, editIndex, onClose }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', jibun: '', visitTime: '', customerResponse: '', photos: ['', ''], status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', jibun: '', visitTime: '', customerResponse: '', photos: ['', '', '', ''], status: PROPERTY_STATUSES[0] }
       );
       const [source, setSource] = useState('TEN');
 
@@ -1643,7 +1643,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               const currentPropertyIndex = photoSourcePropertyIndex;
               if (currentPropertyIndex !== null) {
                 const property = meeting.properties[currentPropertyIndex];
-                const photos = property?.photos || ['', ''];
+                const photos = property?.photos || ['', '', '', ''];
                 const emptyPhotoIndex = photos.findIndex(p => !p);
                 if (emptyPhotoIndex !== -1) {
                   handlePhotoUpload(e, currentPropertyIndex, emptyPhotoIndex);
@@ -1661,7 +1661,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
               const currentPropertyIndex = photoSourcePropertyIndex;
               if (currentPropertyIndex !== null) {
                 const property = meeting.properties[currentPropertyIndex];
-                const photos = property?.photos || ['', ''];
+                const photos = property?.photos || ['', '', '', ''];
                 const emptyPhotoIndex = photos.findIndex(p => !p);
                 if (emptyPhotoIndex !== -1) {
                   handlePhotoUpload(e, currentPropertyIndex, emptyPhotoIndex);
