@@ -509,7 +509,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     setContextMenuMeeting(null);
   };
 
-  const PropertiesViewModal = ({ meeting, onClose, onSaveMeeting }) => {
+  const PropertiesViewModal = ({ meeting, onClose, onSaveMeeting, onUpdateMeeting }) => {
     const [editingPropertyIndex, setEditingPropertyIndex] = useState(null);
     const [showPropertyEditModal, setShowPropertyEditModal] = useState(false);
     const [editingInfoIndex, setEditingInfoIndex] = useState(null);
@@ -557,6 +557,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           properties: updatedProperties
         };
         onSaveMeeting(updatedMeeting);
+        // 즉시 UI 업데이트
+        if (onUpdateMeeting) {
+          onUpdateMeeting(updatedMeeting);
+        }
       }
     };
 
@@ -579,6 +583,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         properties: updatedProperties
       };
       onSaveMeeting(updatedMeeting);
+      if (onUpdateMeeting) {
+        onUpdateMeeting(updatedMeeting);
+      }
     };
 
     const handleInfoDoubleClick = (originalIndex) => {
@@ -592,6 +599,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         newProperties[originalIndex] = { ...newProperties[originalIndex], info: editingInfoValue };
         const updatedMeeting = { ...meeting, properties: newProperties };
         onSaveMeeting(updatedMeeting);
+        if (onUpdateMeeting) {
+          onUpdateMeeting(updatedMeeting);
+        }
         setEditingInfoIndex(null);
         setEditingInfoValue('');
       }
@@ -621,6 +631,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         newProperties[originalIndex] = { ...newProperties[originalIndex], customerResponse: editingResponseValue };
         const updatedMeeting = { ...meeting, properties: newProperties };
         onSaveMeeting(updatedMeeting);
+        if (onUpdateMeeting) {
+          onUpdateMeeting(updatedMeeting);
+        }
         setEditingResponseIndex(null);
         setEditingResponseValue('');
       }
@@ -680,6 +693,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
           const updatedMeeting = { ...meeting, properties: newProperties };
           onSaveMeeting(updatedMeeting);
+          if (onUpdateMeeting) {
+            onUpdateMeeting(updatedMeeting);
+          }
         };
         img.src = event.target?.result;
       };
@@ -693,6 +709,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
       newProperties[originalIndex] = { ...newProperties[originalIndex], photos };
       const updatedMeeting = { ...meeting, properties: newProperties };
       onSaveMeeting(updatedMeeting);
+      if (onUpdateMeeting) {
+        onUpdateMeeting(updatedMeeting);
+      }
     };
 
     const triggerPhotoUpload = (originalIndex) => {
@@ -732,6 +751,10 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
         properties: newProperties
       };
       onSaveMeeting(updatedMeeting);
+      // 즉시 UI 업데이트
+      if (onUpdateMeeting) {
+        onUpdateMeeting(updatedMeeting);
+      }
       setShowPropertyEditModal(false);
       setEditingPropertyIndex(null);
     };
@@ -957,7 +980,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                           newProperties[originalIndex] = {...newProperties[originalIndex], order: parseInt(e.target.value)};
                           const updatedMeeting = {...meeting, properties: newProperties};
                           onSaveMeeting(updatedMeeting);
-                          setViewingMeeting(updatedMeeting);
+                          if (onUpdateMeeting) {
+                            onUpdateMeeting(updatedMeeting);
+                          }
                           setTimeout(() => {
                             if (scrollContainerRef.current && scrollPositionRef.current !== undefined) {
                               scrollContainerRef.current.scrollTop = scrollPositionRef.current;
@@ -997,7 +1022,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                           newProperties[originalIndex] = {...newProperties[originalIndex], status: newStatus, order: newOrder};
                           const updatedMeeting = {...meeting, properties: newProperties};
                           onSaveMeeting(updatedMeeting);
-                          setViewingMeeting(updatedMeeting);
+                          if (onUpdateMeeting) {
+                            onUpdateMeeting(updatedMeeting);
+                          }
                         }}
                         style={{ cursor: 'pointer', border: 'none', fontWeight: 'bold' }}
                       >
@@ -1225,7 +1252,9 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                           newProperties[originalIndex] = {...newProperties[originalIndex], visitTime: e.target.value};
                           const updatedMeeting = {...meeting, properties: newProperties};
                           onSaveMeeting(updatedMeeting);
-                          setViewingMeeting(updatedMeeting);
+                          if (onUpdateMeeting) {
+                            onUpdateMeeting(updatedMeeting);
+                          }
                         }}
                         style={{
                           border: '1px solid #e0e0e0',
@@ -1658,7 +1687,7 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           </div>
         )}
 
-        {viewingMeeting && <PropertiesViewModal meeting={viewingMeeting} onClose={() => setViewingMeeting(null)} onSaveMeeting={onSaveMeeting} />}
+        {viewingMeeting && <PropertiesViewModal meeting={viewingMeeting} onClose={() => setViewingMeeting(null)} onSaveMeeting={onSaveMeeting} onUpdateMeeting={(updatedMeeting) => setViewingMeeting(updatedMeeting)} />}
     </div>
   );
 };
