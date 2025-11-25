@@ -171,7 +171,16 @@ export const extractContactNumberNaver = (text) => {
   const match = text.match(phoneLinePattern);
 
   if (match) {
-    const phoneNumbers = match[1].trim();
+    let phoneNumbers = match[1].trim();
+
+    // 관리소전화 제외 (관리소, 관리팀, 관리사무소 라벨이 있는 번호는 무시)
+    // 패턴: 관리소/관리팀/관리사무소 라벨과 함께 오는 번호들을 필터링
+    phoneNumbers = phoneNumbers.replace(/관리[소팀사무]*[\s\-,]*[\d\-,\s]*/gi, '');
+    phoneNumbers = phoneNumbers.trim();
+
+    if (!phoneNumbers) {
+      return '';
+    }
 
     // 1순위: 02- (서울 유선)
     const seoulMatch = phoneNumbers.match(/(02[-\s]?\d{3,4}[-\s]?\d{4})/);
@@ -381,9 +390,9 @@ const parseNaverFormat = (rawText) => {
     const area = Math.min(area1, area2);
     const rooms = naverRoomMatch[1];
     const baths = naverRoomMatch[2];
-    // 제곱미터를 평으로 환산 (1평 = 3.3, 소수점 첫째자리까지)
-    const pyeong = (area / 3.3).toFixed(1);
-    structure = `${area}㎡ (전용${pyeong}평)/방${rooms},욕실${baths}`;
+    // 제곱미터를 평으로 환산 (m² × 0.3025, 소수점 첫째자리까지)
+    const pyeong = (area * 0.3025).toFixed(1);
+    structure = `${area}㎡ (전용 ${pyeong}평)/방${rooms},욕실${baths}`;
   }
 
   // 4. 동/층: 제목에서 "동" + "해당층/총층"에서 층 정보
@@ -397,9 +406,18 @@ const parseNaverFormat = (rawText) => {
     floorInfo = `${dong}동/${floor}`;
   }
 
-  // 5. 특징: "매물특징" + "방향" + "입주가능일" 정보 조합
+  // 5. 특징: "입주가능일" + "매물특징" + "방향" 정보 조합 (입주가능일을 가장 앞에 배치)
   let feature = '정보없음';
   let featureParts = [];
+
+  // 입주가능일 추출 (최우선)
+  const moveInMatch = rawText.match(/입주가능일\s*(.+?)(?=총주차|$)/);
+  if (moveInMatch) {
+    const moveInText = moveInMatch[1].trim();
+    if (moveInText) {
+      featureParts.push(moveInText);
+    }
+  }
 
   // 매물특징 추출
   const naverFeatureMatch = rawText.match(/매물특징\s*(.+?)(?=계약\/전용면적|해당층|방향|$)/);
@@ -416,15 +434,6 @@ const parseNaverFormat = (rawText) => {
     const directionText = directionMatch[1].trim();
     if (directionText) {
       featureParts.push(directionText);
-    }
-  }
-
-  // 입주가능일 추출
-  const moveInMatch = rawText.match(/입주가능일\s*(.+?)(?=총주차|$)/);
-  if (moveInMatch) {
-    const moveInText = moveInMatch[1].trim();
-    if (moveInText) {
-      featureParts.push(moveInText);
     }
   }
 
@@ -447,8 +456,9 @@ const parseNaverFormat = (rawText) => {
   }
 
   // 7. 연락처: 공인중개사사무소/중개법인 뒤의 전화번호 (관리소전화, 팩스 제외)
+  // 우선순위: 유선번호(02, 031 등) > 기타 지역번호 > 휴대전화(010)
   let contact = '정보없음';
-  const naverContactNumber = extractContactNumber(rawText);
+  const naverContactNumber = extractContactNumberNaver(rawText);
   if (naverContactNumber) {
     contact = naverContactNumber;
   }
