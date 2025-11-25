@@ -523,26 +523,12 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
     const cameraInputRef = React.useRef(null);
     const fileInputRef = React.useRef(null);
 
-    // 순서 순으로 정렬 (원본 인덱스 보존)
+    // 배열 위치 = 순서 (order 필드는 배열 인덱스 기반으로 자동 계산되므로 정렬 불필요)
     // photos 필드 초기화
-    const normalizedProperties = meeting.properties?.map((prop, index) => ({
-      ...prop,
-      order: prop.order !== undefined ? prop.order : index + 1,
-      photos: prop.photos || ['', ''],
-      _originalIndex: index  // 정렬 전의 원본 인덱스 저장
-    })) || [];
-
-    const sortedProperties = normalizedProperties
-      .map((prop, index) => ({ prop, index }))
-      .sort((a, b) => {
-        const orderA = a.prop.order || 999;
-        const orderB = b.prop.order || 999;
-        return orderA - orderB;
-      })
-      .map(({ prop, index }) => ({
-        prop,
-        originalIndex: prop._originalIndex  // 정렬 후에 원본 인덱스 복원
-      }));
+    const sortedProperties = (meeting.properties || []).map((prop, index) => ({
+      prop: { ...prop, photos: prop.photos || ['', ''] },
+      originalIndex: index
+    }));
 
     const handlePropertyEdit = (propertyIndex) => {
       setEditingPropertyIndex(propertyIndex);
@@ -562,6 +548,64 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
           onUpdateMeeting(updatedMeeting);
         }
       }
+    };
+
+    // 위로 이동 (배열 스왑)
+    const handleMoveUp = (currentIndex) => {
+      if (currentIndex <= 0) return;
+
+      scrollPositionRef.current = scrollContainerRef.current?.scrollTop || 0;
+
+      const newProperties = [...meeting.properties];
+      // 배열 스왑
+      [newProperties[currentIndex], newProperties[currentIndex - 1]] =
+      [newProperties[currentIndex - 1], newProperties[currentIndex]];
+
+      // order 필드 재계산
+      newProperties.forEach((prop, idx) => {
+        prop.order = idx + 1;
+      });
+
+      const updatedMeeting = { ...meeting, properties: newProperties };
+      onSaveMeeting(updatedMeeting);
+      if (onUpdateMeeting) {
+        onUpdateMeeting(updatedMeeting);
+      }
+
+      setTimeout(() => {
+        if (scrollContainerRef.current && scrollPositionRef.current !== undefined) {
+          scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+        }
+      }, 0);
+    };
+
+    // 아래로 이동 (배열 스왑)
+    const handleMoveDown = (currentIndex) => {
+      if (currentIndex >= meeting.properties.length - 1) return;
+
+      scrollPositionRef.current = scrollContainerRef.current?.scrollTop || 0;
+
+      const newProperties = [...meeting.properties];
+      // 배열 스왑
+      [newProperties[currentIndex], newProperties[currentIndex + 1]] =
+      [newProperties[currentIndex + 1], newProperties[currentIndex]];
+
+      // order 필드 재계산
+      newProperties.forEach((prop, idx) => {
+        prop.order = idx + 1;
+      });
+
+      const updatedMeeting = { ...meeting, properties: newProperties };
+      onSaveMeeting(updatedMeeting);
+      if (onUpdateMeeting) {
+        onUpdateMeeting(updatedMeeting);
+      }
+
+      setTimeout(() => {
+        if (scrollContainerRef.current && scrollPositionRef.current !== undefined) {
+          scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+        }
+      }, 0);
     };
 
     const addProperty = () => {
@@ -970,57 +1014,87 @@ const MeetingTab = ({ customerId, customerName, meetings, onSaveMeeting, onDelet
                   >
                     <div className="property-room-name">🏠 {prop.roomName || '미지정'}</div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
-                      <select
-                        className="property-status-badge"
-                        value={prop.order || originalIndex + 1}
-                        onChange={(e) => {
-                          // 순서 변경 시에만 스크롤 위치 복원
-                          scrollPositionRef.current = scrollContainerRef.current?.scrollTop || 0;
-                          const newProperties = [...meeting.properties];
-                          newProperties[originalIndex] = {...newProperties[originalIndex], order: parseInt(e.target.value)};
-                          const updatedMeeting = {...meeting, properties: newProperties};
-                          onSaveMeeting(updatedMeeting);
-                          if (onUpdateMeeting) {
-                            onUpdateMeeting(updatedMeeting);
-                          }
-                          setTimeout(() => {
-                            if (scrollContainerRef.current && scrollPositionRef.current !== undefined) {
-                              scrollContainerRef.current.scrollTop = scrollPositionRef.current;
-                            }
-                          }, 0);
+                      {/* 위로 이동 버튼 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveUp(originalIndex);
                         }}
+                        disabled={index === 0}
                         style={{
-                          cursor: 'pointer',
+                          backgroundColor: index === 0 ? '#ccc' : '#4CAF50',
+                          color: 'white',
                           border: 'none',
+                          borderRadius: '4px',
+                          width: '28px',
+                          height: '28px',
+                          cursor: index === 0 ? 'not-allowed' : 'pointer',
+                          fontSize: '14px',
                           fontWeight: 'bold',
-                          backgroundColor: '#e0e0e0',
-                          color: '#333',
-                          padding: '4px 8px',
-                          borderRadius: '12px',
-                          fontSize: '12px'
+                          opacity: index === 0 ? 0.4 : 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
                         }}
+                        title="위로 이동"
                       >
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                          <option key={num} value={num}>{num}</option>
-                        ))}
-                      </select>
+                        ▲
+                      </button>
+
+                      {/* 아래로 이동 버튼 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveDown(originalIndex);
+                        }}
+                        disabled={index === sortedProperties.length - 1}
+                        style={{
+                          backgroundColor: index === sortedProperties.length - 1 ? '#ccc' : '#2196F3',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          width: '28px',
+                          height: '28px',
+                          cursor: index === sortedProperties.length - 1 ? 'not-allowed' : 'pointer',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          opacity: index === sortedProperties.length - 1 ? 0.4 : 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        title="아래로 이동"
+                      >
+                        ▼
+                      </button>
                       <select
                         className={`property-status-badge status-${prop.status}`}
                         value={prop.status}
                         onChange={(e) => {
-                          const newProperties = [...meeting.properties];
                           const newStatus = e.target.value;
+                          let newProperties = [...meeting.properties];
 
-                          // 준비상태에 따라 순서 자동 변경
-                          let newOrder = prop.order;
-                          if (newStatus === '오늘못봄' || newStatus === '계약됨') {
-                            newOrder = 9;
-                          } else if (newStatus === '현장방문완료' || newStatus === '안보기로함') {
-                            newOrder = 8;
+                          // 특정 상태일 경우 배열 끝으로 이동
+                          if (newStatus === '오늘못봄' || newStatus === '계약됨' ||
+                              newStatus === '현장방문완료' || newStatus === '안보기로함') {
+
+                            // 1. 해당 매물을 배열에서 제거
+                            const [removedItem] = newProperties.splice(originalIndex, 1);
+
+                            // 2. 상태 변경 후 배열 끝에 추가
+                            newProperties.push({ ...removedItem, status: newStatus });
+
+                          } else {
+                            // 일반 상태 변경 (위치 유지)
+                            newProperties[originalIndex] = { ...newProperties[originalIndex], status: newStatus };
                           }
 
-                          newProperties[originalIndex] = {...newProperties[originalIndex], status: newStatus, order: newOrder};
-                          const updatedMeeting = {...meeting, properties: newProperties};
+                          // order 필드 재계산 (모든 경우)
+                          newProperties.forEach((prop, idx) => {
+                            prop.order = idx + 1;
+                          });
+
+                          const updatedMeeting = { ...meeting, properties: newProperties };
                           onSaveMeeting(updatedMeeting);
                           if (onUpdateMeeting) {
                             onUpdateMeeting(updatedMeeting);
