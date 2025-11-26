@@ -56,7 +56,7 @@ import {
   deleteTableRow,
   updateTableColumnRequired
 } from './utils/dynamicTableStorage';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase/config';
 
 // Mock data for initial setup
