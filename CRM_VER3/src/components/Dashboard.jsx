@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import MeetingTab from './MeetingTab';
 
 const Dashboard = ({
   customers = [],
@@ -447,6 +448,14 @@ const Dashboard = ({
     );
   };
 
+  // 미팅 카드 클릭 핸들러 - 고객상세패널로 이동하면서 미팅 선택
+  const handleMeetingCardClick = (meeting) => {
+    if (meeting && meeting.customerId) {
+      // 고객상세패널로 이동하고 미팅ID 전달 (미팅탭에서 해당 미팅의 모달을 자동으로 띄우게 함)
+      onNavigate('고객관리', '전체', meeting.customerId, 'customer', meeting.id);
+    }
+  };
+
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
@@ -534,6 +543,14 @@ const Dashboard = ({
         );
       })()}
 
+      {/* 미팅관리 필터 - 최신 미팅 5개 */}
+      {activeFilter === '미팅관리' && (
+        <MeetingTab
+          meetings={meetings}
+          customers={customers}
+          onCardClick={handleMeetingCardClick}
+        />
+      )}
 
       {/* 모달 렌더링 */}
       {modalData && (

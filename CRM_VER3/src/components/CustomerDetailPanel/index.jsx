@@ -15,7 +15,9 @@ const CustomerDetailPanel = ({
     onDeleteActivity,
     meetings,
     onSaveMeeting,
-    onDeleteMeeting
+    onDeleteMeeting,
+    selectedMeetingId,
+    onClearSelectedMeeting
 }) => {
   const [activeTab, setActiveTab] = useState('기본정보');
   const [pendingMeetingProperties, setPendingMeetingProperties] = useState(null);
@@ -41,6 +43,20 @@ const CustomerDetailPanel = ({
       setSelectedMeetingDetail(null);
     }
   }, [selectedCustomer?.id]);
+
+  // selectedMeetingId가 전달되면 해당 미팅탭으로 이동하고 모달 띄우기
+  useEffect(() => {
+    if (selectedMeetingId && meetings && meetings.length > 0) {
+      const meeting = meetings.find(m => m.id === selectedMeetingId);
+      if (meeting) {
+        setActiveTab('미팅기록');
+        setSelectedMeetingDetail(meeting);
+        if (onClearSelectedMeeting) {
+          onClearSelectedMeeting();
+        }
+      }
+    }
+  }, [selectedMeetingId, meetings, onClearSelectedMeeting]);
 
   const isOpen = !!selectedCustomer;
 

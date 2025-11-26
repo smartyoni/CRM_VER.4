@@ -96,6 +96,7 @@ function App() {
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState(null);
   const [selectedContractId, setSelectedContractId] = useState(null);
+  const [selectedMeetingId, setSelectedMeetingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
@@ -1320,7 +1321,7 @@ function App() {
                 properties={properties}
                 contracts={contracts}
                 activeFilter={activeDashboardFilter}
-                onNavigate={(tab, filter, itemId, itemType) => {
+                onNavigate={(tab, filter, itemId, itemType, meetingId) => {
                   setActiveTab(tab);
                   setActiveCustomerFilter(filter);
                   // 계약 클릭 시 상세패널 열기
@@ -1330,6 +1331,10 @@ function App() {
                   // 고객 클릭 시 상세패널 열기
                   else if (itemType === 'customer') {
                     setSelectedCustomerId(itemId);
+                    // 미팅ID가 전달되면 해당 미팅 선택 (미팅탭에서 모달을 띄우게 함)
+                    if (meetingId) {
+                      setSelectedMeetingId(meetingId);
+                    }
                   }
                 }}
               />
@@ -1548,7 +1553,10 @@ function App() {
         <>
           <CustomerDetailPanel
             selectedCustomer={selectedCustomer}
-            onClose={() => setSelectedCustomerId(null)}
+            onClose={() => {
+              setSelectedCustomerId(null);
+              setSelectedMeetingId(null);
+            }}
             onEditCustomer={handleOpenModal}
             onUpdateCustomer={handleSaveCustomer}
             onDeleteCustomer={handleDeleteCustomer}
@@ -1561,6 +1569,8 @@ function App() {
             propertySelections={propertySelections}
             onSavePropertySelection={handleSavePropertySelection}
             onDeletePropertySelection={handleDeletePropertySelection}
+            selectedMeetingId={selectedMeetingId}
+            onClearSelectedMeeting={() => setSelectedMeetingId(null)}
           />
 
           <CustomerModal

@@ -33,7 +33,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
     }
 
     const addProperty = () => {
-        const newProperty = { id: generateId(), roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] };
+        const newProperty = { id: generateId(), roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0], pros: '', cons: '' };
         setFormData({...formData, properties: [...formData.properties, newProperty]});
     }
 
@@ -82,7 +82,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
 
     const PropertyModal = ({ onClose, propertyToEdit, editIndex }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0], pros: '', cons: '' }
       );
       const [source, setSource] = useState('TEN');
 
@@ -142,7 +142,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
               <h3>{editIndex !== null && editIndex !== undefined ? '매물 수정' : '매물 추가'}</h3>
               <button className="btn-close" onClick={onClose}>×</button>
             </div>
-            <div className="form-grid">
+            <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <label style={{ margin: 0 }}>매물정보 (전체 텍스트 붙여넣기)</label>
@@ -259,6 +259,38 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
               <div className="form-group">
                 <label>연락처</label>
                 <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.agencyPhone} onChange={(e) => setPropertyData({...propertyData, agencyPhone: e.target.value})} />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label style={{ color: '#4CAF50' }}>👍 장점</label>
+                <textarea
+                  placeholder="이 매물의 장점을 입력하세요 (예: 역세권, 신축, 풀옵션 등)"
+                  value={propertyData.pros || ''}
+                  onChange={(e) => setPropertyData({...propertyData, pros: e.target.value})}
+                  style={{
+                    padding: '8px',
+                    border: '2px solid #333',
+                    borderRadius: '4px',
+                    width: '100%',
+                    resize: 'vertical',
+                    minHeight: '7.2em'
+                  }}
+                />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label style={{ color: '#f44336' }}>👎 단점</label>
+                <textarea
+                  placeholder="이 매물의 단점을 입력하세요 (예: 주차 불편, 방음 취약 등)"
+                  value={propertyData.cons || ''}
+                  onChange={(e) => setPropertyData({...propertyData, cons: e.target.value})}
+                  style={{
+                    padding: '8px',
+                    border: '2px solid #333',
+                    borderRadius: '4px',
+                    width: '100%',
+                    resize: 'vertical',
+                    minHeight: '7.2em'
+                  }}
+                />
               </div>
             </div>
             <div className="modal-footer">
@@ -444,7 +476,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
 
     const PropertyEditModal = ({ propertyToEdit, editIndex, onClose }) => {
       const [propertyData, setPropertyData] = useState(
-        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0] }
+        propertyToEdit || { roomName: '', agency: '', agencyPhone: '', info: '', status: PROPERTY_STATUSES[0], pros: '', cons: '' }
       );
       const [source, setSource] = useState('TEN');
 
@@ -491,7 +523,7 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
               <h3>매물 수정</h3>
               <button className="btn-close" onClick={onClose}>×</button>
             </div>
-            <div className="form-grid">
+            <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>매물정보 (전체 텍스트 붙여넣기)</label>
                 <textarea
@@ -542,6 +574,38 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
               <div className="form-group">
                 <label>연락처</label>
                 <input type="text" placeholder="자동 입력되지만 수정 가능합니다" value={propertyData.agencyPhone} onChange={(e) => setPropertyData({...propertyData, agencyPhone: e.target.value})} />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label style={{ color: '#4CAF50' }}>👍 장점</label>
+                <textarea
+                  placeholder="이 매물의 장점을 입력하세요 (예: 역세권, 신축, 풀옵션 등)"
+                  value={propertyData.pros || ''}
+                  onChange={(e) => setPropertyData({...propertyData, pros: e.target.value})}
+                  style={{
+                    padding: '8px',
+                    border: '2px solid #333',
+                    borderRadius: '4px',
+                    width: '100%',
+                    resize: 'vertical',
+                    minHeight: '7.2em'
+                  }}
+                />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label style={{ color: '#f44336' }}>👎 단점</label>
+                <textarea
+                  placeholder="이 매물의 단점을 입력하세요 (예: 주차 불편, 방음 취약 등)"
+                  value={propertyData.cons || ''}
+                  onChange={(e) => setPropertyData({...propertyData, cons: e.target.value})}
+                  style={{
+                    padding: '8px',
+                    border: '2px solid #333',
+                    borderRadius: '4px',
+                    width: '100%',
+                    resize: 'vertical',
+                    minHeight: '7.2em'
+                  }}
+                />
               </div>
             </div>
             <div className="modal-footer">
@@ -660,6 +724,59 @@ const PropertySelectionTab = ({ customerId, customerName, propertySelections, on
                   <div className="property-card-body">
                     <div className="property-info-label">📋 매물정보</div>
                     <div className="property-info-content">{prop.info}</div>
+                  </div>
+                  <div style={{
+                    padding: '15px',
+                    backgroundColor: '#fafafa',
+                    borderTop: '1px solid #e0e0e0',
+                    borderBottom: '1px solid #e0e0e0'
+                  }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        color: '#4CAF50',
+                        marginBottom: '6px'
+                      }}>
+                        👍 장점
+                      </div>
+                      <div style={{
+                        fontSize: '13px',
+                        lineHeight: '1.5',
+                        color: '#333',
+                        whiteSpace: 'pre-line',
+                        padding: '8px',
+                        backgroundColor: '#fff',
+                        borderRadius: '4px',
+                        border: '1px solid #e0e0e0',
+                        minHeight: '40px'
+                      }}>
+                        {prop.pros || '장점이 기록되지 않았습니다.'}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        color: '#f44336',
+                        marginBottom: '6px'
+                      }}>
+                        👎 단점
+                      </div>
+                      <div style={{
+                        fontSize: '13px',
+                        lineHeight: '1.5',
+                        color: '#333',
+                        whiteSpace: 'pre-line',
+                        padding: '8px',
+                        backgroundColor: '#fff',
+                        borderRadius: '4px',
+                        border: '1px solid #e0e0e0',
+                        minHeight: '40px'
+                      }}>
+                        {prop.cons || '단점이 기록되지 않았습니다.'}
+                      </div>
+                    </div>
                   </div>
                   <div className="property-card-footer">
                     <span className="property-detail">🏢 {prop.agency}</span>

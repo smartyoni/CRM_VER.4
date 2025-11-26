@@ -219,12 +219,13 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       return contracts?.filter(c => c.progressStatus === status).length || 0;
     } else if (activeTab === '대시보드') {
       // 대시보드 필터
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
       if (status === '고객관리') {
-        // 고객관리 필터에 표시되는 카드의 개수: 3개 (계약예정, 잔금예정, 미팅예정)
+        // 고객관리 필터에 표시되는 카드의 개수
         return 3;
+      }
+      if (status === '미팅관리') {
+        // 미팅관리 필터: 전체 미팅 개수
+        return meetings.length;
       }
 
       return 0;
@@ -251,7 +252,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     } else if (activeTab === '계약호실') {
       return ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'];
     } else if (activeTab === '대시보드') {
-      return ['고객관리'];
+      return ['고객관리', '미팅관리'];
     }
     return [];
   })();
