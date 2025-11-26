@@ -159,6 +159,34 @@ function App() {
     const unsubscribeTables = subscribeToTables((tables) => {
       setDynamicTables(tables);
 
+      // "오늘 기록" 테이블 자동 생성
+      const hasTodayLogTable = tables.some(t => t.name === '오늘 기록');
+      if (!hasTodayLogTable && tables.length > 0) {
+        // 테이블이 로드되었는데 "오늘 기록"이 없으면 생성
+        saveTable({
+          id: 'today-log-table',
+          name: '오늘 기록',
+          icon: '📝',
+          columns: [
+            {
+              name: '기록일자',
+              label: '기록일자',
+              type: 'date',
+              required: true,
+              display: true
+            },
+            {
+              name: '내용',
+              label: '내용',
+              type: 'text',
+              required: false,
+              display: true
+            }
+          ],
+          createdAt: new Date().toISOString()
+        }).catch(err => console.log('오늘 기록 테이블 생성 실패:', err));
+      }
+
       // 각 테이블의 데이터 구독 설정 및 마이그레이션
       tables.forEach(table => {
         // 마이그레이션: 제목과 내용 컬럼의 required를 false로 변경
@@ -186,49 +214,60 @@ function App() {
 
           // 마이그레이션: 일지 테이블 컬럼 순서 및 가시성 조정
           if (table.name?.includes('일지') || table.name?.includes('journal')) {
-            const updatedColumns = table.columns.map(col => {
-              const colName = col.name;
-              const colLabel = col.label || '';
-
-              // 표시할 컬럼: 기록일, 제목, 내용만 display: true
-              if (colName === '기록일' || colLabel === '기록일' ||
-                  colName === '제목' || colLabel === '제목' ||
-                  colName === '내용' || colLabel === '내용') {
-                return { ...col, display: true };
-              }
-
-              // 나머지 컬럼은 숨김
-              return { ...col, display: false };
-            });
-
-            // 컬럼 순서 재정렬: 기록일 → 제목 → 내용
-            const reorderedColumns = [];
-            const 기록일Col = updatedColumns.find(col =>
+            // 현재 컬럼 상태 확인 (이미 올바르게 설정되었는지 체크)
+            const 기록일Col = table.columns.find(col =>
               col.name === '기록일' || col.label === '기록일'
             );
-            const 제목Col = updatedColumns.find(col =>
+            const 제목Col = table.columns.find(col =>
               col.name === '제목' || col.label === '제목'
             );
-            const 내용Col = updatedColumns.find(col =>
+            const 내용Col = table.columns.find(col =>
               col.name === '내용' || col.label === '내용'
             );
 
-            if (기록일Col) reorderedColumns.push(기록일Col);
-            if (제목Col) reorderedColumns.push(제목Col);
-            if (내용Col) reorderedColumns.push(내용Col);
+            // 이미 올바르게 설정되었는지 확인
+            const isAlreadyMigrated =
+              기록일Col?.display === true &&
+              제목Col?.display === true &&
+              내용Col?.display === false &&
+              table.columns[0] === 기록일Col &&
+              table.columns[1] === 제목Col;
 
-            // 나머지 컬럼 추가 (display: false 상태)
-            updatedColumns.forEach(col => {
-              if (col !== 기록일Col && col !== 제목Col && col !== 내용Col) {
-                reorderedColumns.push(col);
-              }
-            });
+            // 아직 마이그레이션되지 않았으면 업데이트
+            if (!isAlreadyMigrated) {
+              const updatedColumns = table.columns.map(col => {
+                const colName = col.name;
+                const colLabel = col.label || '';
 
-            // Firestore 업데이트
-            const tableRef = doc(db, 'tables', table.id);
-            updateDoc(tableRef, { columns: reorderedColumns }).catch(err =>
-              console.log('일지 테이블 컬럼 재배치 실패:', err)
-            );
+                // 표시할 컬럼: 기록일, 제목만 display: true (내용 컬럼 제외)
+                if (colName === '기록일' || colLabel === '기록일' ||
+                    colName === '제목' || colLabel === '제목') {
+                  return { ...col, display: true };
+                }
+
+                // 나머지 컬럼은 숨김 (내용 포함)
+                return { ...col, display: false };
+              });
+
+              // 컬럼 순서 재정렬: 기록일 → 제목
+              const reorderedColumns = [];
+
+              if (기록일Col) reorderedColumns.push(기록일Col);
+              if (제목Col) reorderedColumns.push(제목Col);
+
+              // 나머지 컬럼 추가 (display: false 상태)
+              updatedColumns.forEach(col => {
+                if (col !== 기록일Col && col !== 제목Col) {
+                  reorderedColumns.push(col);
+                }
+              });
+
+              // Firestore 업데이트
+              const tableRef = doc(db, 'tables', table.id);
+              updateDoc(tableRef, { columns: reorderedColumns }).catch(err =>
+                console.log('일지 테이블 컬럼 재배치 실패:', err)
+              );
+            }
           }
         }
 
@@ -1380,6 +1419,54 @@ function App() {
         >
           📋 고객목록
         </button>
+
+        {/* 오늘 기록 탭 (고객관리 다음) */}
+        {dynamicTables.some(t => t.name === '오늘 기록') && (
+          <button
+            onClick={() => setActiveTab('today-log-table')}
+            style={{
+              padding: '12px 24px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: '#000',
+              border: 'none',
+              backgroundColor: activeTab === 'today-log-table' ? 'rgba(156, 39, 176, 0.12)' : 'transparent',
+              borderBottom: activeTab === 'today-log-table' ? '4px solid #9C27B0' : '4px solid transparent',
+              borderRadius: activeTab === 'today-log-table' ? '8px 8px 0 0' : '0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: activeTab === 'today-log-table' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+              WebkitAppearance: 'none',
+              appearance: 'none'
+            }}
+            className="tab-button"
+          >
+            📝 오늘 기록
+          </button>
+        )}
+
+        <button
+          onClick={() => setActiveTab('계약호실')}
+          style={{
+            padding: '12px 24px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: '#000',
+            border: 'none',
+            backgroundColor: activeTab === '계약호실' ? 'rgba(76, 175, 80, 0.12)' : 'transparent',
+            borderBottom: activeTab === '계약호실' ? '4px solid #8BC34A' : '4px solid transparent',
+            borderRadius: activeTab === '계약호실' ? '8px 8px 0 0' : '0',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
+            WebkitAppearance: 'none',
+            appearance: 'none'
+          }}
+          className="tab-button"
+        >
+          📄 계약호실
+        </button>
+
         <button
           onClick={() => setActiveTab('건물정보')}
           style={{
@@ -1402,8 +1489,8 @@ function App() {
           🏢 건물정보
         </button>
 
-        {/* 동적 테이블 탭들 */}
-        {dynamicTables.map(table => (
+        {/* 나머지 동적 테이블 탭들 (오늘 기록 제외) */}
+        {dynamicTables.filter(table => table.name !== '오늘 기록').map(table => (
           <button
             key={table.id}
             onClick={() => setActiveTab(table.id)}

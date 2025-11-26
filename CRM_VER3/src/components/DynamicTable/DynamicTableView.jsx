@@ -18,10 +18,18 @@ const DynamicTableView = ({
   const [editingValues, setEditingValues] = useState({});
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoValue, setMemoValue] = useState('');
+  const [isExpandedMemo, setIsExpandedMemo] = useState(false); // 메모 확장 상태
   const [checklistItems, setChecklistItems] = useState([]);
   const [newChecklistText, setNewChecklistText] = useState('');
   const [isAddingChecklist, setIsAddingChecklist] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [tempCategory, setTempCategory] = useState(''); // 임시 선택 카테고리
+  const [expandedChecklistItem, setExpandedChecklistItem] = useState(null); // 열린 체크리스트 항목
+  const [checklistReplyText, setChecklistReplyText] = useState(''); // 답글 입력 필드
+  const [editingChecklistItemId, setEditingChecklistItemId] = useState(null); // 편집 중인 체크리스트 항목 ID
+  const [editingChecklistText, setEditingChecklistText] = useState(''); // 편집 중인 체크리스트 텍스트
+  const [editingReplyId, setEditingReplyId] = useState(null); // 편집 중인 답글 ID (itemId:replyId 형식)
+  const [editingReplyText, setEditingReplyText] = useState(''); // 편집 중인 답글 텍스트
 
   if (!tableMetadata) {
     return (
@@ -161,6 +169,9 @@ const DynamicTableView = ({
       setIsEditingMemo(false);
       setIsAddingChecklist(false);
       setNewChecklistText('');
+      setIsExpandedMemo(false); // 메모 확장 상태 초기화
+      setEditingReplyId(null); // 답글 편집 상태 초기화
+      setEditingReplyText('');
     }
   }, [selectedRow?.id]);
 
@@ -194,11 +205,27 @@ const DynamicTableView = ({
     setIsEditing(false);
   };
 
-  // 카테고리 변경
-  const handleCategoryChange = (newCategory) => {
-    setSelectedCategory(newCategory);
+  // 행이 선택될 때 tempCategory, expandedChecklistItem, 편집 상태 초기화
+  React.useEffect(() => {
     if (selectedRow) {
-      onEdit({ ...selectedRow, category: newCategory });
+      setTempCategory(selectedRow.category || '');
+      setExpandedChecklistItem(null);
+      setChecklistReplyText('');
+      setEditingChecklistItemId(null);
+      setEditingChecklistText('');
+    }
+  }, [selectedRow?.id]);
+
+  // 임시 카테고리 선택 (저장 전)
+  const handleTempCategoryChange = (newCategory) => {
+    setTempCategory(newCategory);
+  };
+
+  // 카테고리 저장 (확정)
+  const handleSaveCategoryChange = () => {
+    setSelectedCategory(tempCategory);
+    if (selectedRow) {
+      onEdit({ ...selectedRow, category: tempCategory });
     }
   };
 
@@ -261,6 +288,127 @@ const DynamicTableView = ({
     }
   };
 
+  // 체크리스트 답글 추가
+  const handleAddChecklistReply = (itemId) => {
+    if (!checklistReplyText.trim()) return;
+
+    const updatedChecklists = checklistItems.map(item => {
+      if (item.id === itemId) {
+        const replies = item.replies || [];
+        return {
+          ...item,
+          replies: [
+            ...replies,
+            {
+              id: `reply_${Date.now()}_${Math.random()}`,
+              text: checklistReplyText.trim(),
+              createdAt: new Date().toISOString()
+            }
+          ]
+        };
+      }
+      return item;
+    });
+
+    setChecklistItems(updatedChecklists);
+    setChecklistReplyText('');
+
+    if (selectedRow) {
+      onEdit({ ...selectedRow, checklists: updatedChecklists });
+    }
+  };
+
+  // 체크리스트 답글 삭제
+  const handleDeleteChecklistReply = (itemId, replyId) => {
+    const updatedChecklists = checklistItems.map(item => {
+      if (item.id === itemId) {
+        return {
+          ...item,
+          replies: (item.replies || []).filter(reply => reply.id !== replyId)
+        };
+      }
+      return item;
+    });
+
+    setChecklistItems(updatedChecklists);
+
+    if (selectedRow) {
+      onEdit({ ...selectedRow, checklists: updatedChecklists });
+    }
+  };
+
+  // 체크리스트 인라인 편집 시작
+  const handleStartEditChecklist = (itemId, itemText) => {
+    setEditingChecklistItemId(itemId);
+    setEditingChecklistText(itemText);
+  };
+
+  // 체크리스트 인라인 편집 저장
+  const handleSaveChecklistEdit = (itemId) => {
+    if (!editingChecklistText.trim()) return;
+
+    const updatedChecklists = checklistItems.map(item => {
+      if (item.id === itemId) {
+        return { ...item, text: editingChecklistText.trim() };
+      }
+      return item;
+    });
+
+    setChecklistItems(updatedChecklists);
+    setEditingChecklistItemId(null);
+    setEditingChecklistText('');
+
+    if (selectedRow) {
+      onEdit({ ...selectedRow, checklists: updatedChecklists });
+    }
+  };
+
+  // 체크리스트 인라인 편집 취소
+  const handleCancelChecklistEdit = () => {
+    setEditingChecklistItemId(null);
+    setEditingChecklistText('');
+  };
+
+  // 답글 인라인 편집 시작
+  const handleStartEditReply = (itemId, replyId, replyText) => {
+    setEditingReplyId(`${itemId}:${replyId}`);
+    setEditingReplyText(replyText);
+  };
+
+  // 답글 인라인 편집 저장
+  const handleSaveReply = (itemId, replyId) => {
+    if (!editingReplyText.trim()) return;
+
+    const updatedChecklists = checklistItems.map(item => {
+      if (item.id === itemId) {
+        return {
+          ...item,
+          replies: (item.replies || []).map(reply => {
+            if (reply.id === replyId) {
+              return { ...reply, text: editingReplyText.trim() };
+            }
+            return reply;
+          })
+        };
+      }
+      return item;
+    });
+
+    setChecklistItems(updatedChecklists);
+    setEditingReplyId(null);
+    setEditingReplyText('');
+
+    if (selectedRow) {
+      onEdit({ ...selectedRow, checklists: updatedChecklists });
+    }
+  };
+
+  // 답글 인라인 편집 취소
+  const handleCancelEditReply = () => {
+    setEditingReplyId(null);
+    setEditingReplyText('');
+  };
+
   // 체크리스트 완료율 계산
   const getChecklistProgress = () => {
     if (checklistItems.length === 0) return 0;
@@ -316,35 +464,89 @@ const DynamicTableView = ({
             </button>
           </div>
 
-          {/* 카테고리 드롭다운 */}
+          {/* 카테고리 버튼 */}
           <div style={{
             padding: '15px 20px',
             borderBottom: '1px solid #e0e0e0',
             display: 'flex',
-            gap: '10px',
-            alignItems: 'center'
+            gap: '8px',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap'
           }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: '#666', minWidth: '60px' }}>
-              카테고리:
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => handleCategoryChange(e.target.value)}
+            {/* 카테고리 버튼들 */}
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              flex: 1
+            }}>
+              {JOURNAL_CATEGORIES.map((cat, index) => {
+                // 각 버튼에 고유 색상 부여
+                const colors = ['#4CAF50', '#2196F3', '#f44336', '#FFC107']; // 녹색, 파란색, 빨간색, 노란색
+                const color = colors[index];
+                const isDark = index === 3; // 노란색은 텍스트를 어둡게
+
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => handleTempCategoryChange(cat)}
+                    style={{
+                      padding: '8px 16px',
+                      border: tempCategory === cat ? `2px solid ${color}` : '1px solid #ddd',
+                      borderRadius: '20px',
+                      fontSize: '13px',
+                      backgroundColor: tempCategory === cat ? color : '#fff',
+                      color: tempCategory === cat ? '#fff' : isDark ? '#333' : color,
+                      cursor: 'pointer',
+                      fontWeight: tempCategory === cat ? '600' : '400',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (tempCategory !== cat) {
+                        e.target.style.borderColor = color;
+                        e.target.style.color = color;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (tempCategory !== cat) {
+                        e.target.style.borderColor = '#ddd';
+                        e.target.style.color = isDark ? '#333' : color;
+                      }
+                    }}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 저장 버튼 */}
+            <button
+              onClick={handleSaveCategoryChange}
               style={{
-                padding: '8px 12px',
-                border: '1px solid #ddd',
+                padding: '8px 16px',
+                backgroundColor: '#2196F3',
+                color: '#fff',
+                border: 'none',
                 borderRadius: '4px',
                 fontSize: '13px',
-                backgroundColor: '#fff',
+                fontWeight: '600',
                 cursor: 'pointer',
-                flex: 1
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#1976D2';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#2196F3';
               }}
             >
-              <option value="">카테고리 선택</option>
-              {JOURNAL_CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              저장
+            </button>
           </div>
 
           {/* 콘텐츠 */}
@@ -412,8 +614,27 @@ const DynamicTableView = ({
                 color: '#666',
                 marginBottom: '10px',
                 paddingBottom: '8px',
-                borderBottom: '2px solid #2196F3'
-              }}>
+                borderBottom: '2px solid #2196F3',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                userSelect: 'none',
+                transition: 'color 0.2s'
+              }}
+              onClick={() => selectedRow.memo && selectedRow.memo.split('\n').length > 3 && setIsExpandedMemo(!isExpandedMemo)}
+              onMouseEnter={(e) => {
+                if (selectedRow.memo && selectedRow.memo.split('\n').length > 3) {
+                  e.currentTarget.style.color = '#1976d2';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#666';
+              }}
+              >
+                {selectedRow.memo && selectedRow.memo.split('\n').length > 3 && (
+                  <span style={{ fontSize: '12px' }}>{isExpandedMemo ? '▼' : '▶'}</span>
+                )}
                 📝 메모
               </h4>
               {isEditingMemo ? (
@@ -472,7 +693,6 @@ const DynamicTableView = ({
                     padding: '12px',
                     backgroundColor: '#f9f9f9',
                     borderRadius: '4px',
-                    minHeight: '140px',
                     color: selectedRow.memo ? '#333' : '#999',
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word',
@@ -483,7 +703,18 @@ const DynamicTableView = ({
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'}
                 >
-                  {selectedRow.memo || '메모가 없습니다 (더블클릭하여 편집)'}
+                  {selectedRow.memo ? (
+                    <>
+                      {isExpandedMemo ? (
+                        selectedRow.memo
+                      ) : (
+                        selectedRow.memo.split('\n').slice(0, 3).join('\n') +
+                        (selectedRow.memo.split('\n').length > 3 ? '\n...' : '')
+                      )}
+                    </>
+                  ) : (
+                    '메모가 없습니다 (더블클릭하여 편집)'
+                  )}
                 </div>
               )}
             </section>
@@ -533,9 +764,9 @@ const DynamicTableView = ({
                       key={item.id}
                       style={{
                         display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '10px',
-                        padding: '8px 10px',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        padding: '10px',
                         backgroundColor: '#fafafa',
                         borderRadius: '4px',
                         transition: 'background-color 0.2s'
@@ -543,40 +774,237 @@ const DynamicTableView = ({
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fafafa'}
                     >
-                      <input
-                        type="checkbox"
-                        checked={item.completed}
-                        onChange={() => handleToggleChecklistItem(item.id)}
-                        style={{
-                          marginTop: '3px',
-                          cursor: 'pointer',
-                          accentColor: '#9C27B0'
-                        }}
-                      />
-                      <span style={{
-                        flex: 1,
-                        color: item.completed ? '#999' : '#333',
-                        textDecoration: item.completed ? 'line-through' : 'none',
-                        wordBreak: 'break-word'
-                      }}>
-                        {item.text}
-                      </span>
-                      <button
-                        onClick={() => handleDeleteChecklistItem(item.id)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#d32f2f',
-                          cursor: 'pointer',
-                          padding: '0 5px',
-                          fontSize: '14px',
-                          minWidth: '24px',
-                          padding: '2px 6px'
-                        }}
-                        title="삭제"
-                      >
-                        ✕
-                      </button>
+                      {/* 체크리스트 항목 */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <input
+                          type="checkbox"
+                          checked={item.completed}
+                          onChange={() => handleToggleChecklistItem(item.id)}
+                          style={{
+                            marginTop: '3px',
+                            cursor: 'pointer',
+                            accentColor: '#9C27B0'
+                          }}
+                        />
+                        {editingChecklistItemId === item.id ? (
+                          <input
+                            autoFocus
+                            type="text"
+                            value={editingChecklistText}
+                            onChange={(e) => setEditingChecklistText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveChecklistEdit(item.id);
+                              } else if (e.key === 'Escape') {
+                                handleCancelChecklistEdit();
+                              }
+                            }}
+                            onBlur={() => handleSaveChecklistEdit(item.id)}
+                            style={{
+                              flex: 1,
+                              padding: '4px 8px',
+                              border: '2px solid #9C27B0',
+                              borderRadius: '3px',
+                              fontSize: '13px',
+                              fontFamily: 'inherit',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                        ) : (
+                          <span
+                            onDoubleClick={() => handleStartEditChecklist(item.id, item.text)}
+                            style={{
+                              flex: 1,
+                              color: item.completed ? '#999' : '#333',
+                              textDecoration: item.completed ? 'line-through' : 'none',
+                              wordBreak: 'break-word',
+                              fontSize: '13px',
+                              cursor: 'text',
+                              userSelect: 'none'
+                            }}
+                          >
+                            {item.text}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => setExpandedChecklistItem(expandedChecklistItem === item.id ? null : item.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#2196F3',
+                            cursor: 'pointer',
+                            padding: '0 5px',
+                            fontSize: '12px',
+                            fontWeight: '600'
+                          }}
+                          title="답글"
+                        >
+                          💬 {(item.replies || []).length}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteChecklistItem(item.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#d32f2f',
+                            cursor: 'pointer',
+                            padding: '0 5px',
+                            fontSize: '14px',
+                            minWidth: '24px',
+                            padding: '2px 6px'
+                          }}
+                          title="삭제"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {/* 답글 섹션 (펼쳐진 경우만 표시) */}
+                      {expandedChecklistItem === item.id && (
+                        <div style={{
+                          marginLeft: '28px',
+                          paddingTop: '8px',
+                          borderTop: '1px solid #e0e0e0',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px'
+                        }}>
+                          {/* 기존 답글들 */}
+                          {(item.replies || []).length > 0 && (
+                            <div style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '6px',
+                              marginBottom: '8px'
+                            }}>
+                              {item.replies.map(reply => {
+                                const isEditingThisReply = editingReplyId === `${item.id}:${reply.id}`;
+                                return (
+                                  <div
+                                    key={reply.id}
+                                    style={{
+                                      padding: '8px 10px',
+                                      backgroundColor: isEditingThisReply ? '#fff' : '#f0f0f0',
+                                      borderRadius: '3px',
+                                      fontSize: '12px',
+                                      display: 'flex',
+                                      gap: '8px',
+                                      alignItems: 'flex-start',
+                                      border: isEditingThisReply ? '1px solid #2196F3' : 'none'
+                                    }}
+                                  >
+                                    {isEditingThisReply ? (
+                                      <textarea
+                                        value={editingReplyText}
+                                        onChange={(e) => setEditingReplyText(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSaveReply(item.id, reply.id);
+                                          } else if (e.key === 'Escape') {
+                                            handleCancelEditReply();
+                                          }
+                                        }}
+                                        onBlur={() => handleSaveReply(item.id, reply.id)}
+                                        autoFocus
+                                        style={{
+                                          flex: 1,
+                                          minHeight: '60px',
+                                          padding: '6px 8px',
+                                          border: '1px solid #ddd',
+                                          borderRadius: '3px',
+                                          fontSize: '12px',
+                                          fontFamily: 'inherit',
+                                          resize: 'vertical',
+                                          boxSizing: 'border-box'
+                                        }}
+                                      />
+                                    ) : (
+                                      <span
+                                        onDoubleClick={() => handleStartEditReply(item.id, reply.id, reply.text)}
+                                        style={{
+                                          flex: 1,
+                                          color: '#333',
+                                          whiteSpace: 'pre-wrap',
+                                          wordBreak: 'break-word',
+                                          lineHeight: '1.4',
+                                          cursor: 'pointer',
+                                          userSelect: 'none'
+                                        }}
+                                      >
+                                        {reply.text}
+                                      </span>
+                                    )}
+                                    {!isEditingThisReply && (
+                                      <button
+                                        onClick={() => handleDeleteChecklistReply(item.id, reply.id)}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: '#d32f2f',
+                                          cursor: 'pointer',
+                                          padding: '0',
+                                          fontSize: '12px',
+                                          minWidth: '16px',
+                                          flexShrink: 0
+                                        }}
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* 답글 입력 필드 */}
+                          <div style={{
+                            display: 'flex',
+                            gap: '6px',
+                            flexDirection: 'column'
+                          }}>
+                            <textarea
+                              value={expandedChecklistItem === item.id ? checklistReplyText : ''}
+                              onChange={(e) => setChecklistReplyText(e.target.value)}
+                              placeholder="답글 입력 (Shift+Enter: 줄바꿈)"
+                              style={{
+                                flex: 1,
+                                minHeight: '60px',
+                                padding: '8px 10px',
+                                border: '1px solid #ddd',
+                                borderRadius: '3px',
+                                fontSize: '12px',
+                                fontFamily: 'inherit',
+                                resize: 'vertical',
+                                boxSizing: 'border-box'
+                              }}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleAddChecklistReply(item.id);
+                                }
+                              }}
+                            />
+                            <button
+                              onClick={() => handleAddChecklistReply(item.id)}
+                              disabled={!checklistReplyText.trim()}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: checklistReplyText.trim() ? '#2196F3' : '#ddd',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '3px',
+                                cursor: checklistReplyText.trim() ? 'pointer' : 'not-allowed',
+                                fontSize: '12px',
+                                fontWeight: '600'
+                              }}
+                            >
+                              답글 추가
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -756,19 +1184,50 @@ const DynamicTableView = ({
                     fontWeight: '600'
                   };
 
-                  // 첫 번째 컬럼(기록일시) 너비 200px로 고정
-                  if (colIndex === 0) {
-                    columnStyle.width = '200px';
-                    columnStyle.minWidth = '200px';
-                    columnStyle.maxWidth = '200px';
-                  }
+                  // 일지 테이블: 첫 번째 컬럼(기록일) 너비 150px, 두 번째 컬럼(제목) 나머지
+                  const isJournalTable = tableMetadata.name?.includes('일지') || tableMetadata.name?.includes('journal');
+                  // 오늘 기록 테이블: 첫 번째 컬럼(기록일자) 너비 180px
+                  const isTodayLogTable = tableMetadata.name === '오늘 기록';
 
-                  // 두 번째 컬럼(제목) 너비 250px로 고정
-                  if (colIndex === 1) {
-                    columnStyle.width = '250px';
-                    columnStyle.minWidth = '250px';
-                    columnStyle.maxWidth = '250px';
-                    columnStyle.whiteSpace = 'normal';
+                  if (isJournalTable) {
+                    // 첫 번째 컬럼(기록일) 너비 150px로 고정
+                    if (colIndex === 0) {
+                      columnStyle.width = '150px';
+                      columnStyle.minWidth = '150px';
+                      columnStyle.maxWidth = '150px';
+                    }
+                    // 두 번째 컬럼(제목) - 나머지 공간 차지
+                    if (colIndex === 1) {
+                      columnStyle.whiteSpace = 'normal';
+                      columnStyle.flex = 1;
+                    }
+                  } else if (isTodayLogTable) {
+                    // 오늘 기록 테이블: 첫 번째 컬럼(기록일자) 너비 180px로 고정
+                    if (colIndex === 0) {
+                      columnStyle.width = '180px';
+                      columnStyle.minWidth = '180px';
+                      columnStyle.maxWidth = '180px';
+                    }
+                    // 두 번째 컬럼(내용) - 나머지 공간 차지
+                    if (colIndex === 1) {
+                      columnStyle.whiteSpace = 'normal';
+                      columnStyle.flex = 1;
+                    }
+                  } else {
+                    // 다른 테이블: 첫 번째 컬럼(기록일시) 너비 200px로 고정
+                    if (colIndex === 0) {
+                      columnStyle.width = '200px';
+                      columnStyle.minWidth = '200px';
+                      columnStyle.maxWidth = '200px';
+                    }
+
+                    // 두 번째 컬럼(제목) 너비 250px로 고정
+                    if (colIndex === 1) {
+                      columnStyle.width = '250px';
+                      columnStyle.minWidth = '250px';
+                      columnStyle.maxWidth = '250px';
+                      columnStyle.whiteSpace = 'normal';
+                    }
                   }
 
                   // 컬럼 타입별 클래스 지정
@@ -841,20 +1300,53 @@ const DynamicTableView = ({
                       padding: '12px'
                     };
 
-                    // 첫 번째 컬럼(기록일시) 너비 200px로 고정
-                    if (colIndex === 0) {
-                      columnStyle.width = '200px';
-                      columnStyle.minWidth = '200px';
-                      columnStyle.maxWidth = '200px';
-                    }
+                    // 일지 테이블: 첫 번째 컬럼(기록일) 너비 150px, 두 번째 컬럼(제목) 나머지
+                    const isJournalTable = tableMetadata.name?.includes('일지') || tableMetadata.name?.includes('journal');
+                    // 오늘 기록 테이블: 첫 번째 컬럼(기록일자) 너비 180px
+                    const isTodayLogTable = tableMetadata.name === '오늘 기록';
 
-                    // 두 번째 컬럼(제목) 너비 250px로 고정
-                    if (colIndex === 1) {
-                      columnStyle.width = '250px';
-                      columnStyle.minWidth = '250px';
-                      columnStyle.maxWidth = '250px';
-                      columnStyle.whiteSpace = 'normal';
-                      columnStyle.wordBreak = 'break-word';
+                    if (isJournalTable) {
+                      // 첫 번째 컬럼(기록일) 너비 150px로 고정
+                      if (colIndex === 0) {
+                        columnStyle.width = '150px';
+                        columnStyle.minWidth = '150px';
+                        columnStyle.maxWidth = '150px';
+                      }
+                      // 두 번째 컬럼(제목) - 나머지 공간 차지
+                      if (colIndex === 1) {
+                        columnStyle.whiteSpace = 'normal';
+                        columnStyle.wordBreak = 'break-word';
+                        columnStyle.flex = 1;
+                      }
+                    } else if (isTodayLogTable) {
+                      // 오늘 기록 테이블: 첫 번째 컬럼(기록일자) 너비 180px로 고정
+                      if (colIndex === 0) {
+                        columnStyle.width = '180px';
+                        columnStyle.minWidth = '180px';
+                        columnStyle.maxWidth = '180px';
+                      }
+                      // 두 번째 컬럼(내용) - 나머지 공간 차지
+                      if (colIndex === 1) {
+                        columnStyle.whiteSpace = 'normal';
+                        columnStyle.wordBreak = 'break-word';
+                        columnStyle.flex = 1;
+                      }
+                    } else {
+                      // 다른 테이블: 첫 번째 컬럼(기록일시) 너비 200px로 고정
+                      if (colIndex === 0) {
+                        columnStyle.width = '200px';
+                        columnStyle.minWidth = '200px';
+                        columnStyle.maxWidth = '200px';
+                      }
+
+                      // 두 번째 컬럼(제목) 너비 250px로 고정
+                      if (colIndex === 1) {
+                        columnStyle.width = '250px';
+                        columnStyle.minWidth = '250px';
+                        columnStyle.maxWidth = '250px';
+                        columnStyle.whiteSpace = 'normal';
+                        columnStyle.wordBreak = 'break-word';
+                      }
                     }
 
                     // 컬럼 타입별 클래스 지정

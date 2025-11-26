@@ -16,16 +16,24 @@ const DynamicRowModal = ({ isOpen, onClose, onSave, tableMetadata }) => {
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const timeString = `${year}-${month}-${date} ${hours}:${minutes}`;
+      const dateString = `${year}-${month}-${date}`; // 날짜만
 
       displayColumns.forEach(col => {
         const colName = col.name.toLowerCase();
         const colLabel = (col.label || '').toLowerCase();
 
+        // date 타입이고 "기록일자" 또는 "기록" + "일자" 포함하면 자동으로 오늘 날짜
+        if (col.type === 'date' &&
+            ((colName.includes('기록') && colName.includes('일자')) ||
+             (colLabel.includes('기록') && colLabel.includes('일자')) ||
+             colName === '기록일자' || colLabel === '기록일자')) {
+          autoInitialData[col.name] = dateString;
+        }
         // 기록일시 관련 컬럼 감지: 컬럼명이나 라벨에 "기록", "일시", "로그" 포함
-        if ((colName.includes('기록') || colLabel.includes('기록') ||
-             colName.includes('일시') || colLabel.includes('일시') ||
-             colName.includes('로그') || colLabel.includes('로그')) &&
-            (col.type === 'text' || !col.type)) {
+        else if ((colName.includes('기록') || colLabel.includes('기록') ||
+                  colName.includes('일시') || colLabel.includes('일시') ||
+                  colName.includes('로그') || colLabel.includes('로그')) &&
+                 (col.type === 'text' || !col.type)) {
           autoInitialData[col.name] = timeString;
         }
       });
