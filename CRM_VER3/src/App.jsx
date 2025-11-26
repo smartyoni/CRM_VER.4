@@ -2,18 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import FilterSidebar from './components/FilterSidebar';
 import Dashboard from './components/Dashboard';
 import CustomerTable from './components/CustomerTable';
-import PropertyTable from './components/PropertyTable';
 import BuildingTable from './components/BuildingTable';
 import ContractTable from './components/ContractTable';
 import CustomerModal from './components/CustomerModal';
-import PropertyModal from './components/PropertyModal';
 import BuildingModal from './components/BuildingModal';
 import ContractModal from './components/ContractModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
-import PropertyDetailPanel from './components/PropertyDetailPanel';
 import BuildingDetailPanel from './components/BuildingDetailPanel';
 import ContractDetailPanel from './components/ContractDetailPanel';
-import PropertyImporter from './components/PropertyImporter';
 import BuildingImporter from './components/BuildingImporter';
 import ContractImporter from './components/ContractImporter';
 import DynamicTableView from './components/DynamicTable/DynamicTableView';
@@ -38,8 +34,6 @@ import {
   deleteMeeting,
   savePropertySelection,
   deletePropertySelection,
-  saveProperty,
-  deleteProperty,
   saveProperties,
   saveBuilding,
   deleteBuilding,
@@ -93,16 +87,13 @@ function App() {
   const [buildings, setBuildings] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
-  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState(null);
   const [selectedContractId, setSelectedContractId] = useState(null);
   const [selectedMeetingId, setSelectedMeetingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
-  const [editingProperty, setEditingProperty] = useState(null);
   const [editingBuilding, setEditingBuilding] = useState(null);
   const [editingContract, setEditingContract] = useState(null);
   const [activeCustomerFilter, setActiveCustomerFilter] = useState('전체');
@@ -111,8 +102,7 @@ function App() {
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [dynamicTableFilters, setDynamicTableFilters] = useState({}); // { tableId: filterValue }
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '계약호실', '고객관리', '매물장', '건물정보'
-  const [isPropertyImporterOpen, setIsPropertyImporterOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '고객관리', '건물정보', '계약호실'
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
   const [isContractImporterOpen, setIsContractImporterOpen] = useState(false);
   const [dynamicTables, setDynamicTables] = useState([]);
@@ -349,8 +339,6 @@ function App() {
     } else if (activeTab === '고객관리') {
       setActiveCustomerFilter(filter);
       setActiveProgressFilter(null); // 상태 변경 시 진행상황 필터 초기화
-    } else if (activeTab === '매물장') {
-      setActivePropertyFilter(filter);
     } else if (activeTab === '건물정보') {
       setActiveBuildingFilter(filter);
     } else if (activeTab === '계약호실') {
@@ -439,42 +427,6 @@ function App() {
     }
   };
 
-  const handleSelectProperty = (property) => {
-    // 이미 선택된 매물을 다시 클릭하면 패널 닫기 (토글)
-    if (selectedPropertyId === property.id) {
-      setSelectedPropertyId(null);
-    } else {
-      setSelectedPropertyId(property.id);
-    }
-  };
-
-  const handleOpenPropertyModal = (property = null) => {
-    setEditingProperty(property);
-    setIsPropertyModalOpen(true);
-    // 모바일에서 detail panel 닫기
-    if (property && property.id === selectedPropertyId) {
-      setSelectedPropertyId(null);
-    }
-  };
-
-  const handleClosePropertyModal = () => {
-    setIsPropertyModalOpen(false);
-    setEditingProperty(null);
-  };
-
-  const handleSaveProperty = async (propertyData) => {
-    await saveProperty(propertyData);
-  };
-
-  const handleDeleteProperty = async (property) => {
-    if (confirm(`"${property.buildingName}" 매물을 정말 삭제하시겠습니까?`)) {
-      await deleteProperty(property.id);
-      if (selectedPropertyId === property.id) {
-        setSelectedPropertyId(null);
-      }
-    }
-  };
-
   // Building handlers
   const handleSelectBuilding = (building) => {
     if (selectedBuildingId === building.id) {
@@ -535,7 +487,6 @@ function App() {
   // 상세패널 닫기 핸들러 (검색창 클릭 시 호출)
   const handleCloseDetailPanel = () => {
     setSelectedCustomerId(null);
-    setSelectedPropertyId(null);
     setSelectedBuildingId(null);
     setSelectedContractId(null);
     setSelectedDynamicRowId(null);
@@ -653,16 +604,6 @@ function App() {
       if (selectedContractId === contract.id) {
         setSelectedContractId(null);
       }
-    }
-  };
-
-  const handleImportProperties = async (importedProperties) => {
-    try {
-      await saveProperties(importedProperties);
-      // Firestore 실시간 구독이 자동으로 state 업데이트
-    } catch (error) {
-      console.error('Error importing properties:', error);
-      throw error;
     }
   };
 
@@ -819,7 +760,7 @@ function App() {
     if (Math.abs(diff) < minSwipeDistance) return; // 너무 짧은 터치 무시
 
     // 탭 목록 정의
-    const tabs = ['대시보드', '고객관리', '매물장', '건물정보', '계약호실'];
+    const tabs = ['대시보드', '고객관리', '건물정보', '계약호실'];
     const dynamicTabIds = dynamicTables.map(t => t.id);
     const allTabs = [...tabs, ...dynamicTabIds];
 
@@ -1182,7 +1123,6 @@ function App() {
   })();
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
-  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
   const selectedContract = contracts.find(c => c.id === selectedContractId);
   const selectedBuilding = buildings.find(b => b.id === selectedBuildingId);
 
@@ -1249,7 +1189,7 @@ function App() {
                       <span style={{ fontSize: 'calc(1em - 4px)', color: '#ff0000', marginLeft: '20px' }}>{`${year}년 ${month}월 ${date}일 ${hours}:${minutes}`}</span>
                     </>
                   );
-                })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '매물장' ? '매물장' : activeTab === '건물정보' ? '건물정보' : activeTab === '계약호실' ? '계약호실' : dynamicTables.find(t => t.id === activeTab)?.name || 'Unknown'}
+                })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '건물정보' ? '건물정보' : activeTab === '계약호실' ? '계약호실' : dynamicTables.find(t => t.id === activeTab)?.name || 'Unknown'}
               </h1>
               {activeTab === '대시보드' && (
                 <span style={{ fontSize: '11px', color: '#999' }}>
@@ -1268,14 +1208,6 @@ function App() {
               ) : activeTab === '고객관리' ? (
                 <>
                   <button onClick={() => handleOpenModal()} className="btn-primary">+ 고객 추가</button>
-                  <button onClick={handleBackup} className="btn-secondary">백업</button>
-                  <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
-                  <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
-                </>
-              ) : activeTab === '매물장' ? (
-                <>
-                  <button onClick={() => handleOpenPropertyModal()} className="btn-primary">+ 매물 추가</button>
-                  <button onClick={() => setIsPropertyImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
                   <button onClick={handleBackup} className="btn-secondary">백업</button>
                   <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
                   <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
@@ -1352,15 +1284,6 @@ function App() {
                 onFavoriteCustomer={handleFavoriteCustomer}
                 activities={activities}
                 meetings={meetings}
-                onCloseDetailPanel={handleCloseDetailPanel}
-              />
-            ) : activeTab === '매물장' ? (
-              <PropertyTable
-                properties={properties}
-                onSelectProperty={handleSelectProperty}
-                onEdit={handleOpenPropertyModal}
-                onDelete={handleDeleteProperty}
-                selectedPropertyId={selectedPropertyId}
                 onCloseDetailPanel={handleCloseDetailPanel}
               />
             ) : activeTab === '건물정보' ? (
@@ -1456,27 +1379,6 @@ function App() {
           className="tab-button"
         >
           📋 고객목록
-        </button>
-        <button
-          onClick={() => setActiveTab('매물장')}
-          style={{
-            padding: '12px 24px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: '#000',
-            border: 'none',
-            backgroundColor: activeTab === '매물장' ? 'rgba(33, 150, 243, 0.12)' : 'transparent',
-            borderBottom: activeTab === '매물장' ? '4px solid #2196F3' : '4px solid transparent',
-            borderRadius: activeTab === '매물장' ? '8px 8px 0 0' : '0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: activeTab === '매물장' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
-            WebkitAppearance: 'none',
-            appearance: 'none'
-          }}
-          className="tab-button"
-        >
-          🏠 매물장
         </button>
         <button
           onClick={() => setActiveTab('건물정보')}
@@ -1579,35 +1481,6 @@ function App() {
             onSave={handleSaveCustomer}
             editData={editingCustomer}
           />
-        </>
-      )}
-
-      {activeTab === '매물장' && (
-        <>
-          {/* PropertyDetailPanel */}
-          <PropertyDetailPanel
-            selectedProperty={selectedProperty}
-            onClose={() => setSelectedPropertyId(null)}
-            onEditProperty={handleOpenPropertyModal}
-            onUpdateProperty={handleSaveProperty}
-            onDeleteProperty={handleDeleteProperty}
-          />
-
-          {/* PropertyModal */}
-          <PropertyModal
-            isOpen={isPropertyModalOpen}
-            onClose={handleClosePropertyModal}
-            onSave={handleSaveProperty}
-            editData={editingProperty}
-          />
-
-          {/* PropertyImporter */}
-          {isPropertyImporterOpen && (
-            <PropertyImporter
-              onImport={handleImportProperties}
-              onClose={() => setIsPropertyImporterOpen(false)}
-            />
-          )}
         </>
       )}
 

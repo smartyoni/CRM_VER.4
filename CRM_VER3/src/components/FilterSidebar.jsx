@@ -252,7 +252,7 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
     } else if (activeTab === '계약호실') {
       return ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'];
     } else if (activeTab === '대시보드') {
-      return ['고객관리', '미팅관리'];
+      return ['미팅관리', '고객관리'];
     }
     return [];
   })();
