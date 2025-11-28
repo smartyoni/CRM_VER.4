@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { STATUSES, CONTRACT_PROGRESS_STATUSES, JOURNAL_CATEGORIES } from '../constants';
+import { STATUSES, JOURNAL_CATEGORIES } from '../constants';
 
-const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, properties, buildings, contracts, dynamicTableData, dynamicTables, isMobileOpen, onMobileClose }) => {
+const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, meetings, activities, buildings, dynamicTableData, dynamicTables, isMobileOpen, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const getLastActivityDate = (customerId) => {
@@ -97,126 +97,6 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
       }
 
       return customers.filter(c => c.status === status).length;
-    } else if (activeTab === '계약호실') {
-      // 계약호실 필터
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (status === '전체') return contracts?.length || 0;
-
-      // "계약서작성" 필터: 계약서작성일이 오늘 이후
-      if (status === '계약서작성') {
-        return contracts?.filter(c => {
-          if (!c.contractDate) return false;
-
-          const contractDate = new Date(c.contractDate);
-          contractDate.setHours(0, 0, 0, 0);
-
-          return contractDate >= today;
-        }).length || 0;
-      }
-
-      // "잔금" 필터: 진행상황이 '잔금'이고 잔금일이 오늘 이후
-      if (status === '잔금') {
-        return contracts?.filter(c => {
-          if (c.progressStatus !== '잔금') return false;
-          if (!c.balanceDate) return false;
-
-          const balanceDate = new Date(c.balanceDate);
-          balanceDate.setHours(0, 0, 0, 0);
-
-          return balanceDate >= today;
-        }).length || 0;
-      }
-
-      // "금월계약" 필터: 계약서작성일이 이번 달
-      if (status === '금월계약') {
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-
-        return contracts?.filter(c => {
-          if (!c.contractDate) return false;
-
-          const contractDate = new Date(c.contractDate);
-          return (
-            contractDate.getFullYear() === currentYear &&
-            contractDate.getMonth() === currentMonth
-          );
-        }).length || 0;
-      }
-
-      // "금월잔금" 필터: 잔금일이 이번 달
-      if (status === '금월잔금') {
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-
-        return contracts?.filter(c => {
-          if (!c.balanceDate) return false;
-
-          const balanceDate = new Date(c.balanceDate);
-          return (
-            balanceDate.getFullYear() === currentYear &&
-            balanceDate.getMonth() === currentMonth
-          );
-        }).length || 0;
-      }
-
-      // "전월입금" 필터: 입금일이 전달
-      if (status === '전월입금') {
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-        const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
-        const previousYear = previousMonthDate.getFullYear();
-        const previousMonth = previousMonthDate.getMonth();
-
-        return contracts?.filter(c => {
-          if (!c.remainderPaymentDate) return false;
-
-          const paymentDate = new Date(c.remainderPaymentDate);
-          return (
-            paymentDate.getFullYear() === previousYear &&
-            paymentDate.getMonth() === previousMonth
-          );
-        }).length || 0;
-      }
-
-      // "금월입금" 필터: 입금일이 이번 달
-      if (status === '금월입금') {
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-
-        return contracts?.filter(c => {
-          if (!c.remainderPaymentDate) return false;
-
-          const paymentDate = new Date(c.remainderPaymentDate);
-          return (
-            paymentDate.getFullYear() === currentYear &&
-            paymentDate.getMonth() === currentMonth
-          );
-        }).length || 0;
-      }
-
-      // "다음달입금" 필터: 입금일이 다음달
-      if (status === '다음달입금') {
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-        const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
-        const nextYear = nextMonthDate.getFullYear();
-        const nextMonth = nextMonthDate.getMonth();
-
-        return contracts?.filter(c => {
-          if (!c.remainderPaymentDate) return false;
-
-          const paymentDate = new Date(c.remainderPaymentDate);
-          return (
-            paymentDate.getFullYear() === nextYear &&
-            paymentDate.getMonth() === nextMonth
-          );
-        }).length || 0;
-      }
-
-      // 해당 진행상황의 계약호실 개수
-      return contracts?.filter(c => c.progressStatus === status).length || 0;
     } else if (activeTab === '대시보드') {
       // 대시보드 필터
       if (status === '고객관리') {
@@ -249,8 +129,6 @@ const FilterSidebar = ({ activeTab, activeFilter, onFilterChange, customers, mee
 
     if (activeTab === '고객관리') {
       return ['전체', '오늘활동', '오늘미팅', '미팅일확정', '즐겨찾기', '답장대기', '보류'];
-    } else if (activeTab === '계약호실') {
-      return ['전체', '금월계약', '금월잔금', '전월입금', '금월입금', '다음달입금'];
     } else if (activeTab === '대시보드') {
       return ['미팅관리', '고객관리'];
     }

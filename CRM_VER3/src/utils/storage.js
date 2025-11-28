@@ -457,3 +457,47 @@ export const subscribeToBookmarks = (callback) => {
     console.error('Error in bookmarks subscription:', error);
   });
 };
+
+// ========== Data Deletion Functions ==========
+
+// 계약호실 데이터 전체 삭제
+export const deleteAllContracts = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, CONTRACTS_COLLECTION));
+    const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(promises);
+    console.log(`${snapshot.docs.length}개의 계약호실 데이터가 삭제되었습니다.`);
+    return snapshot.docs.length;
+  } catch (error) {
+    console.error('Error deleting all contracts:', error);
+    throw error;
+  }
+};
+
+// 매물 데이터 전체 삭제
+export const deleteAllProperties = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, PROPERTIES_COLLECTION));
+    const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(promises);
+    console.log(`${snapshot.docs.length}개의 매물 데이터가 삭제되었습니다.`);
+    return snapshot.docs.length;
+  } catch (error) {
+    console.error('Error deleting all properties:', error);
+    throw error;
+  }
+};
+
+// 매물 선택 데이터 전체 삭제
+export const deleteAllPropertySelections = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, PROPERTY_SELECTIONS_COLLECTION));
+    const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(promises);
+    console.log(`${snapshot.docs.length}개의 매물 선택 데이터가 삭제되었습니다.`);
+    return snapshot.docs.length;
+  } catch (error) {
+    console.error('Error deleting all property selections:', error);
+    throw error;
+  }
+};

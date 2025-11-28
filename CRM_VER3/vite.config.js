@@ -34,6 +34,23 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        cleanupOutdatedCaches: true,
+        // Ensure the service worker doesn't try to cache chrome-extension URLs
+        skipWaiting: true,
+        clientsClaim: true,
+        // Exclude chrome-extension URLs from precache manifest
+        manifestTransforms: [
+          (manifestEntries) => {
+            const manifest = manifestEntries.filter(entry => {
+              // Filter out any chrome-extension:// URLs
+              if (typeof entry.url === 'string' && entry.url.startsWith('chrome-extension://')) {
+                return false
+              }
+              return true
+            })
+            return { manifest }
+          }
+        ],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

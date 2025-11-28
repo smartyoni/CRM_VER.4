@@ -3,15 +3,11 @@ import FilterSidebar from './components/FilterSidebar';
 import Dashboard from './components/Dashboard';
 import CustomerTable from './components/CustomerTable';
 import BuildingTable from './components/BuildingTable';
-import ContractTable from './components/ContractTable';
 import CustomerModal from './components/CustomerModal';
 import BuildingModal from './components/BuildingModal';
-import ContractModal from './components/ContractModal';
 import CustomerDetailPanel from './components/CustomerDetailPanel';
 import BuildingDetailPanel from './components/BuildingDetailPanel';
-import ContractDetailPanel from './components/ContractDetailPanel';
 import BuildingImporter from './components/BuildingImporter';
-import ContractImporter from './components/ContractImporter';
 import DynamicTableView from './components/DynamicTable/DynamicTableView';
 import TableCreator from './components/DynamicTable/TableCreator';
 import DynamicCSVImporter from './components/DynamicTable/DynamicCSVImporter';
@@ -22,29 +18,21 @@ import {
   subscribeToCustomers,
   subscribeToActivities,
   subscribeToMeetings,
-  subscribeToPropertySelections,
-  subscribeToProperties,
   subscribeToBuildings,
-  subscribeToContracts,
   saveCustomer,
   deleteCustomer,
   saveActivity,
   deleteActivity,
   saveMeeting,
   deleteMeeting,
-  savePropertySelection,
-  deletePropertySelection,
-  saveProperties,
   saveBuilding,
   deleteBuilding,
   saveBuildings,
-  saveContract,
-  saveContracts,
-  deleteContract,
   removeDuplicateBuildings,
   subscribeToBookmarks,
   saveBookmark,
-  deleteBookmark
+  deleteBookmark,
+  deleteAllProperties
 } from './utils/storage';
 import {
   subscribeToTables,
@@ -54,7 +42,8 @@ import {
   saveTableRow,
   saveTableRows,
   deleteTableRow,
-  updateTableColumnRequired
+  updateTableColumnRequired,
+  deleteAllJournalTables
 } from './utils/dynamicTableStorage';
 import { doc, updateDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase/config';
@@ -82,29 +71,21 @@ function App() {
   const [customers, setCustomers] = useState([]);
   const [activities, setActivities] = useState([]);
   const [meetings, setMeetings] = useState([]);
-  const [propertySelections, setPropertySelections] = useState([]);
-  const [properties, setProperties] = useState([]);
   const [buildings, setBuildings] = useState([]);
-  const [contracts, setContracts] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState(null);
-  const [selectedContractId, setSelectedContractId] = useState(null);
   const [selectedMeetingId, setSelectedMeetingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
-  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [editingBuilding, setEditingBuilding] = useState(null);
-  const [editingContract, setEditingContract] = useState(null);
   const [activeCustomerFilter, setActiveCustomerFilter] = useState('전체');
-  const [activeContractFilter, setActiveContractFilter] = useState('전체');
   const [activeDashboardFilter, setActiveDashboardFilter] = useState('고객관리');
   const [activeProgressFilter, setActiveProgressFilter] = useState(null);
   const [dynamicTableFilters, setDynamicTableFilters] = useState({}); // { tableId: filterValue }
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '고객관리', '건물정보', '계약호실'
+  const [activeTab, setActiveTab] = useState('대시보드'); // '대시보드', '고객관리', '건물정보'
   const [isBuildingImporterOpen, setIsBuildingImporterOpen] = useState(false);
-  const [isContractImporterOpen, setIsContractImporterOpen] = useState(false);
   const [dynamicTables, setDynamicTables] = useState([]);
   const [dynamicTableData, setDynamicTableData] = useState({}); // { tableId: [rows] }
   const [selectedDynamicTableId, setSelectedDynamicTableId] = useState(null);
@@ -120,6 +101,50 @@ function App() {
   const dynamicTableUnsubscribes = useRef({});
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  // Firebase 최적화: 마이그레이션 상태 추적 및 무한 루프 방지
+  const migratedTablesRef = useRef(new Set());
+  const initTodayLogRef = useRef(false);
+  const lastCustomerStatusUpdateRef = useRef(null);
+  // 앱 시작 시 일지, 매물 데이터 삭제 (한 번만 실행)
+  useEffect(() => {
+    // localStorage에서 삭제 여부 확인 (새로고침 후에도 유지)
+    if (localStorage.getItem('dataDeletedOrSkipped')) return;
+
+    const deleteData = async () => {
+      const confirmed = window.confirm(
+        '아래 데이터가 삭제됩니다:\n' +
+        '- 일지테이블 (모든 동적 테이블 중 "일지"가 포함된 테이블)\n' +
+        '- 매물정보\n\n' +
+        '정말 삭제하겠습니까?'
+      );
+
+      if (!confirmed) {
+        // 취소했으므로 다시 묻지 않음 (localStorage에 저장)
+        localStorage.setItem('dataDeletedOrSkipped', 'true');
+        return;
+      }
+
+      try {
+        // 매물 데이터 삭제
+        const propertiesDeleted = await deleteAllProperties();
+        console.log(`✓ 매물: ${propertiesDeleted}개 삭제됨`);
+
+        // 일지 테이블 데이터 삭제
+        const journalResult = await deleteAllJournalTables();
+        console.log(`✓ 일지 테이블: ${journalResult.tablesDeleted}개 테이블, ${journalResult.rowsDeleted}개 행 삭제됨`);
+
+        // 삭제 완료 표시
+        localStorage.setItem('dataDeletedOrSkipped', 'true');
+        alert('데이터 삭제가 완료되었습니다. 페이지를 새로고침합니다.');
+        window.location.reload();
+      } catch (error) {
+        console.error('데이터 삭제 중 오류 발생:', error);
+        alert(`데이터 삭제 중 오류가 발생했습니다: ${error.message}`);
+      }
+    };
+
+    deleteData();
+  }, []);
 
   useEffect(() => {
     // Realtime subscriptions for Firestore
@@ -135,142 +160,20 @@ function App() {
       setMeetings(meetings);
     });
 
-    const unsubscribePropertySelections = subscribeToPropertySelections((propertySelections) => {
-      setPropertySelections(propertySelections);
-    });
-
-    const unsubscribeProperties = subscribeToProperties((properties) => {
-      setProperties(properties);
-    });
-
     const unsubscribeBuildings = subscribeToBuildings((buildings) => {
       setBuildings(buildings);
-    });
-
-    const unsubscribeContracts = subscribeToContracts((contracts) => {
-      setContracts(contracts);
     });
 
     const unsubscribeBookmarks = subscribeToBookmarks((bookmarks) => {
       setBookmarks(bookmarks);
     });
 
-    // 동적 테이블 메타데이터 구독
+    // 동적 테이블 메타데이터 구독 - 마이그레이션/테이블 생성은 별도 useEffect로 이동
     const unsubscribeTables = subscribeToTables((tables) => {
       setDynamicTables(tables);
 
-      // "오늘 기록" 테이블 자동 생성
-      const hasTodayLogTable = tables.some(t => t.name === '오늘 기록');
-      if (!hasTodayLogTable && tables.length > 0) {
-        // 테이블이 로드되었는데 "오늘 기록"이 없으면 생성
-        saveTable({
-          id: 'today-log-table',
-          name: '오늘 기록',
-          icon: '📝',
-          columns: [
-            {
-              name: '기록일자',
-              label: '기록일자',
-              type: 'date',
-              required: true,
-              display: true
-            },
-            {
-              name: '내용',
-              label: '내용',
-              type: 'text',
-              required: false,
-              display: true
-            }
-          ],
-          createdAt: new Date().toISOString()
-        }).catch(err => console.log('오늘 기록 테이블 생성 실패:', err));
-      }
-
-      // 각 테이블의 데이터 구독 설정 및 마이그레이션
+      // 각 테이블의 데이터 구독만 설정 (마이그레이션 제거)
       tables.forEach(table => {
-        // 마이그레이션: 제목과 내용 컬럼의 required를 false로 변경
-        if (table.columns) {
-          const titleColumn = table.columns.find(col =>
-            col.name === '제목' || col.name === 'title' || col.label === '제목'
-          );
-          const contentColumn = table.columns.find(col =>
-            col.name === '내용' || col.name === 'content' || col.label === '내용'
-          );
-
-          // 제목 컬럼의 required가 true이면 false로 변경
-          if (titleColumn && titleColumn.required === true) {
-            updateTableColumnRequired(table.id, titleColumn.name, false).catch(err =>
-              console.log('제목 컬럼 업데이트 실패:', err)
-            );
-          }
-
-          // 내용 컬럼의 required가 true이면 false로 변경
-          if (contentColumn && contentColumn.required === true) {
-            updateTableColumnRequired(table.id, contentColumn.name, false).catch(err =>
-              console.log('내용 컬럼 업데이트 실패:', err)
-            );
-          }
-
-          // 마이그레이션: 일지 테이블 컬럼 순서 및 가시성 조정
-          if (table.name?.includes('일지') || table.name?.includes('journal')) {
-            // 현재 컬럼 상태 확인 (이미 올바르게 설정되었는지 체크)
-            const 기록일Col = table.columns.find(col =>
-              col.name === '기록일' || col.label === '기록일'
-            );
-            const 제목Col = table.columns.find(col =>
-              col.name === '제목' || col.label === '제목'
-            );
-            const 내용Col = table.columns.find(col =>
-              col.name === '내용' || col.label === '내용'
-            );
-
-            // 이미 올바르게 설정되었는지 확인
-            const isAlreadyMigrated =
-              기록일Col?.display === true &&
-              제목Col?.display === true &&
-              내용Col?.display === false &&
-              table.columns[0] === 기록일Col &&
-              table.columns[1] === 제목Col;
-
-            // 아직 마이그레이션되지 않았으면 업데이트
-            if (!isAlreadyMigrated) {
-              const updatedColumns = table.columns.map(col => {
-                const colName = col.name;
-                const colLabel = col.label || '';
-
-                // 표시할 컬럼: 기록일, 제목만 display: true (내용 컬럼 제외)
-                if (colName === '기록일' || colLabel === '기록일' ||
-                    colName === '제목' || colLabel === '제목') {
-                  return { ...col, display: true };
-                }
-
-                // 나머지 컬럼은 숨김 (내용 포함)
-                return { ...col, display: false };
-              });
-
-              // 컬럼 순서 재정렬: 기록일 → 제목
-              const reorderedColumns = [];
-
-              if (기록일Col) reorderedColumns.push(기록일Col);
-              if (제목Col) reorderedColumns.push(제목Col);
-
-              // 나머지 컬럼 추가 (display: false 상태)
-              updatedColumns.forEach(col => {
-                if (col !== 기록일Col && col !== 제목Col) {
-                  reorderedColumns.push(col);
-                }
-              });
-
-              // Firestore 업데이트
-              const tableRef = doc(db, 'tables', table.id);
-              updateDoc(tableRef, { columns: reorderedColumns }).catch(err =>
-                console.log('일지 테이블 컬럼 재배치 실패:', err)
-              );
-            }
-          }
-        }
-
         // 기존 구독 해제
         if (dynamicTableUnsubscribes.current[table.id]) {
           dynamicTableUnsubscribes.current[table.id]();
@@ -291,10 +194,7 @@ function App() {
       unsubscribeCustomers();
       unsubscribeActivities();
       unsubscribeMeetings();
-      unsubscribePropertySelections();
-      unsubscribeProperties();
       unsubscribeBuildings();
-      unsubscribeContracts();
       unsubscribeBookmarks();
       unsubscribeTables();
 
@@ -305,14 +205,19 @@ function App() {
     };
   }, []);
 
-  // 과거 미팅이 있는 고객을 자동으로 진행중으로 변경
+  // 과거 미팅이 있는 고객을 자동으로 진행중으로 변경 (최적화: 변경 사항만 감지)
   useEffect(() => {
     if (customers.length === 0 || meetings.length === 0) return;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const customersToUpdate = [];
+
     customers.forEach(customer => {
+      // 이미 진행중인 고객은 스킵
+      if (customer.status !== '신규') return;
+
       const customerMeetings = meetings.filter(m => m.customerId === customer.id);
       const hasPastMeeting = customerMeetings.some(m => {
         const meetingDate = new Date(m.date);
@@ -320,53 +225,143 @@ function App() {
         return meetingDate < today;
       });
 
-      if (hasPastMeeting && customer.status === '신규') {
-        saveCustomer({ ...customer, status: '진행중' });
+      if (hasPastMeeting) {
+        customersToUpdate.push(customer);
       }
+    });
+
+    // 변경할 고객이 없으면 Firebase 쓰기 생략
+    if (customersToUpdate.length === 0) return;
+
+    // 마지막 업데이트 시간과 비교 (3초 이내 중복 업데이트 방지)
+    const now = Date.now();
+    if (lastCustomerStatusUpdateRef.current && (now - lastCustomerStatusUpdateRef.current) < 3000) {
+      return;
+    }
+
+    lastCustomerStatusUpdateRef.current = now;
+
+    customersToUpdate.forEach(customer => {
+      saveCustomer({ ...customer, status: '진행중' });
     });
   }, [customers, meetings]);
 
-  // 계약호실 진행상황 자동 변경
-  // 계약서작성일 다음날 → 잔금, 잔금일 다음날 → 입주완료
+  // "오늘 기록" 테이블 자동 생성 (한 번만 실행)
   useEffect(() => {
-    if (contracts.length === 0) return;
+    if (dynamicTables.length === 0 || initTodayLogRef.current) return;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const hasTodayLogTable = dynamicTables.some(t => t.name === '오늘 기록');
+    if (!hasTodayLogTable) {
+      initTodayLogRef.current = true;
+      saveTable({
+        id: 'today-log-table',
+        name: '오늘 기록',
+        icon: '📝',
+        columns: [
+          {
+            name: '기록일자',
+            label: '기록일자',
+            type: 'date',
+            required: true,
+            display: true
+          },
+          {
+            name: '내용',
+            label: '내용',
+            type: 'text',
+            required: false,
+            display: true
+          }
+        ],
+        createdAt: new Date().toISOString()
+      }).catch(err => console.log('오늘 기록 테이블 생성 실패:', err));
+    }
+  }, [dynamicTables]);
 
-    contracts.forEach(contract => {
-      let newProgressStatus = null;
+  // 테이블 마이그레이션 작업 (한 번만 실행)
+  useEffect(() => {
+    if (dynamicTables.length === 0) return;
 
-      // 잔금일이 지났는지 확인 (잔금일 다음날부터 입주완료로 변경)
-      if (contract.balanceDate && contract.progressStatus !== '입주완료') {
-        const balanceDate = new Date(contract.balanceDate);
-        balanceDate.setHours(0, 0, 0, 0);
-        const nextDayAfterBalance = new Date(balanceDate);
-        nextDayAfterBalance.setDate(nextDayAfterBalance.getDate() + 1);
+    dynamicTables.forEach(table => {
+      // 이미 마이그레이션된 테이블은 스킵
+      if (migratedTablesRef.current.has(table.id)) return;
 
-        if (today >= nextDayAfterBalance) {
-          newProgressStatus = '입주완료';
+      if (table.columns) {
+        const titleColumn = table.columns.find(col =>
+          col.name === '제목' || col.name === 'title' || col.label === '제목'
+        );
+        const contentColumn = table.columns.find(col =>
+          col.name === '내용' || col.name === 'content' || col.label === '내용'
+        );
+
+        // 제목 컬럼의 required가 true이면 false로 변경
+        if (titleColumn && titleColumn.required === true) {
+          updateTableColumnRequired(table.id, titleColumn.name, false).catch(err =>
+            console.log('제목 컬럼 업데이트 실패:', err)
+          );
         }
-      }
 
-      // 계약서작성일이 지났는지 확인 (계약서작성일 다음날부터 잔금으로 변경)
-      if (!newProgressStatus && contract.contractDate && contract.progressStatus !== '잔금' && contract.progressStatus !== '입주완료') {
-        const contractDate = new Date(contract.contractDate);
-        contractDate.setHours(0, 0, 0, 0);
-        const nextDayAfterContract = new Date(contractDate);
-        nextDayAfterContract.setDate(nextDayAfterContract.getDate() + 1);
-
-        if (today >= nextDayAfterContract) {
-          newProgressStatus = '잔금';
+        // 내용 컬럼의 required가 true이면 false로 변경
+        if (contentColumn && contentColumn.required === true) {
+          updateTableColumnRequired(table.id, contentColumn.name, false).catch(err =>
+            console.log('내용 컬럼 업데이트 실패:', err)
+          );
         }
-      }
 
-      // 진행상황이 변경되어야 하는 경우
-      if (newProgressStatus && contract.progressStatus !== newProgressStatus) {
-        saveContract({ ...contract, progressStatus: newProgressStatus });
+        // 마이그레이션: 일지 테이블 컬럼 순서 및 가시성 조정
+        if (table.name?.includes('일지') || table.name?.includes('journal')) {
+          const 기록일Col = table.columns.find(col =>
+            col.name === '기록일' || col.label === '기록일'
+          );
+          const 제목Col = table.columns.find(col =>
+            col.name === '제목' || col.label === '제목'
+          );
+          const 내용Col = table.columns.find(col =>
+            col.name === '내용' || col.label === '내용'
+          );
+
+          const isAlreadyMigrated =
+            기록일Col?.display === true &&
+            제목Col?.display === true &&
+            내용Col?.display === false &&
+            table.columns[0] === 기록일Col &&
+            table.columns[1] === 제목Col;
+
+          if (!isAlreadyMigrated) {
+            const updatedColumns = table.columns.map(col => {
+              const colName = col.name;
+              const colLabel = col.label || '';
+
+              if (colName === '기록일' || colLabel === '기록일' ||
+                  colName === '제목' || colLabel === '제목') {
+                return { ...col, display: true };
+              }
+
+              return { ...col, display: false };
+            });
+
+            const reorderedColumns = [];
+            if (기록일Col) reorderedColumns.push(기록일Col);
+            if (제목Col) reorderedColumns.push(제목Col);
+
+            updatedColumns.forEach(col => {
+              if (col !== 기록일Col && col !== 제목Col) {
+                reorderedColumns.push(col);
+              }
+            });
+
+            const tableRef = doc(db, 'tables', table.id);
+            updateDoc(tableRef, { columns: reorderedColumns }).catch(err =>
+              console.log('일지 테이블 컬럼 재배치 실패:', err)
+            );
+          }
+        }
+
+        // 마이그레이션 완료 표시
+        migratedTablesRef.current.add(table.id);
       }
     });
-  }, [contracts]);
+  }, [dynamicTables]);
 
   const handleFilterChange = (filter) => {
     // 동적 테이블 필터
@@ -380,8 +375,6 @@ function App() {
       setActiveProgressFilter(null); // 상태 변경 시 진행상황 필터 초기화
     } else if (activeTab === '건물정보') {
       setActiveBuildingFilter(filter);
-    } else if (activeTab === '계약호실') {
-      setActiveContractFilter(filter);
     } else if (activeTab === '대시보드') {
       setActiveDashboardFilter(filter); // 현재는 고객관리 필터만 사용
     }
@@ -456,16 +449,6 @@ function App() {
     }
   };
 
-  const handleSavePropertySelection = async (propertySelectionData) => {
-    await savePropertySelection(propertySelectionData);
-  };
-
-  const handleDeletePropertySelection = async (propertySelectionId) => {
-    if (confirm('정말 이 미팅매물준비를 삭제하시겠습니까?')) {
-      await deletePropertySelection(propertySelectionId);
-    }
-  };
-
   // Building handlers
   const handleSelectBuilding = (building) => {
     if (selectedBuildingId === building.id) {
@@ -501,33 +484,10 @@ function App() {
     }
   };
 
-  // Contract handlers
-  const handleSelectContract = (contract) => {
-    if (selectedContractId === contract.id) {
-      setSelectedContractId(null);
-    } else {
-      setSelectedContractId(contract.id);
-    }
-  };
-
-  const handleOpenContractModal = (contract = null) => {
-    setEditingContract(contract);
-    setIsContractModalOpen(true);
-    if (contract && contract.id === selectedContractId) {
-      setSelectedContractId(null);
-    }
-  };
-
-  const handleCloseContractModal = () => {
-    setIsContractModalOpen(false);
-    setEditingContract(null);
-  };
-
   // 상세패널 닫기 핸들러 (검색창 클릭 시 호출)
   const handleCloseDetailPanel = () => {
     setSelectedCustomerId(null);
     setSelectedBuildingId(null);
-    setSelectedContractId(null);
     setSelectedDynamicRowId(null);
   };
 
@@ -629,39 +589,12 @@ function App() {
     }
   };
 
-  const handleSaveContract = async (contractData) => {
-    await saveContract(contractData);
-    // 로컬 상태를 즉시 업데이트하여 UI를 빠르게 반영
-    setContracts(prevContracts =>
-      prevContracts.map(c => c.id === contractData.id ? contractData : c)
-    );
-  };
-
-  const handleDeleteContract = async (contract) => {
-    if (confirm(`"${contract.buildingName} ${contract.roomNumber}" 계약호실을 정말 삭제하시겠습니까?`)) {
-      await deleteContract(contract.id);
-      if (selectedContractId === contract.id) {
-        setSelectedContractId(null);
-      }
-    }
-  };
-
   const handleImportBuildings = async (importedBuildings) => {
     try {
       await saveBuildings(importedBuildings);
       // Firestore 실시간 구독이 자동으로 state 업데이트
     } catch (error) {
       console.error('Error importing buildings:', error);
-      throw error;
-    }
-  };
-
-  const handleImportContracts = async (importedContracts) => {
-    try {
-      await saveContracts(importedContracts);
-      // Firestore 실시간 구독이 자동으로 state 업데이트
-    } catch (error) {
-      console.error('Error importing contracts:', error);
       throw error;
     }
   };
@@ -751,12 +684,10 @@ function App() {
         const data = JSON.parse(e.target.result);
         if (data && Array.isArray(data.customers) && Array.isArray(data.activities)) {
           // Firestore에 각 문서 저장
-          const { saveCustomers, saveActivities, saveMeetings, savePropertySelections, saveProperties, saveBuildings } = await import('./utils/storage');
+          const { saveCustomers, saveActivities, saveMeetings, saveBuildings } = await import('./utils/storage');
           await saveCustomers(data.customers || []);
           await saveActivities(data.activities || []);
           await saveMeetings(data.meetings || []);
-          await savePropertySelections(data.propertySelections || []);
-          await saveProperties(data.properties || []);
           await saveBuildings(data.buildings || []);
           alert('데이터가 성공적으로 복원되었습니다.');
         } else {
@@ -799,7 +730,7 @@ function App() {
     if (Math.abs(diff) < minSwipeDistance) return; // 너무 짧은 터치 무시
 
     // 탭 목록 정의
-    const tabs = ['대시보드', '고객관리', '건물정보', '계약호실'];
+    const tabs = ['대시보드', '고객관리', '건물정보'];
     const dynamicTabIds = dynamicTables.map(t => t.id);
     const allTabs = [...tabs, ...dynamicTabIds];
 
@@ -1014,130 +945,6 @@ function App() {
     return filtered;
   })();
 
-
-  // 계약호실 필터링
-  const filteredContracts = (() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (activeContractFilter === '전체') {
-      return contracts;
-    }
-
-    // "계약서작성" 필터: 진행상황이 '계약서작성'이고 계약서작성일이 오늘 이후
-    if (activeContractFilter === '계약서작성') {
-      return contracts.filter(c => {
-        if (c.progressStatus !== '계약서작성') return false;
-        if (!c.contractDate) return false;
-
-        const contractDate = new Date(c.contractDate);
-        contractDate.setHours(0, 0, 0, 0);
-
-        return contractDate >= today;
-      });
-    }
-
-    if (activeContractFilter === '잔금') {
-      return contracts.filter(c => {
-        if (c.progressStatus !== '잔금') return false;
-        if (!c.balanceDate) return false;
-
-        const balanceDate = new Date(c.balanceDate);
-        balanceDate.setHours(0, 0, 0, 0);
-
-        return balanceDate >= today;
-      });
-    }
-
-    // "금월계약" 필터: 계약서작성일이 이번 달
-    if (activeContractFilter === '금월계약') {
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth();
-
-      return contracts.filter(c => {
-        if (!c.contractDate) return false;
-
-        const contractDate = new Date(c.contractDate);
-        return (
-          contractDate.getFullYear() === currentYear &&
-          contractDate.getMonth() === currentMonth
-        );
-      });
-    }
-
-    // "금월잔금" 필터: 잔금일이 이번 달
-    if (activeContractFilter === '금월잔금') {
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth();
-
-      return contracts.filter(c => {
-        if (!c.balanceDate) return false;
-
-        const balanceDate = new Date(c.balanceDate);
-        return (
-          balanceDate.getFullYear() === currentYear &&
-          balanceDate.getMonth() === currentMonth
-        );
-      });
-    }
-
-    // "전월입금" 필터: 입금일이 전달
-    if (activeContractFilter === '전월입금') {
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth();
-      const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
-      const previousYear = previousMonthDate.getFullYear();
-      const previousMonth = previousMonthDate.getMonth();
-
-      return contracts.filter(c => {
-        if (!c.remainderPaymentDate) return false;
-
-        const paymentDate = new Date(c.remainderPaymentDate);
-        return (
-          paymentDate.getFullYear() === previousYear &&
-          paymentDate.getMonth() === previousMonth
-        );
-      });
-    }
-
-    // "금월입금" 필터: 입금일이 이번 달
-    if (activeContractFilter === '금월입금') {
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth();
-
-      return contracts.filter(c => {
-        if (!c.remainderPaymentDate) return false;
-
-        const paymentDate = new Date(c.remainderPaymentDate);
-        return (
-          paymentDate.getFullYear() === currentYear &&
-          paymentDate.getMonth() === currentMonth
-        );
-      });
-    }
-
-    // "다음달입금" 필터: 입금일이 다음달
-    if (activeContractFilter === '다음달입금') {
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth();
-      const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
-      const nextYear = nextMonthDate.getFullYear();
-      const nextMonth = nextMonthDate.getMonth();
-
-      return contracts.filter(c => {
-        if (!c.remainderPaymentDate) return false;
-
-        const paymentDate = new Date(c.remainderPaymentDate);
-        return (
-          paymentDate.getFullYear() === nextYear &&
-          paymentDate.getMonth() === nextMonth
-        );
-      });
-    }
-
-    return contracts.filter(c => c.progressStatus === activeContractFilter);
-  })();
-
   // 동적 테이블 필터링 (카테고리 기반)
   const filteredDynamicTableData = (() => {
     if (!dynamicTables.some(t => t.id === activeTab)) {
@@ -1162,7 +969,6 @@ function App() {
   })();
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
-  const selectedContract = contracts.find(c => c.id === selectedContractId);
   const selectedBuilding = buildings.find(b => b.id === selectedBuildingId);
 
   return (
@@ -1188,7 +994,6 @@ function App() {
           activeFilter={
             dynamicTables && dynamicTables.some(t => t.id === activeTab) ? (dynamicTableFilters[activeTab] || '전체') :
             activeTab === '고객관리' ? activeCustomerFilter :
-            activeTab === '계약호실' ? activeContractFilter :
             activeTab === '대시보드' ? activeDashboardFilter :
             ''
           }
@@ -1196,9 +1001,7 @@ function App() {
           customers={customers}
           meetings={meetings}
           activities={activities}
-          properties={properties}
           buildings={buildings}
-          contracts={contracts}
           dynamicTableData={dynamicTableData}
           dynamicTables={dynamicTables}
           isMobileOpen={isMobileSidebarOpen}
@@ -1228,7 +1031,7 @@ function App() {
                       <span style={{ fontSize: 'calc(1em - 4px)', color: '#ff0000', marginLeft: '20px' }}>{`${year}년 ${month}월 ${date}일 ${hours}:${minutes}`}</span>
                     </>
                   );
-                })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '건물정보' ? '건물정보' : activeTab === '계약호실' ? '계약호실' : dynamicTables.find(t => t.id === activeTab)?.name || 'Unknown'}
+                })() : activeTab === '고객관리' ? '고객 목록' : activeTab === '건물정보' ? '건물정보' : dynamicTables.find(t => t.id === activeTab)?.name || 'Unknown'}
               </h1>
               {activeTab === '대시보드' && (
                 <span style={{ fontSize: '11px', color: '#999' }}>
@@ -1272,15 +1075,7 @@ function App() {
                     테이블 삭제
                   </button>
                 </>
-              ) : (
-                <>
-                  <button onClick={() => handleOpenContractModal()} className="btn-primary">+ 계약호실 추가</button>
-                  <button onClick={() => setIsContractImporterOpen(true)} className="btn-secondary">CSV 임포트</button>
-                  <button onClick={handleBackup} className="btn-secondary">백업</button>
-                  <button onClick={() => restoreInputRef.current?.click()} className="btn-secondary">복원</button>
-                  <input type="file" ref={restoreInputRef} onChange={handleRestore} style={{ display: 'none' }} accept=".json"/>
-                </>
-              )}
+              ) : null}
             </div>
           </header>
           <main className="table-container" style={{ flex: 1, overflow: activeTab === '대시보드' ? 'auto' : 'auto' }}>
@@ -1289,18 +1084,12 @@ function App() {
                 customers={customers}
                 meetings={meetings}
                 activities={activities}
-                properties={properties}
-                contracts={contracts}
                 activeFilter={activeDashboardFilter}
                 onNavigate={(tab, filter, itemId, itemType, meetingId) => {
                   setActiveTab(tab);
                   setActiveCustomerFilter(filter);
-                  // 계약 클릭 시 상세패널 열기
-                  if (itemType === 'contract') {
-                    setSelectedContractId(itemId);
-                  }
                   // 고객 클릭 시 상세패널 열기
-                  else if (itemType === 'customer') {
+                  if (itemType === 'customer') {
                     setSelectedCustomerId(itemId);
                     // 미팅ID가 전달되면 해당 미팅 선택 (미팅탭에서 모달을 띄우게 함)
                     if (meetingId) {
@@ -1344,17 +1133,7 @@ function App() {
                 selectedRowId={selectedDynamicRowId}
                 onCloseDetailPanel={handleCloseDetailPanel}
               />
-            ) : (
-              <ContractTable
-                contracts={filteredContracts}
-                onSelectContract={handleSelectContract}
-                onEdit={handleOpenContractModal}
-                onDelete={handleDeleteContract}
-                selectedContractId={selectedContractId}
-                onCloseDetailPanel={handleCloseDetailPanel}
-                activeFilter={activeContractFilter}
-              />
-            )}
+            ) : null}
           </main>
         </div>
       </div>
@@ -1446,28 +1225,6 @@ function App() {
         )}
 
         <button
-          onClick={() => setActiveTab('계약호실')}
-          style={{
-            padding: '12px 24px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: '#000',
-            border: 'none',
-            backgroundColor: activeTab === '계약호실' ? 'rgba(76, 175, 80, 0.12)' : 'transparent',
-            borderBottom: activeTab === '계약호실' ? '4px solid #8BC34A' : '4px solid transparent',
-            borderRadius: activeTab === '계약호실' ? '8px 8px 0 0' : '0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: activeTab === '계약호실' ? '0 -2px 8px rgba(0,0,0,0.08)' : 'none',
-            WebkitAppearance: 'none',
-            appearance: 'none'
-          }}
-          className="tab-button"
-        >
-          📄 계약호실
-        </button>
-
-        <button
           onClick={() => setActiveTab('건물정보')}
           style={{
             padding: '12px 24px',
@@ -1555,9 +1312,6 @@ function App() {
             meetings={meetings}
             onSaveMeeting={handleSaveMeeting}
             onDeleteMeeting={handleDeleteMeeting}
-            propertySelections={propertySelections}
-            onSavePropertySelection={handleSavePropertySelection}
-            onDeletePropertySelection={handleDeletePropertySelection}
             selectedMeetingId={selectedMeetingId}
             onClearSelectedMeeting={() => setSelectedMeetingId(null)}
           />
@@ -1601,35 +1355,6 @@ function App() {
             onSave={handleSaveBuilding}
             building={editingBuilding}
           />
-        </>
-      )}
-
-      {activeTab === '계약호실' && (
-        <>
-          {/* ContractDetailPanel */}
-          <ContractDetailPanel
-            selectedContract={selectedContract}
-            onClose={() => setSelectedContractId(null)}
-            onEditContract={handleOpenContractModal}
-            onUpdateContract={handleSaveContract}
-            onDeleteContract={handleDeleteContract}
-          />
-
-          {/* ContractModal */}
-          <ContractModal
-            isOpen={isContractModalOpen}
-            onClose={handleCloseContractModal}
-            onSave={handleSaveContract}
-            editData={editingContract}
-          />
-
-          {/* ContractImporter */}
-          {isContractImporterOpen && (
-            <ContractImporter
-              onImport={handleImportContracts}
-              onClose={() => setIsContractImporterOpen(false)}
-            />
-          )}
         </>
       )}
 

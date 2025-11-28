@@ -5,63 +5,22 @@ const Dashboard = ({
   customers = [],
   meetings = [],
   activities = [],
-  properties = [],
-  contracts = [],
   activeFilter = '오늘업무',
   onNavigate = () => {}
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
 
-  // 디버깅: contracts 데이터 확인
-  React.useEffect(() => {
-    if (activeFilter === '중개업무') {
-      console.log('Dashboard contracts:', contracts);
-      console.log('Contracts with historyCards:', contracts.filter(c => c.historyCards && c.historyCards.length > 0));
-    }
-  }, [contracts, activeFilter]);
   // 대시보드 통계 계산
   const stats = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // 오늘의 계약 (계약서작성일이 오늘)
-    const todayContracts = contracts.filter(c => {
-      if (!c.contractDate) return false;
-      const contractDate = new Date(c.contractDate);
-      contractDate.setHours(0, 0, 0, 0);
-      return contractDate.getTime() === today.getTime();
-    });
-
-    // 오늘의 잔금 (잔금일이 오늘)
-    const todayBalance = contracts.filter(c => {
-      if (!c.balanceDate) return false;
-      const balanceDate = new Date(c.balanceDate);
-      balanceDate.setHours(0, 0, 0, 0);
-      return balanceDate.getTime() === today.getTime();
-    });
 
     // 오늘의 미팅
     const todayMeetings = meetings.filter(m => {
       const meetingDate = new Date(m.date);
       meetingDate.setHours(0, 0, 0, 0);
       return meetingDate.getTime() === today.getTime();
-    });
-
-    // 앞으로 예정된 계약 (미래)
-    const futureContracts = contracts.filter(c => {
-      if (!c.contractDate) return false;
-      const contractDate = new Date(c.contractDate);
-      contractDate.setHours(0, 0, 0, 0);
-      return contractDate.getTime() > today.getTime();
-    });
-
-    // 앞으로 예정된 잔금 (미래)
-    const futureBalance = contracts.filter(c => {
-      if (!c.balanceDate) return false;
-      const balanceDate = new Date(c.balanceDate);
-      balanceDate.setHours(0, 0, 0, 0);
-      return balanceDate.getTime() > today.getTime();
     });
 
     // 앞으로 예정된 미팅 (미래)
@@ -120,94 +79,16 @@ const Dashboard = ({
 
     const weekChange = newThisWeek.length - lastWeekNew.length;
 
-    // 금월계약 (계약서작성일이 이번 달)
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-
-    const thisMonthContracts = contracts.filter(c => {
-      if (!c.contractDate) return false;
-      const contractDate = new Date(c.contractDate);
-      return (
-        contractDate.getFullYear() === currentYear &&
-        contractDate.getMonth() === currentMonth
-      );
-    });
-
-    // 금월잔금 (잔금일이 이번 달)
-    const thisMonthBalance = contracts.filter(c => {
-      if (!c.balanceDate) return false;
-      const balanceDate = new Date(c.balanceDate);
-      return (
-        balanceDate.getFullYear() === currentYear &&
-        balanceDate.getMonth() === currentMonth
-      );
-    });
-
-    // 전월입금 (입금일이 지난달)
-    const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
-    const previousYear = previousMonthDate.getFullYear();
-    const previousMonth = previousMonthDate.getMonth();
-
-    const lastMonthPayment = contracts.filter(c => {
-      if (!c.remainderPaymentDate) return false;
-      const paymentDate = new Date(c.remainderPaymentDate);
-      return (
-        paymentDate.getFullYear() === previousYear &&
-        paymentDate.getMonth() === previousMonth
-      );
-    });
-
-    // 금월입금 (입금일이 이번 달)
-    const thisMonthPayment = contracts.filter(c => {
-      if (!c.remainderPaymentDate) return false;
-      const paymentDate = new Date(c.remainderPaymentDate);
-      return (
-        paymentDate.getFullYear() === currentYear &&
-        paymentDate.getMonth() === currentMonth
-      );
-    });
-
-    // 다음달입금 (입금일이 다음달)
-    const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
-    const nextYear = nextMonthDate.getFullYear();
-    const nextMonth = nextMonthDate.getMonth();
-
-    const nextMonthPayment = contracts.filter(c => {
-      if (!c.remainderPaymentDate) return false;
-      const paymentDate = new Date(c.remainderPaymentDate);
-      return (
-        paymentDate.getFullYear() === nextYear &&
-        paymentDate.getMonth() === nextMonth
-      );
-    });
-
-    // 중개보수 총합 (모든 계약호실의 중개보수금액 합산)
-    const totalBrokerageFee = contracts.reduce((sum, c) => {
-      return sum + (Number(c.brokerageFee) || 0);
-    }, 0);
-
     return {
-      todayContracts,
-      todayBalance,
       todayMeetings,
-      futureContracts,
-      futureBalance,
       futureMeetings,
-      thisMonthContracts,
-      thisMonthBalance,
-      lastMonthPayment,
-      thisMonthPayment,
-      nextMonthPayment,
       needsContact,
       awaitingReply,
       newThisWeek,
       weekChange,
-      totalCustomers: customers.length,
-      totalProperties: properties.length,
-      totalContracts: contracts.length,
-      totalBrokerageFee
+      totalCustomers: customers.length
     };
-  }, [customers, meetings, activities, properties, contracts]);
+  }, [customers, meetings, activities]);
 
   // 날짜 포맷 함수
   const formatDate = (dateString) => {
@@ -218,11 +99,7 @@ const Dashboard = ({
 
   // 항목 클릭 핸들러 (카드 리스트 또는 모달에서)
   const handleItemClick = (item, type, cardTitle) => {
-    if (type === 'contract' || type === 'balance') {
-      // 계약 데이터의 ID를 전달하여 상세패널 직접 열기
-      onNavigate('계약호실', '전체', item.id, 'contract');
-      setModalOpen(false);
-    } else if (type === 'meeting') {
+    if (type === 'meeting') {
       // 고객 ID 전달하여 상세패널 직접 열기
       onNavigate('고객관리', '오늘미팅', item.customerId, 'customer');
       setModalOpen(false);
@@ -255,7 +132,7 @@ const Dashboard = ({
   };
 
   // 신규 StatCard 컴포넌트 (헤더 + 리스트 형식)
-  const StatCard = ({ title, number, items = [], onClick, color = '#4CAF50', type = 'contract', brokerageFeeTotal = 0 }) => {
+  const StatCard = ({ title, number, items = [], onClick, color = '#4CAF50', type = 'customer', brokerageFeeTotal = 0 }) => {
     const displayItems = items.slice(0, 5);
     const remainingCount = items.length - 5;
 
@@ -329,9 +206,7 @@ const Dashboard = ({
                 }}
               >
                 <span style={{ fontWeight: 'bold', color: '#000', minWidth: '20px' }}>{idx + 1}.</span>
-                {type === 'contract' || type === 'balance' ? (
-                  <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')} - {formatDate(type === 'contract' ? item.contractDate : item.balanceDate)}</div>
-                ) : type === 'customer' ? (
+                {type === 'customer' ? (
                   <div>{item.name || '알 수 없음'}</div>
                 ) : (
                   <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'} - {formatDate(item.date)}</div>
@@ -425,21 +300,12 @@ const Dashboard = ({
                 }}
               >
                 <span style={{ fontWeight: 'bold', color: '#000', minWidth: '24px', marginTop: '2px' }}>{idx + 1}.</span>
-                {type === 'contract' || type === 'balance' ? (
-                  <div style={{ fontSize: '13px', fontWeight: '500', flex: 1 }}>
-                    <div>{[item.buildingName, item.roomName].filter(Boolean).join(' ')}</div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                      {type === 'contract' ? `계약일: ${formatDate(item.contractDate)}` : `잔금일: ${formatDate(item.balanceDate)}`}
-                    </div>
+                <div style={{ fontSize: '13px', fontWeight: '500', flex: 1 }}>
+                  <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'}</div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                    미팅일: {formatDate(item.date)} | {item.location || '장소 미정'}
                   </div>
-                ) : (
-                  <div style={{ fontSize: '13px', fontWeight: '500', flex: 1 }}>
-                    <div>{customers.find(c => c.id === item.customerId)?.name || '알 수 없음'}</div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                      미팅일: {formatDate(item.date)} | {item.location || '장소 미정'}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             ))}
           </div>

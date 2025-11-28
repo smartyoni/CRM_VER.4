@@ -241,3 +241,36 @@ export const removeColumnFromTable = async (tableId, columnName) => {
     throw error;
   }
 };
+
+// ========== 테이블 데이터 삭제 Functions ==========
+
+// 일지 테이블 전체 삭제 (이름에 "일지"가 포함된 모든 테이블)
+export const deleteAllJournalTables = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, TABLES_METADATA_COLLECTION));
+    const journalTables = snapshot.docs.filter(doc => {
+      const tableName = doc.data().name || '';
+      return tableName.includes('일지') || tableName.includes('journal');
+    });
+
+    let totalRowsDeleted = 0;
+
+    // 각 일지 테이블의 행 데이터 삭제
+    for (const tableDoc of journalTables) {
+      const tableId = tableDoc.id;
+      const rowsSnapshot = await getDocs(collection(db, `${TABLES_METADATA_COLLECTION}/${tableId}/rows`));
+      const rowsPromises = rowsSnapshot.docs.map(rowDoc => deleteDoc(rowDoc.ref));
+      await Promise.all(rowsPromises);
+      totalRowsDeleted += rowsSnapshot.docs.length;
+
+      // 테이블 메타데이터 삭제
+      await deleteDoc(tableDoc.ref);
+    }
+
+    console.log(`${journalTables.length}개의 일지 테이블과 ${totalRowsDeleted}개의 행이 삭제되었습니다.`);
+    return { tablesDeleted: journalTables.length, rowsDeleted: totalRowsDeleted };
+  } catch (error) {
+    console.error('Error deleting journal tables:', error);
+    throw error;
+  }
+};
